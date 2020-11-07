@@ -1,6 +1,5 @@
 import typing as tp
 import logging
-import os
 
 import pkg_resources
 from cryptography import x509
@@ -28,7 +27,7 @@ x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 @Singleton
 class DevRootCertificateStore:
     def add_certificate(self, name: str):
-        ca_file = pkg_resources.resource_filename(__name__, 'certs/%s' % (name, ))
+        ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name, ))
         with open(ca_file, 'rb') as f_in:
             cert_pem_data = f_in.read()
             cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem_data)
