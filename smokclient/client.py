@@ -9,17 +9,53 @@ import requests
 from satella.coding import Closeable
 from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
+from satella.files import read_in_file
 
 from smokclient.basics import DeviceInfo, Environment
 from smokclient.certificate import get_device_info
 from smokclient.exceptions import ResponseError
-from smokclient.pathpoint.executor import OrderExecutorThread
-from smokclient.pathpoint.getter import OrderGetterThread
+from smokclient.threads.executor import OrderExecutorThread
+from smokclient.threads.communicator import OrderGetterThread
 from smokclient.pathpoint.pathpoint import Pathpoint
 
 
 def default_pathpoint(path: str) -> None:
     raise KeyError('Pathpoint does not exist')
+
+
+class RequestsAPI:
+    def __init__(self, device):
+        self.environment = device.environment
+        self.base_url = device.url
+        if self.environment == Environment.STAGING:
+            self.cert = read_in_file(device.cert[0], 'utf-8').replace('\n', '\t')
+        else:
+            self.cert = device.cert
+
+    def get(self, url):
+        if self.environment == Environment.STAGING:
+            resp = requests.get(self.base_url+url, headers={
+                'X-SSL-Client-Certificate': self.cert
+            })
+        else:
+            resp = requests.get(self.base_url+url, cert=self.cert)
+        if resp.status_code not in (200, 201):
+            raise ResponseError('HTTP %s seen, status is %s' % (resp.status_code,
+                                                                resp.json()['status']))
+        return resp.json()
+
+    def post(self, url, json_data=None):
+        if self.environment == Environment.STAGING:
+            resp = requests.post(self.base_url+url, json=json_data, headers={
+                'X-SSL-Client-Certificate': self.cert
+            })
+        else:
+            resp = requests.get(self.base_url+url, json=json_data, cert=self.cert)
+        if resp.status_code not in (200, 201):
+            raise ResponseError('HTTP %s seen, status is %s' % (resp.status_code,
+                                                                resp.json()['status']))
+        return resp.json()
+
 
 
 class SMOKDevice(Closeable):
@@ -64,7 +100,10 @@ class SMOKDevice(Closeable):
         elif self.environment == Environment.LOCAL_DEVELOPMENT:
             self.url = 'http://http-api'
 
+        self.api = RequestsAPI(self)
+
         order_queue = PeekableQueue()
+
         self.executor = OrderExecutorThread(self, order_queue).start()
         self.getter = OrderGetterThread(self, order_queue).start()
 
@@ -86,9 +125,7 @@ class SMOKDevice(Closeable):
         """
         :return: current device information
         """
-        resp = requests.get(self.url+'/v1/device', cert=self.cert)
-        if resp.status_code != 200:
-            raise ResponseError('HTTP %s seen with status %s' % (resp.status_code,
-                                                                 resp.json()['status']))
-        return DeviceInfo.from_json(resp.json())
+        resp = self.api.get('/v1/device')
+
+        return DeviceInfo.from_json(resp)
 

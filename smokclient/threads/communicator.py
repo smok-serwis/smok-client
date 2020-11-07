@@ -1,9 +1,10 @@
 import queue
 
+from satella.coding import silence_excs
 from satella.coding.concurrent import IntervalTerminableThread
-import requests
 
-from .orders import sections_from_list
+from smokclient.exceptions import ResponseError
+from smokclient.pathpoint.orders import sections_from_list
 
 
 class OrderGetterThread(IntervalTerminableThread):
@@ -12,12 +13,10 @@ class OrderGetterThread(IntervalTerminableThread):
         self.device = device
         self.queue = order_queue
 
+    @silence_excs(ResponseError)
     def loop(self) -> None:
-        resp = requests.post(self.device.url+'/v1/device/orders')
-        if resp.status_code != 200:
-            return
-        data = resp.json()
+        resp = self.device.api.post('/v1/device/orders')
 
-        if data:
-            for section in sections_from_list(data):
+        if resp:
+            for section in sections_from_list(resp):
                 self.queue.put(section)

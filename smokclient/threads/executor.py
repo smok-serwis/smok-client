@@ -1,18 +1,10 @@
+import queue
 from concurrent.futures import wait
 
-import requests
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
-import queue
 
-from smokclient.pathpoint.orders import Section, MessageOrder, WriteOrder, ReadOrder, Disposition
-
-__all__ = ['OrderExecutorThread']
-
-
-@call_in_separate_thread()
-def execute_a_message(device, msg: MessageOrder):
-    requests.post(device.url + '/v1/device/orders/message/' + msg.uuid, cert=device.cert)
+from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 
 
 class OrderExecutorThread(TerminableThread):
@@ -38,7 +30,12 @@ class OrderExecutorThread(TerminableThread):
                     fut = pathpoint.on_read(order.advise)
 
             elif isinstance(order, MessageOrder):
-                fut = execute_a_message(self.device, order)
+
+                @call_in_separate_thread
+                def execute_a_message(uuid: str) -> None:
+                    self.device.api.post('/v1/device/orders/message/' + uuid)
+
+                fut = execute_a_message(order.uuid)
 
             self.futures_to_complete.append(fut)
 
