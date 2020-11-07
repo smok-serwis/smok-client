@@ -1,3 +1,4 @@
+import time
 import typing as tp
 import enum
 
@@ -15,8 +16,12 @@ class AdviseLevel(enum.IntEnum):
 
 class Order:
     """Base class for all orders"""
+    __slots__ = ()
+
 
 class MessageOrder(Order):
+    __slots__ = ('uuid', )
+
     def __init__(self, uuid: str):
         self.uuid = uuid
 
@@ -26,6 +31,8 @@ class MessageOrder(Order):
 
 
 class WaitOrder(Order):
+    __slots__ = ('period', )
+
     def __init__(self, period: float):
         self.period = period
 
@@ -35,11 +42,18 @@ class WaitOrder(Order):
 
 
 class WriteOrder(Order):
+    __slots__ = ('pathpoint', 'value', 'advise', 'stale_after')
+
     def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel, stale_after: tp.Optional[float]):
         self.pathpoint = pathpoint
         self.value = value
         self.advise = advise
         self.stale_after = stale_after
+
+    def is_valid(self) -> bool:
+        if self.stale_after is None:
+            return True
+        return self.stale_after > time.time()
 
     @classmethod
     def from_json(cls, dct: dict) -> 'WriteOrder':
@@ -97,6 +111,9 @@ class Section:
 
     def __add__(self, other: 'Section') -> 'Section':
         return Section(self.orders + other.orders)
+
+    def is_joinable(self) -> bool:
+        return self.disposition == Disposition.JOINABLE
 
     def max_wait(self) -> tp.Optional[float]:
         wait = None
