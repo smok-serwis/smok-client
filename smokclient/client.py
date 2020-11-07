@@ -88,6 +88,7 @@ class SMOKDevice(Closeable):
         """
         resp = requests.get(self.url+'/v1/device', cert=self.cert)
         if resp.status_code != 200:
-            raise ResponseError('HTTP %s seen' % (resp.status_code, ))
+            raise ResponseError('HTTP %s seen with status %s' % (resp.status_code,
+                                                                 resp.json()['status']))
         return DeviceInfo.from_json(resp.json())
 
