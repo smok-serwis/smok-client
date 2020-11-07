@@ -8,3 +8,9 @@ class InvalidCredentials(SMOKClientError):
     """
 
 __all__ = ['SMOKClientError', 'InvalidCredentials']
+
+
+class ResponseError(SMOKClientError):
+    """
+    Server replied with a wrong code
+    """

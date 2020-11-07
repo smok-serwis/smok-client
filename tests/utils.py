@@ -4,6 +4,7 @@ import typing as tp
 class FakeResponse:
     def __init__(self, response):
         self.response = response
+        self.status_code = 200
 
     def json(self):
         return self.response

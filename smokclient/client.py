@@ -12,6 +12,7 @@ from satella.coding.structures import DirtyDict
 
 from smokclient.basics import DeviceInfo, Environment
 from smokclient.certificate import get_device_info
+from smokclient.exceptions import ResponseError
 from smokclient.pathpoint.executor import OrderExecutorThread
 from smokclient.pathpoint.getter import OrderGetterThread
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -86,5 +87,7 @@ class SMOKDevice(Closeable):
         :return: current device information
         """
         resp = requests.get(self.url+'/v1/device', cert=self.cert)
+        if resp.status_code != 200:
+            raise ResponseError('HTTP %s seen' % (resp.status_code, ))
         return DeviceInfo.from_json(resp.json())
 

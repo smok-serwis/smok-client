@@ -1,9 +1,9 @@
 import queue
 
-import requests
 from satella.coding.concurrent import IntervalTerminableThread
+import requests
 
-from smokclient.pathpoint.orders import sections_from_list
+from .orders import sections_from_list
 
 
 class OrderGetterThread(IntervalTerminableThread):
@@ -14,6 +14,8 @@ class OrderGetterThread(IntervalTerminableThread):
 
     def loop(self) -> None:
         resp = requests.post(self.device.url+'/v1/device/orders')
+        if resp.status_code != 200:
+            return
         data = resp.json()
 
         if data:
