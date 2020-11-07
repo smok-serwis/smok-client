@@ -1,31 +1,44 @@
 import os
-import queue
-import ssl
 import typing as tp
 import io
 import tempfile
 
 
-import pkg_resources
 import requests
 
-from smokclient.basics import SlaveDeviceInfo, DeviceInfo, Environment
+from satella.coding import Closeable
+from satella.coding.concurrent import PeekableQueue
+
+from smokclient.basics import DeviceInfo, Environment
 from smokclient.certificate import get_device_info
 from smokclient.pathpoint.reader import OrderExecutorThread
+from smokclient.pathpoint.getter import OrderGetterThread
+from smokclient.pathpoint.pathpoint import Pathpoint
 
 
-class SMOKDevice:
+def default_pathpoint(path: str) -> None:
+    raise KeyError('Pathpoint does not exist')
+
+
+class SMOKDevice(Closeable):
     """
-    A base class for a SMOK device
+    A base class for a SMOK device.
+
+    Note that instantiating this object spawns two non-daemon thread. This object must be
+    close()d before termination (or __del__eted).
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
     """
     __slots__ = ('temp_file_for_cert', 'temp_file_for_key', 'device_id',
-                 'environment', 'cert', 'url', 'executor', 'getter')
+                 'environment', 'cert', 'url', 'executor', 'getter',
+                 'queue', 'unknown_pathpoint_provider', 'pathpoints')
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
-                 priv_key: tp.Union[str, io.StringIO]):
+                 priv_key: tp.Union[str, io.StringIO],
+                 unknown_pathpoint_provider: tp.Callable[[str], Pathpoint] = default_pathpoint):
+        self.unknown_pathpoint_provider = unknown_pathpoint_provider
+        self.pathpoints = {}
         self.temp_file_for_cert = None
         if not isinstance(cert, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as cert_file:
@@ -51,17 +64,28 @@ class SMOKDevice:
         elif self.environment == Environment.LOCAL_DEVELOPMENT:
             self.url = 'http://http-api'
 
-        order_queue = queue.Queue()
-        # self.executor = OrderExecutorThread(order_queue).start()
-        # self.getter = OrderGetterThread(order_queue).start()
+        order_queue = PeekableQueue()
+        self.executor = OrderExecutorThread(order_queue).start()
+        self.getter = OrderGetterThread(order_queue).start()
 
-    def __del__(self) -> None:
-        if self.temp_file_for_cert:
-            os.unlink(self.temp_file_for_cert)
-        if self.temp_file_for_key:
-            os.unlink(self.temp_file_for_key)
+    def close(self) -> None:
+        """
+        Close the connection, clean up the resources.
+        """
+        if super().close():
+            self.executor.terminate()
+            self.getter.terminate()
+            if self.temp_file_for_cert:
+                os.unlink(self.temp_file_for_cert)
+            if self.temp_file_for_key:
+                os.unlink(self.temp_file_for_key)
+            self.executor.join()
+            self.getter.join()
 
     def get_device_info(self) -> DeviceInfo:
+        """
+        :return: current device information
+        """
         resp = requests.get(self.url+'/v1/device', cert=self.cert)
         return DeviceInfo.from_json(resp.json())
 

@@ -76,18 +76,37 @@ def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
             orders.append(o)
     return orders
 
+
 class Disposition(enum.IntEnum):
     JOINABLE = 0
     CANNOT_JOIN = 1
 
+
 class Section:
-    def __init__(self, orders: tp.List[Order], disposition: Disposition):
+    def __init__(self, orders: tp.List[Order], disposition: Disposition = Disposition.JOINABLE):
         self.orders = orders
         self.disposition = disposition
 
     @classmethod
     def from_json(cls, dct: dict):
         return Section([orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0))])
+
+    def __iadd__(self, other: 'Section') -> 'Section':
+        self.orders.extend(other.orders)
+        return self
+
+    def __add__(self, other: 'Section') -> 'Section':
+        return Section(self.orders + other.orders)
+
+    def max_wait(self) -> tp.Optional[float]:
+        wait = None
+        for order in (or_ for or_ in self.orders if isinstance(or_, WaitOrder)):
+            if wait is None:
+                wait = order.period
+            else:
+                if wait < order.period:
+                    wait = order.period
+        return wait
 
 
 def sections_from_list(lst: tp.List[dict]) -> tp.List[Section]:

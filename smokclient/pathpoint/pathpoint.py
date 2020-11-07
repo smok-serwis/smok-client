@@ -2,6 +2,8 @@ import typing as tp
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
+from smokclient.pathpoint.orders import AdviseLevel
+
 PathpointValueType = tp.Union[int, float, str]
 
 
@@ -11,7 +13,7 @@ class Pathpoint(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def on_read(self) -> Future:
+    def on_read(self, advise: AdviseLevel) -> Future:
         """
         Called when there's a request to read this pathpoint.
 
@@ -21,7 +23,7 @@ class Pathpoint(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def on_write(self, value: PathpointValueType) -> Future:
+    def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
         """
         Called when there's a request to write this pathpoint with a particular value
 
