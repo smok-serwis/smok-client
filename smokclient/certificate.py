@@ -8,9 +8,11 @@ from cryptography.hazmat.backends import default_backend
 from OpenSSL import crypto
 from pyasn1.codec.der.decoder import decode
 from pyasn1.error import PyAsn1Error
+from satella.coding import rethrow_as
 
 from satella.coding.structures import Singleton
 
+from smokclient.basics import Environment
 from smokclient.exceptions import InvalidCredentials
 
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ def check_if_trusted(cert_data: bytes) -> bool:
         return False
 
 
-def get_device_info(cert_data: bytes) -> tp.Tuple[str, int]:
+def get_device_info(cert_data: bytes) -> tp.Tuple[str, Environment]:
     try:
         cert = x509.load_pem_x509_certificate(cert_data, default_backend())
     except ValueError:
@@ -82,5 +84,5 @@ def get_device_info(cert_data: bytes) -> tp.Tuple[str, int]:
     except ValueError as e:
         raise InvalidCredentials('unrecognized environment')
 
-    return device_id, environment
-
+    with rethrow_as(ValueError, InvalidCredentials):
+        return device_id, Environment(environment)

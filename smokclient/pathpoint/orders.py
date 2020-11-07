@@ -1,0 +1,94 @@
+import typing as tp
+import enum
+
+from smokclient.pathpoint.pathpoint import PathpointValueType
+
+
+__all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
+           'WaitOrder', 'MessageOrder', 'Section', 'sections_from_list']
+
+
+class AdviseLevel(enum.IntEnum):
+    ADVISE = 0
+    FORCE = 1
+
+
+class Order:
+    """Base class for all orders"""
+
+class MessageOrder(Order):
+    def __init__(self, uuid: str):
+        self.uuid = uuid
+
+    @classmethod
+    def from_json(cls, dct: dict) -> 'MessageOrder':
+        return MessageOrder(dct['uuid'])
+
+
+class WaitOrder(Order):
+    def __init__(self, period: float):
+        self.period = period
+
+    @classmethod
+    def from_json(cls, dct: dict) -> 'WaitOrder':
+        return WaitOrder(dct['time'])
+
+
+class WriteOrder(Order):
+    def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel, stale_after: tp.Optional[float]):
+        self.pathpoint = pathpoint
+        self.value = value
+        self.advise = advise
+        self.stale_after = stale_after
+
+    @classmethod
+    def from_json(cls, dct: dict) -> 'WriteOrder':
+        return WriteOrder(dct['path'], dct['value'], AdviseLevel(dct.get('advise', 0)),
+                          dct.get('stale_after'))
+
+
+class ReadOrder(Order):
+    def __init__(self, pathpoint: str, advise: AdviseLevel):
+        self.pathpoint = pathpoint
+        self.advise = advise
+
+    @classmethod
+    def from_json(cls, dct: dict) -> 'ReadOrder':
+        return ReadOrder(dct['path'], AdviseLevel(dct.get('advise', 0)))
+
+
+def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
+    orders = []
+    for order in lst:
+        order_type = order['type']
+        if order_type == 'message':
+            o = MessageOrder.from_json(order)
+        elif order_type == 'read':
+            o = ReadOrder.from_json(order)
+        elif order_type == 'wait':
+            o = WaitOrder.from_json(order)
+        elif order_type == 'write':
+            o = WriteOrder.from_json(order)
+        else:
+            o = None
+
+        if o:
+            orders.append(o)
+    return orders
+
+class Disposition(enum.IntEnum):
+    JOINABLE = 0
+    CANNOT_JOIN = 1
+
+class Section:
+    def __init__(self, orders: tp.List[Order], disposition: Disposition):
+        self.orders = orders
+        self.disposition = disposition
+
+    @classmethod
+    def from_json(cls, dct: dict):
+        return Section([orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0))])
+
+
+def sections_from_list(lst: tp.List[dict]) -> tp.List[Section]:
+    return [Section.from_json(section) for section in lst]

@@ -1,0 +1,5 @@
+satella
+requests
+pyasn1
+cryptography
+pyopenssl
