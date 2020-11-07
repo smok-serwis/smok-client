@@ -26,6 +26,12 @@ class SlaveDeviceInfo(JSONAble):
         return SlaveDeviceInfo(dct['device_id'], dct['master_controller'],
                                dct['responsible_service'], dct['configuration'])
 
+    def __repr__(self) -> str:
+        return 'SlaveDeviceInfo(%s, %s, %s, %s)' % map(repr, [self.device_id,
+                                                              self.master_controller,
+                                                              self.responsible_service,
+                                                              self.configuration])
+
     def to_json(self) -> dict:
         return {
             'device_id': self.device_id,
@@ -38,6 +44,12 @@ class SlaveDeviceInfo(JSONAble):
 class DeviceInfo:
     __slots__ = ('device_id', 'slaves', 'facets', 'language', 'timezone', 'units',
                  'verbose_name')
+
+    def __repr__(self) -> str:
+        return 'DeviceInfo(%s, %s, %s, %s, %s, %s, %s)' % map(repr, [self.device_id, self.facets,
+                                                                     self.language, self.timezone,
+                                                                     self.units, self.verbose_name,
+                                                                     self.slaves])
 
     def __init__(self, device_id: str, facets: tp.Set[str], language: str, timezone: str,
                  units: str, verbose_name: str, slaves: tp.List[SlaveDeviceInfo]):

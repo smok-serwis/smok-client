@@ -10,8 +10,11 @@ class TestClient(unittest.TestCase):
     def test_set_up_smok_device(self):
         """Tests that basic constructor works"""
         client = SMOKDevice('tests/dev.testing.crt', 'tests/dev.testing.key')
-        self.assertEqual(client.environment, Environment.LOCAL_DEVELOPMENT)
-        self.assertEqual(client.device_id, '1')
+        try:
+            self.assertEqual(client.environment, Environment.LOCAL_DEVELOPMENT)
+            self.assertEqual(client.device_id, '1')
+        finally:
+            client.close()
 
     @mock.patch('requests.get', FakeCall({'/v1/device': {
             'device_id': '1',
@@ -33,5 +36,8 @@ class TestClient(unittest.TestCase):
     def test_device_info(self):
         """Tests that basic constructor works"""
         client = SMOKDevice('tests/dev.testing.crt', 'tests/dev.testing.key')
-        dev = client.get_device_info()
-        self.assertEqual(dev.slaves[0].responsible_service, 'rapid')
+        try:
+            dev = client.get_device_info()
+            self.assertEqual(dev.slaves[0].responsible_service, 'rapid')
+        finally:
+            client.close()

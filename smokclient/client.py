@@ -8,10 +8,11 @@ import requests
 
 from satella.coding import Closeable
 from satella.coding.concurrent import PeekableQueue
+from satella.coding.structures import DirtyDict
 
 from smokclient.basics import DeviceInfo, Environment
 from smokclient.certificate import get_device_info
-from smokclient.pathpoint.reader import OrderExecutorThread
+from smokclient.pathpoint.executor import OrderExecutorThread
 from smokclient.pathpoint.getter import OrderGetterThread
 from smokclient.pathpoint.pathpoint import Pathpoint
 
@@ -30,15 +31,13 @@ class SMOKDevice(Closeable):
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
     """
-    __slots__ = ('temp_file_for_cert', 'temp_file_for_key', 'device_id',
-                 'environment', 'cert', 'url', 'executor', 'getter',
-                 'queue', 'unknown_pathpoint_provider', 'pathpoints')
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO],
                  unknown_pathpoint_provider: tp.Callable[[str], Pathpoint] = default_pathpoint):
+        super().__init__()
         self.unknown_pathpoint_provider = unknown_pathpoint_provider
-        self.pathpoints = {}
+        self.pathpoints = DirtyDict()
         self.temp_file_for_cert = None
         if not isinstance(cert, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as cert_file:
@@ -65,8 +64,8 @@ class SMOKDevice(Closeable):
             self.url = 'http://http-api'
 
         order_queue = PeekableQueue()
-        self.executor = OrderExecutorThread(order_queue).start()
-        self.getter = OrderGetterThread(order_queue).start()
+        self.executor = OrderExecutorThread(self, order_queue).start()
+        self.getter = OrderGetterThread(self, order_queue).start()
 
     def close(self) -> None:
         """

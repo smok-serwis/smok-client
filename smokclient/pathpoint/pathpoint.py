@@ -1,10 +1,8 @@
-import typing as tp
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
-from smokclient.pathpoint.orders import AdviseLevel
-
-PathpointValueType = tp.Union[int, float, str]
+from .orders import AdviseLevel
+from .typing import PathpointValueType
 
 
 class Pathpoint(metaclass=ABCMeta):

@@ -2,8 +2,7 @@ import time
 import typing as tp
 import enum
 
-from smokclient.pathpoint.pathpoint import PathpointValueType
-
+from smokclient.pathpoint.typing import PathpointValueType
 
 __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
            'WaitOrder', 'MessageOrder', 'Section', 'sections_from_list']
