@@ -4,10 +4,12 @@ import queue
 
 from satella.coding import silence_excs, for_argument
 from satella.coding.concurrent import IntervalTerminableThread
+from satella.coding.structures import DirtyDict
 from satella.coding.transforms import jsonify
 
 from smokclient.basics import StorageLevel
 from smokclient.exceptions import ResponseError
+from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import sections_from_list
 from smokclient.pathpoint.pathpoint import Pathpoint
 
@@ -24,17 +26,26 @@ def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
 
 
 class CommunicatorThread(IntervalTerminableThread):
-    def __init__(self, device: 'SMOKClient', order_queue: queue.Queue):
+    def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
+                 data_to_sync: DataSyncDict):
         super().__init__(30, name='order getter')
         self.device = device
         self.queue = order_queue
+        self.data_to_sync = data_to_sync
 
     def fetch_orders(self) -> None:
         resp = self.device.api.post('/v1/device/orders')
-
         if resp:
             for section in sections_from_list(resp):
                 self.queue.put(section)
+
+    def sync_data(self) -> None:
+        data = self.data_to_sync.to_json()
+        try:
+            self.device.api.post('/v1/device/pathpoints', json=data)
+        except ResponseError as e:
+            logger.debug(f'Failed to sync data {e}')
+            self.data_to_sync.add_from_json(data)
 
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
@@ -74,6 +85,9 @@ class CommunicatorThread(IntervalTerminableThread):
 
     @silence_excs(ResponseError)
     def loop(self) -> None:
+        if self.data_to_sync.dirty:
+            self.sync_data()
+
         # Synchronize the pathpoints
         if self.device.pathpoints.dirty:
             self.sync_pathpoints()

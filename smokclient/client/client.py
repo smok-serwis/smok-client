@@ -10,6 +10,7 @@ from satella.coding.structures import DirtyDict
 from smokclient.client.api import RequestsAPI
 from smokclient.basics import DeviceInfo, Environment, StorageLevel
 from smokclient.client.certificate import get_device_info
+from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.threads import OrderExecutorThread, CommunicatorThread
 from smokclient.pathpoint.pathpoint import Pathpoint
 
@@ -63,9 +64,10 @@ class SMOKDevice(Closeable):
         self.api = RequestsAPI(self)
 
         order_queue = PeekableQueue()
+        data_to_sync = DataSyncDict()
 
-        self.executor = OrderExecutorThread(self, order_queue).start()
-        self.getter = CommunicatorThread(self, order_queue).start()
+        self.executor = OrderExecutorThread(self, order_queue, data_to_sync).start()
+        self.getter = CommunicatorThread(self, order_queue, data_to_sync).start()
 
     def register_pathpoint(self, pp: Pathpoint) -> None:
         self.pathpoints[pp.name] = pp

@@ -17,6 +17,12 @@ class Order:
     """Base class for all orders"""
     __slots__ = ()
 
+    def __repr__(self) -> str:
+        return str(type(self))
+
+    def __str__(self) -> str:
+        return str(type(self))
+
 
 class MessageOrder(Order):
     __slots__ = ('uuid', )
@@ -102,7 +108,7 @@ class Section:
 
     @classmethod
     def from_json(cls, dct: dict):
-        return Section([orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0))])
+        return Section(orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0)))
 
     def __iadd__(self, other: 'Section') -> 'Section':
         self.orders.extend(other.orders)

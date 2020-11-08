@@ -26,7 +26,7 @@ if __name__ == '__main__':
             def read(advised: AdviseLevel):
                 print(f'Readed {self.name}')
                 return self.value
-            return read()
+            return read(advise)
 
         def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
             @call_in_separate_thread()

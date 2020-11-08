@@ -10,6 +10,7 @@ class Pathpoint(metaclass=ABCMeta):
     """
     Base class for an user-defined pathpoint.
     """
+    __slots__ = ('name', 'storage_level')
 
     def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):
         self.name = name
@@ -20,7 +21,9 @@ class Pathpoint(metaclass=ABCMeta):
         """
         Called when there's a request to read this pathpoint.
 
-        This is called from a separate thread spawned by SMOKDevice
+        This is called from a separate thread spawned by SMOKDevice.
+
+        The future should raise OperationFailedError when the read fails.
 
         :returns: a Future that returns the value of this pathpoint
         """
@@ -31,6 +34,8 @@ class Pathpoint(metaclass=ABCMeta):
         Called when there's a request to write this pathpoint with a particular value
 
         This is called from a separate thread spawned by SMOKDevice
+
+        The future should raise OperationFailedError when the write fails.
 
         :returns: a Future that completes successfully if written correctly or excepts if failed
             (any exception will do).
