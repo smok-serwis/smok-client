@@ -1,5 +1,5 @@
 import queue
-from concurrent.futures import wait
+from concurrent.futures import wait, Future
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
@@ -32,7 +32,7 @@ class OrderExecutorThread(TerminableThread):
             elif isinstance(order, MessageOrder):
 
                 @call_in_separate_thread
-                def execute_a_message(uuid: str) -> None:
+                def execute_a_message(uuid: str) -> Future:
                     self.device.api.post('/v1/device/orders/message/' + uuid)
 
                 fut = execute_a_message(order.uuid)

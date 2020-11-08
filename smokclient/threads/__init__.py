@@ -1,4 +1,4 @@
-from .communicator import OrderGetterThread
+from .communicator import CommunicatorThread
 from .executor import OrderExecutorThread
 
-__all__ = ['OrderGetterThread', 'OrderExecutorThread']
+__all__ = ['CommunicatorThread', 'OrderExecutorThread']

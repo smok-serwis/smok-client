@@ -15,3 +15,9 @@ class ResponseError(SMOKClientError):
     """
     Server replied with a wrong code
     """
+    def __str__(self) -> str:
+        return 'ResponseError(%s, "%s")' % (self.status_code, self.status)
+
+    def __init__(self, status_code: int, status: str):
+        self.status_code = status_code
+        self.status = status

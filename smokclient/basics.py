@@ -10,6 +10,11 @@ class Environment(enum.IntEnum):
     LOCAL_DEVELOPMENT = 2
 
 
+class StorageLevel(enum.IntEnum):
+    PERMANENT = 0
+    TREND = 1
+
+
 class SlaveDeviceInfo(JSONAble):
     __slots__ = ('device_id', 'master_controller', 'responsible_service',
                  'configuration')

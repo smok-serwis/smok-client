@@ -1,3 +1,5 @@
+import json
+
 import requests
 from satella.files import read_in_file
 
@@ -23,15 +25,17 @@ class RequestsAPI:
         else:
             resp = op(self.base_url+url, cert=self.cert, **kwargs)
         if resp.status_code not in (200, 201):
-            raise ResponseError('HTTP %s seen, status is %s' % (resp.status_code,
-                                                                resp.json()['status']))
-        return resp.json()
+            raise ResponseError(resp.status_code, resp.json()['status'])
+        try:
+            return resp.json()
+        except json.decoder.JSONDecodeError:
+            raise ResponseError(resp.status_code, resp.content)
 
     def get(self, url):
         return self.request('get', url)
 
-    def post(self, url, json_data=None):
-        return self.request('post', url, json=json_data)
+    def post(self, url, **kwargs):
+        return self.request('post', url, **kwargs)
 
-    def put(self, url, json_data=None):
-        return self.request('put', json=json_data)
+    def put(self, url, **kwargs):
+        return self.request('put', url, **kwargs)

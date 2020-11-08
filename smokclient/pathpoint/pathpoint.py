@@ -3,12 +3,17 @@ from concurrent.futures import Future
 
 from .orders import AdviseLevel
 from .typing import PathpointValueType
+from ..basics import StorageLevel
 
 
 class Pathpoint(metaclass=ABCMeta):
     """
     Base class for an user-defined pathpoint.
     """
+
+    def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):
+        self.name = name
+        self.storage_level = storage_level
 
     @abstractmethod
     def on_read(self, advise: AdviseLevel) -> Future:
@@ -30,4 +35,13 @@ class Pathpoint(metaclass=ABCMeta):
         :returns: a Future that completes successfully if written correctly or excepts if failed
             (any exception will do).
         """
+
+    def on_new_storage_level(self, new_storage_level: StorageLevel) -> None:
+        """
+        Called when this pathpoint's storage level is updated.
+
+        This should complete ASAP, as this is called by a thread that is responsible
+        for communication with the server.
+        """
+        self.storage_level = new_storage_level
 

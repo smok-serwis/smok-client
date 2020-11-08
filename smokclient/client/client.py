@@ -8,13 +8,13 @@ from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
 
 from smokclient.client.api import RequestsAPI
-from smokclient.basics import DeviceInfo, Environment
+from smokclient.basics import DeviceInfo, Environment, StorageLevel
 from smokclient.client.certificate import get_device_info
-from smokclient.threads import OrderExecutorThread, OrderGetterThread
+from smokclient.threads import OrderExecutorThread, CommunicatorThread
 from smokclient.pathpoint.pathpoint import Pathpoint
 
 
-def default_pathpoint(path: str) -> None:
+def default_pathpoint(path: str, storage_level: StorageLevel) -> None:
     raise KeyError('Pathpoint does not exist')
 
 
@@ -65,7 +65,10 @@ class SMOKDevice(Closeable):
         order_queue = PeekableQueue()
 
         self.executor = OrderExecutorThread(self, order_queue).start()
-        self.getter = OrderGetterThread(self, order_queue).start()
+        self.getter = CommunicatorThread(self, order_queue).start()
+
+    def register_pathpoint(self, pp: Pathpoint) -> None:
+        self.pathpoints[pp.name] = pp
 
     def close(self) -> None:
         """
