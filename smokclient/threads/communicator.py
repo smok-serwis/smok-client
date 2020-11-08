@@ -3,9 +3,11 @@ import typing as tp
 import queue
 
 from satella.coding import silence_excs, for_argument
-from satella.coding.concurrent import IntervalTerminableThread
+from satella.coding.concurrent import TerminableThread
 from satella.coding.structures import DirtyDict
 from satella.coding.transforms import jsonify
+from satella.exceptions import WouldWaitMore
+from satella.time import measure
 
 from smokclient.basics import StorageLevel
 from smokclient.exceptions import ResponseError
@@ -25,10 +27,13 @@ def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
     return output
 
 
-class CommunicatorThread(IntervalTerminableThread):
+COMMUNICATOR_INTERVAL = 30
+
+
+class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
                  data_to_sync: DataSyncDict):
-        super().__init__(30, name='order getter')
+        super().__init__(name='order getter')
         self.device = device
         self.queue = order_queue
         self.data_to_sync = data_to_sync
@@ -85,12 +90,16 @@ class CommunicatorThread(IntervalTerminableThread):
 
     @silence_excs(ResponseError)
     def loop(self) -> None:
-        if self.data_to_sync.dirty:
-            self.sync_data()
+        with measure() as measurement:
+            if self.data_to_sync.dirty:
+                self.sync_data()
 
-        # Synchronize the pathpoints
-        if self.device.pathpoints.dirty:
-            self.sync_pathpoints()
+            # Synchronize the pathpoints
+            if self.device.pathpoints.dirty:
+                self.sync_pathpoints()
 
-        # Fetch the orders
-        self.fetch_orders()
+            # Fetch the orders
+            self.fetch_orders()
+
+            with silence_excs(WouldWaitMore):
+                self.data_to_sync.updated_condition.wait(timeout=COMMUNICATOR_INTERVAL-measurement())

@@ -2,6 +2,7 @@ import time
 import typing as tp
 
 from satella.coding import Monitor
+from satella.coding.concurrent import Condition
 from satella.coding.structures import DirtyDict
 
 from .typing import PathpointValueType
@@ -12,6 +13,7 @@ class DataSyncDict(DirtyDict, Monitor):
     def __init__(self):
         super().__init__()
         Monitor.__init__(self)
+        self.updated_condition = Condition()
 
     def on_readed_successfully(self, pathpoint: str, value: PathpointValueType,
                                timestamp: tp.Optional[float] = None):
@@ -27,6 +29,7 @@ class DataSyncDict(DirtyDict, Monitor):
             if timestamp > ts_last:
                 self[pathpoint].append(tpl)
         self.dirty = True
+        self.updated_condition.notify()
 
     def add_from_json(self, dct: tp.List[dict]) -> None:
         for entry in dct:
