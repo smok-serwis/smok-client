@@ -26,7 +26,8 @@ class Order:
         return str(type(self))
 
 
-class MessageOrder(Order):
+class MessageOrder(Order, ReprableMixin):
+    _REPR_FIELDS = ('uuid', )
     __slots__ = ('uuid', )
 
     def __init__(self, uuid: str):
@@ -37,7 +38,8 @@ class MessageOrder(Order):
         return MessageOrder(dct['uuid'])
 
 
-class WaitOrder(Order):
+class WaitOrder(Order, ReprableMixin):
+    _REPR_FIELDS = ('period', )
     __slots__ = ('period', )
 
     def __init__(self, period: float):
@@ -48,7 +50,8 @@ class WaitOrder(Order):
         return WaitOrder(dct['time'])
 
 
-class WriteOrder(Order):
+class WriteOrder(Order, ReprableMixin):
+    _REPR_FIELDS = ('pathpoint', 'value', 'advise', 'stale_after')
     __slots__ = ('pathpoint', 'value', 'advise', 'stale_after')
 
     def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel,
@@ -69,7 +72,9 @@ class WriteOrder(Order):
                           dct.get('stale_after'))
 
 
-class ReadOrder(Order):
+class ReadOrder(Order, ReprableMixin):
+    _REPR_FIELDS = ('pathpoint', 'advise')
+
     def __init__(self, pathpoint: str, advise: AdviseLevel):
         self.pathpoint = pathpoint
         self.advise = advise

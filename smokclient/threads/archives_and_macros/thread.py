@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import silence_excs
+from satella.coding import silence_excs, ListDeleter
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -38,15 +38,16 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     def update_macros(self) -> None:
         start = self.macros_updated_on
         if start == 0:
-            start = time_as_int() - 3600
-        stop = start + 3600 + 3 * MACROS_UPDATING_INTERVAL
+            start = time_as_int() - 2*MACROS_UPDATING_INTERVAL
+        stop = start + 5 * MACROS_UPDATING_INTERVAL
         resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
             start, stop
         ))
         macros = [macro_parameters_from_json(macro) for macro in resp]
         self.macros_to_execute = []
         for macro in macros:
-            self.macros_to_execute.append(get_macro(*macro))
+            if macro:
+                self.macros_to_execute.append(get_macro(*macro))
         self.macros_updated_on = time.time()
 
     @retry(3, exc_classes=ResponseError)
@@ -69,9 +70,13 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         if self.should_update_archives():
             self.update_archives()
 
-        for macro in self.macros_to_execute:
-            if macro.should_execute():
-                macro.execute(self.device, self.order_queue)
+        with ListDeleter(self.macros_to_execute) as ld:
+            for macro in ld:
+                if macro.should_execute():
+                    macro.execute(self.device, self.order_queue)
+                    if not macro:
+                        ld.delete()
+                        clean_cache()
 
         sec = Section()
         for a_entry in self.archiving_entries:

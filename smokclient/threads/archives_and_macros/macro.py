@@ -33,20 +33,18 @@ class Macro(OmniHashableMixin, ReprableMixin):
     def should_execute(self) -> bool:
         return time.time() > self.occurrences_not_done[0]
 
-    @retry(3, exc_classes=ResponseError)
+    @retry(6, exc_classes=ResponseError)
     def mark_as_complete(self, ts: int, device: 'SMOKDevice') -> None:
         device.api.post('/v1/device/macros/%s/%s' % (self.macro_id, ts))
 
     def execute(self, device: 'SMOKDevice', order_queue: PeekableQueue) -> None:
-        logger.warning(f'Executing')
+        logger.warning(f'Executing {self}')
         while self.should_execute():
-            sec = Section()
-            for pathpoint_name, pathpoint_value in self.commands.items():
-                sec += WriteOrder(pathpoint_name, pathpoint_value, AdviseLevel.FORCE)
+            sec = Section([WriteOrder(pathpoint_name, pathpoint_value, AdviseLevel.FORCE)
+                           for pathpoint_name, pathpoint_value in self.commands.items()])
             order_queue.put(sec)
 
-            ts = self.occurrences_not_done.popleft()
-            self.mark_as_complete(ts, device)
+            self.mark_as_complete(self.occurrences_not_done.popleft(), device)
 
 
 macro_cache = {}        # type: tp.Dict[str, Macro]
@@ -56,10 +54,14 @@ def get_macro(macro_id: str, commands, occurrences):
     global macro_cache
 
     if not macro_id in macro_cache:
-        macro_cache[macro_id] = Macro(macro_id, commands, occurrences)
-        logger.warning(f'Registered new macro {macro_cache[macro_id]}')
+        macro = Macro(macro_id, commands, occurrences)
+        if macro:
+            macro_cache[macro_id] = macro
+            logger.warning(f'Registered new macro {macro_cache[macro_id]}')
+    else:
+        macro = macro_cache[macro_id]
 
-    return macro_cache[macro_id]
+    return macro
 
 
 def macro_parameters_from_json(dct: dict) -> tp.Tuple[str,

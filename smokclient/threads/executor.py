@@ -32,6 +32,7 @@ class OrderExecutorThread(TerminableThread):
         self.data_to_sync = data_to_sync
 
     def execute_a_section(self, section: Section) -> None:
+        logger.warning(f'Executing {section}')
         for order in section.orders:
             if isinstance(order, (WriteOrder, ReadOrder)):
                 pp = order.pathpoint
@@ -42,6 +43,7 @@ class OrderExecutorThread(TerminableThread):
                 if isinstance(order, WriteOrder):
                     if not order.is_valid():
                         continue
+                    logger.warning(f'Executing {repr(order)}')
                     fut = pathpoint.on_write(order.value, order.advise)
                 elif isinstance(order, ReadOrder):
                     fut = pathpoint.on_read(order.advise)       # type: Future

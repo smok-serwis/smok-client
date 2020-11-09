@@ -34,7 +34,7 @@ if __name__ == '__main__':
             def write(val, advised: AdviseLevel):
                 print(f'Written {self.name} with {val}')
                 self.value = val
-            return write()
+            return write(value, advise)
 
     a = PP('W1')
     sd.register_pathpoint(a)
