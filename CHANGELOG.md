@@ -1,3 +1,4 @@
 # v0.0.2
 
 * minor refactorings and docs improvements
+* added `alarms` and `predicates` for device

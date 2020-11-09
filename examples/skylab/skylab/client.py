@@ -32,6 +32,6 @@ if __name__ == '__main__':
     assert sd.device_id == 'skylab'
     assert sd.environment == Environment.STAGING
     print(repr(sd.get_device_info()))
-
+    sd.instrumentation = '{"ok": True}'
     a = PP('W1')
     sd.register_pathpoint(a)

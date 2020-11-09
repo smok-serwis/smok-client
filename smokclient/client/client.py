@@ -7,12 +7,12 @@ from satella.coding import Closeable
 from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
 
-from smokclient.client.api import RequestsAPI
-from smokclient.basics import DeviceInfo, Environment, StorageLevel
-from smokclient.client.certificate import get_device_info
-from smokclient.pathpoint.data_sync_dict import DataSyncDict
-from smokclient.threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
-from smokclient.pathpoint.pathpoint import Pathpoint
+from .api import RequestsAPI
+from ..basics import DeviceInfo, Environment, StorageLevel
+from .certificate import get_device_info
+from ..pathpoint.data_sync_dict import DataSyncDict
+from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
+from ..pathpoint import Pathpoint
 
 
 def default_pathpoint(path: str, storage_level: StorageLevel) -> None:
@@ -31,6 +31,7 @@ class SMOKDevice(Closeable):
     :param unknown_pathpoint_provider: a callable that is called with two arguments:
         pathpoint name and pathpoint storage level. It is supposed to return a Pathpoint
         object, or raise KeyError if it doesn't exist.
+        The default implementation always raises KeyError.
 
     :ivar device_id: device ID of this device
     :ivar environment: environment of this device
@@ -44,6 +45,8 @@ class SMOKDevice(Closeable):
         self.unknown_pathpoint_provider = unknown_pathpoint_provider
         self.pathpoints = DirtyDict()
         self.temp_file_for_cert = None
+        self._linkstate = None
+        self._instrumentation = None
         if not isinstance(cert, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as cert_file:
                 cert_file.write(cert.read())
@@ -88,6 +91,52 @@ class SMOKDevice(Closeable):
         :param pp: pathpoint to register
         """
         self.pathpoints[pp.name] = pp
+
+    @property
+    def linkstate(self) -> str:
+        """
+        :returns: current link state
+        """
+        if self._linkstate is None:
+            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id, ))
+            self._linkstate = resp['linkstate']
+            self._instrumentation = resp['instrumentation']
+        return self._linkstate
+
+    @linkstate.setter
+    def linkstate(self, v: str) -> None:
+        """
+        Set a new link state
+
+        :param v: new link state
+        """
+        self.client.patch('/v1/device/instrumentation/%s' % (self.device_id, ), json={
+            'linkstate': v
+        })
+        self._linkstate = v
+
+    @property
+    def instrumentation(self) -> str:
+        """
+        :return: current instrumentation
+        """
+        if self._instrumentation is None:
+            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id, ))
+            self._linkstate = resp['linkstate']
+            self._instrumentation = resp['instrumentation']
+        return self._instrumentation
+
+    @instrumentation.setter
+    def instrumentation(self, v: str) -> None:
+        """
+        Set a new instrumentation
+
+        :param v: new value for the instrumentation
+        """
+        self.client.patch('/v1/device/instrumentation/%s' % (self.device_id, ), json={
+            'instrumentation': v
+        })
+        self._instrumentation = v
 
     def close(self) -> None:
         """
