@@ -87,4 +87,10 @@ Class droplist
 .. autoclass:: smokclient.basics.Environment
     :members:
 
+.. autoclass:: smokclient.basics.DeviceInfo
+    :members:
+
+.. autoclass:: smokclient.basics.SlaveDeviceInfo
+    :members:
+
 .. autodata:: smokclient.pathpoint.PathpointValueType

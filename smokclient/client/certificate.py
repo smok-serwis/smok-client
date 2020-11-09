@@ -26,6 +26,8 @@ x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 
 @Singleton
 class DevRootCertificateStore:
+    __slots__ = ('store', )
+
     def add_certificate(self, name: str):
         ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name, ))
         with open(ca_file, 'rb') as f_in:

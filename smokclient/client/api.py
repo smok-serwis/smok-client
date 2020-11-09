@@ -8,6 +8,8 @@ from smokclient.exceptions import ResponseError
 
 
 class RequestsAPI:
+    __slots__ = ('environment', 'base_url', 'cert')
+
     def __init__(self, device):
         self.environment = device.environment
         self.base_url = device.url

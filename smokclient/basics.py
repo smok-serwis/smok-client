@@ -16,14 +16,20 @@ class Environment(enum.IntEnum):
 class StorageLevel(enum.IntEnum):
     """
     A storage level defines how long is the pathpoint kept at SMOK server.
-
-    PERMANENT means "hold all values"
     """
     PERMANENT = 0       #: hold all values indefinitely
     TREND = 1           #: values at most 2 weeks old will be kept
 
 
 class SlaveDeviceInfo(JSONAble):
+    """
+    Information about a slave device attached to primary device
+
+    :ivar device_id: slave device ID
+    :ivar master_controller: ID of master device
+    :ivar responsible_service: service responsible for this device, mostly "rapid"
+    :ivar configuration: a string containing configuration for this device
+    """
     __slots__ = ('device_id', 'master_controller', 'responsible_service',
                  'configuration')
 
@@ -56,6 +62,18 @@ class SlaveDeviceInfo(JSONAble):
 
 
 class DeviceInfo:
+    """
+    A class holding device information
+
+    :ivar device_id: device ID of the device
+    :ivar slaves: list of :class:`smokclient.basics.SlaveDeviceInfo` containing info
+        about the slave devices
+    :ivar facets: a set of strings, contains interfaces that access to this device is allowed for
+    :ivar timezone: local timezone of this device, in accordance with tzdata
+    :ivar language: language of this device, according to ISO639-1
+    :ivar units: either `metric` or `imperial`, units used on this device
+    :ivar verbose_name: human-readable name of this device
+    """
     __slots__ = ('device_id', 'slaves', 'facets', 'language', 'timezone', 'units',
                  'verbose_name')
 
