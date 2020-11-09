@@ -22,19 +22,15 @@ if __name__ == '__main__':
             super().__init__(name)
             self.value = 5
 
+        @call_in_separate_thread()
         def on_read(self, advise: AdviseLevel) -> Future:
-            @call_in_separate_thread()
-            def read(advised: AdviseLevel):
-                print(f'Readed {self.name}')
-                return self.value
-            return read(advise)
+            print(f'Readed {self.name}')
+            return self.value
 
+        @call_in_separate_thread()
         def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
-            @call_in_separate_thread()
-            def write(val, advised: AdviseLevel):
-                print(f'Written {self.name} with {val}')
-                self.value = val
-            return write(value, advise)
+            print(f'Written {self.name} with {value}')
+            self.value = value
 
     a = PP('W1')
     sd.register_pathpoint(a)

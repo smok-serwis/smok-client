@@ -2,9 +2,14 @@ How to start
 ============
 
 First, you will need to obtain a certificate signed by SMOK sp. z o. o. Contact
-[Piotr Maślanka](mailto:pmaslanka@smok.co) to have you do that. A certificate is
-valid either for [production](https://api.smok.co) or for
-[testing](http://api.test.smok-serwis.pl) environments.
+Piotr Maslanka_ to have you do that. A certificate is
+valid either for production_ or for testing_ environments.
+
+.. _Maslanka: mailto:pmaslanka@smok.co
+
+.. _production: https://api.smok.co
+
+.. _testing: http://api.test.smok-serwis.pl
 
 Then you will need to think of what pathpoints your device supports. SMOK sensors are
 a server-side construct, so your device thinks in pathpoints. A pathpoint is a single value,
@@ -41,6 +46,13 @@ A reason has to be given, it is an enum
 
 .. autoclass:: smokclient.exceptions.OperationFailedReason
     :members:
+
+When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 threads!
+
+::
+
+    sd.close()      # this may block for like 10 seconds
+
 
 Class droplist
 ==============

@@ -4,6 +4,7 @@ import queue
 
 from satella.coding import silence_excs, for_argument
 from satella.coding.concurrent import TerminableThread
+from satella.coding.decorators import retry
 from satella.coding.structures import DirtyDict
 from satella.coding.transforms import jsonify
 from satella.exceptions import WouldWaitMore
@@ -38,57 +39,54 @@ class CommunicatorThread(TerminableThread):
         self.queue = order_queue
         self.data_to_sync = data_to_sync
 
+    @retry(3, ResponseError)
     def fetch_orders(self) -> None:
         resp = self.device.api.post('/v1/device/orders')
         if resp:
             for section in sections_from_list(resp):
                 self.queue.put(section)
 
+    @retry(3, ResponseError)
     def sync_data(self) -> None:
         data = self.data_to_sync.to_json()
         try:
             self.device.api.post('/v1/device/pathpoints', json=data)
         except ResponseError as e:
-            logger.debug(f'Failed to sync data {e}')
+            logger.debug(f'Failed to sync data', exc_info=e)
             self.data_to_sync.add_from_json(data)
+            raise
 
+    @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
-        for i in range(3):
-            try:
-                resp = self.device.api.put('/v1/device/pathpoints', json=data)
-                for pp in resp:
-                    name = pp['path']
-                    with silence_excs(KeyError):
-                        if name not in pps:
-                            new_pp = self.device.unknown_pathpoint_provider(name,
-                                                                            StorageLevel(
-                                                                                pp.get(
-                                                                                    'storage_level',
-                                                                                    1)))
-                            self.device.pathpoints[name] = new_pp
-                            self.device.pathpoints.clear_dirty()
-                        pathpoint = pps[name]
-                        stor_level = StorageLevel(pp.get('storage_level', 1))
-                        if stor_level != pathpoint.storage_level:
-                            pathpoint.on_new_storage_level(stor_level)
-                logger.debug('Successfully synchronized pathpoints')
-                break
-            except ResponseError as e:
-                logger.warning('One failure to sync pathpoints: {e}', exc_info=e)
-                continue
-        else:
-            logger.error('Failed to synchronize pathpoints')
+        try:
+            resp = self.device.api.put('/v1/device/pathpoints', json=data)
+            for pp in resp:
+                name = pp['path']
+                with silence_excs(KeyError):
+                    if name not in pps:
+                        new_pp = self.device.unknown_pathpoint_provider(name,
+                                                                        StorageLevel(
+                                                                            pp.get(
+                                                                                'storage_level',
+                                                                                1)))
+                        self.device.pathpoints[name] = new_pp
+                        self.device.pathpoints.clear_dirty()
+                    pathpoint = pps[name]
+                    stor_level = StorageLevel(pp.get('storage_level', 1))
+                    if stor_level != pathpoint.storage_level:
+                        pathpoint.on_new_storage_level(stor_level)
+            logger.debug('Successfully synchronized pathpoints')
+        except ResponseError:
             self.device.pathpoints.update(pps)
             self.device.pathpoints.dirty = True
-            return
+            raise
 
     def prepare(self):
         # Give the app a moment to prepare and define it's pathpoints
         self.safe_sleep(5)
 
-    @silence_excs(ResponseError)
     def loop(self) -> None:
         with measure() as measurement:
             if self.data_to_sync.dirty:

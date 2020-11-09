@@ -28,6 +28,9 @@ class SMOKDevice(Closeable):
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
+    :param unknown_pathpoint_provider: a callable that is called with two arguments:
+        pathpoint name and pathpoint storage level. It is supposed to return a Pathpoint
+        object, or raise KeyError if it doesn't exist.
     """
 
     def __init__(self, cert: tp.Union[str, io.StringIO],

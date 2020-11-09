@@ -5,7 +5,7 @@ Welcome to SMOK Client's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-    how-to-start
+   how-to-start
 
 
 SMOK devices are devices that consist of a bunch of pathpoints (eg. a single MODBUS register)

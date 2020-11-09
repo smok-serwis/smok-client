@@ -38,7 +38,10 @@ class OrderExecutorThread(TerminableThread):
             if isinstance(order, (WriteOrder, ReadOrder)):
                 pp = order.pathpoint
                 if pp not in self.device.pathpoints:
-                    self.device.pathpoints[pp] = self.device.unknown_pathpoint_provider(pp, StorageLevel.TREND)
+                    try:
+                        self.device.pathpoints[pp] = self.device.unknown_pathpoint_provider(pp, StorageLevel.TREND)
+                    except KeyError:
+                        continue
                 pathpoint = self.device.pathpoints[pp]
 
                 if isinstance(order, WriteOrder):
