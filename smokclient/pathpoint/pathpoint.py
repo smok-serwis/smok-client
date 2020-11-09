@@ -11,6 +11,8 @@ from ..basics import StorageLevel
 class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     """
     Base class for an user-defined pathpoint.
+
+    :param name: pathpoint name.
     """
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level')
@@ -28,6 +30,7 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
 
         The future should raise OperationFailedError when the read fails.
 
+        :param advise: advise level of this read operation
         :returns: a Future that returns the value of this pathpoint
         """
 
@@ -40,6 +43,8 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
 
         The future should raise OperationFailedError when the write fails.
 
+        :param value: value to be written
+        :param advise: advise level of this read operation
         :returns: a Future that completes successfully if written correctly or excepts if failed
             (any exception will do).
         """
@@ -48,8 +53,12 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
         """
         Called when this pathpoint's storage level is updated.
 
+        This is usually invoked by syncing the pathpoints with the server.
+
         This should complete ASAP, as this is called by a thread that is responsible
         for communication with the server.
+
+        :param new_storage_level: new storage level for this pathpoint
         """
         self.storage_level = new_storage_level
 

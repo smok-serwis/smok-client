@@ -40,6 +40,15 @@ In that case, you should write:
     pp = MyModbusRegister('W1', StorageLevel.TREND)
     sd.register_pathpoint(pp)
 
+Note that first letter of the pathpoint defines it's type. Allowed are:
+
+* `w` - signed 16-bit
+* `W` - unsigned 16-bit
+* `f` - float
+* `d` - double
+* `u` - an Unicode string
+* `B` - a binary value (0 or 1)
+
 Both of these calls (ie. `on_read` and `on_write`) must return a Future that will complete
 (or fail) when a call is finished. If you failed an operation, you should raise the following inside
 your future:
