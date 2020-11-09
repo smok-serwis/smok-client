@@ -13,6 +13,10 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     Base class for an user-defined pathpoint.
 
     :param name: pathpoint name.
+    :param storage_level: storage level for this pathpoint
+
+    :ivar name: pathpoint name
+    :ivar storage_level: pathpoint's storage level
     """
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level')
@@ -31,7 +35,7 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
         The future should raise OperationFailedError when the read fails.
 
         :param advise: advise level of this read operation
-        :returns: a Future that returns the value of this pathpoint
+        :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
         """
 
     @abstractmethod
@@ -46,7 +50,7 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
         :param value: value to be written
         :param advise: advise level of this read operation
         :returns: a Future that completes successfully if written correctly or excepts if failed
-            (any exception will do).
+            (you should raise OperationFailedError).
         """
 
     def on_new_storage_level(self, new_storage_level: StorageLevel) -> None:
