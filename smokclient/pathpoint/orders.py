@@ -2,6 +2,8 @@ import time
 import typing as tp
 import enum
 
+from satella.coding.structures import ReprableMixin
+
 from smokclient.pathpoint.typing import PathpointValueType
 
 __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
@@ -49,7 +51,8 @@ class WaitOrder(Order):
 class WriteOrder(Order):
     __slots__ = ('pathpoint', 'value', 'advise', 'stale_after')
 
-    def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel, stale_after: tp.Optional[float]):
+    def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel,
+                 stale_after: tp.Optional[float] = None):
         self.pathpoint = pathpoint
         self.value = value
         self.advise = advise
@@ -101,21 +104,34 @@ class Disposition(enum.IntEnum):
     CANNOT_JOIN = 1
 
 
-class Section:
-    def __init__(self, orders: tp.List[Order], disposition: Disposition = Disposition.JOINABLE):
-        self.orders = orders
+class Section(ReprableMixin):
+    _REPR_FIELDS = ('orders', 'disposition')
+    __slots__ = ('orders', 'disposition')
+
+    def __init__(self, orders: tp.List[Order] = None,
+                 disposition: Disposition = Disposition.JOINABLE):
+        self.orders = orders or []
         self.disposition = disposition
+
+    def __bool__(self) -> bool:
+        return bool(self.orders)
 
     @classmethod
     def from_json(cls, dct: dict):
         return Section(orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0)))
 
-    def __iadd__(self, other: 'Section') -> 'Section':
-        self.orders.extend(other.orders)
+    def __iadd__(self, other: tp.Union[Order, 'Section']) -> 'Section':
+        if isinstance(other, Order):
+            self.orders.append(other)
+        else:
+            self.orders.extend(other.orders)
         return self
 
-    def __add__(self, other: 'Section') -> 'Section':
-        return Section(self.orders + other.orders)
+    def __add__(self, other: tp.Union['Section', Order]) -> 'Section':
+        if isinstance(other, Order):
+            return Section(self.orders + [other])
+        else:
+            return Section(self.orders + other.orders)
 
     def is_joinable(self) -> bool:
         return self.disposition == Disposition.JOINABLE

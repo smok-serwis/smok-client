@@ -5,7 +5,7 @@ from concurrent.futures import wait, Future
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
 
-
+from smokclient.basics import StorageLevel
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -36,7 +36,7 @@ class OrderExecutorThread(TerminableThread):
             if isinstance(order, (WriteOrder, ReadOrder)):
                 pp = order.pathpoint
                 if pp not in self.device.pathpoints:
-                    self.device.pathpoints[pp] = self.device.unknown_pathpoint_provider(pp)
+                    self.device.pathpoints[pp] = self.device.unknown_pathpoint_provider(pp, StorageLevel.TREND)
                 pathpoint = self.device.pathpoints[pp]
 
                 if isinstance(order, WriteOrder):
@@ -44,7 +44,7 @@ class OrderExecutorThread(TerminableThread):
                         continue
                     fut = pathpoint.on_write(order.value, order.advise)
                 elif isinstance(order, ReadOrder):
-                    fut: Future = pathpoint.on_read(order.advise)
+                    fut = pathpoint.on_read(order.advise)       # type: Future
                     fut.add_done_callback(on_read_completed_factory(self, pathpoint))
 
             elif isinstance(order, MessageOrder):
@@ -73,4 +73,4 @@ class OrderExecutorThread(TerminableThread):
             if section.is_joinable() and sec.is_joinable():
                 section += self.queue.get()
 
-            self.execute_a_section(sec)
+        self.execute_a_section(section)

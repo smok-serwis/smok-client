@@ -11,7 +11,7 @@ from smokclient.client.api import RequestsAPI
 from smokclient.basics import DeviceInfo, Environment, StorageLevel
 from smokclient.client.certificate import get_device_info
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
-from smokclient.threads import OrderExecutorThread, CommunicatorThread
+from smokclient.threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
 from smokclient.pathpoint.pathpoint import Pathpoint
 
 
@@ -66,6 +66,7 @@ class SMOKDevice(Closeable):
         order_queue = PeekableQueue()
         data_to_sync = DataSyncDict()
 
+        self.arch_and_macros = ArchivingAndMacroThread(self, order_queue).start()
         self.executor = OrderExecutorThread(self, order_queue, data_to_sync).start()
         self.getter = CommunicatorThread(self, order_queue, data_to_sync).start()
 
@@ -79,12 +80,14 @@ class SMOKDevice(Closeable):
         if super().close():
             self.executor.terminate()
             self.getter.terminate()
+            self.arch_and_macros.terminate()
             if self.temp_file_for_cert:
                 os.unlink(self.temp_file_for_cert)
             if self.temp_file_for_key:
                 os.unlink(self.temp_file_for_key)
             self.executor.join()
             self.getter.join()
+            self.arch_and_macros.join()
 
     def get_device_info(self) -> DeviceInfo:
         """

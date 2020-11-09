@@ -1,15 +1,18 @@
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
+from satella.coding.structures import ReprableMixin
+
 from .orders import AdviseLevel
 from .typing import PathpointValueType
 from ..basics import StorageLevel
 
 
-class Pathpoint(metaclass=ABCMeta):
+class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     """
     Base class for an user-defined pathpoint.
     """
+    _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level')
 
     def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):

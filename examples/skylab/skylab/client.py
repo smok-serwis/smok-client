@@ -1,5 +1,5 @@
 import logging
-from concurrent.futures._base import Future
+from concurrent.futures import Future
 
 from satella.coding.concurrent import call_in_separate_thread
 
@@ -8,6 +8,7 @@ from smokclient.client import SMOKDevice
 from smokclient.pathpoint.orders import AdviseLevel
 from smokclient.pathpoint.pathpoint import Pathpoint
 from smokclient.pathpoint.typing import PathpointValueType
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
