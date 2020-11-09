@@ -17,7 +17,7 @@ that can be read and written to by SMOK. An example pathpoint would be a single 
 
 You can view the example_, or keep on reading these docs.
 
-.. _example: https://github.com/smok-serwis/smok-client/examples/skylab
+.. _example: https://github.com/smok-serwis/smok-client/tree/develop/examples/skylab
 
 In that case, you should write:
 
