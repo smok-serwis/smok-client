@@ -2,7 +2,7 @@ import logging
 import time
 import collections
 
-from satella.coding import silence_excs
+from satella.coding import silence_excs, DictDeleter
 from satella.coding.concurrent import PeekableQueue
 from satella.coding.decorators import retry
 from satella.coding.structures import OmniHashableMixin, ReprableMixin
@@ -78,6 +78,8 @@ def macro_parameters_from_json(dct: dict) -> tp.Tuple[str,
 
 
 def clean_cache():
-    for macro_id in list(macro_cache.keys()):
-        if not macro_cache[macro_id]:
-            del macro_cache[macro_id]
+    global macro_cache
+    with DictDeleter(macro_cache) as ld:
+        for macro_id, macro in ld.items():
+            if not macro:
+                ld.delete()
