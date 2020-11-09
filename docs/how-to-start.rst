@@ -74,3 +74,6 @@ Class droplist
 
 .. autoclass:: smokclient.basics.StorageLevel
     :members:
+
+.. autoclass:: smokclient.basics.Environment
+    :members:

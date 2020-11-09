@@ -5,9 +5,12 @@ from satella.json import JSONAble
 
 
 class Environment(enum.IntEnum):
-    PRODUCTION = 0
-    STAGING = 1
-    LOCAL_DEVELOPMENT = 2
+    """
+    An environment in which this device runs
+    """
+    PRODUCTION = 0              #: production
+    STAGING = 1                 #: testing environment
+    LOCAL_DEVELOPMENT = 2       #: CI or local development
 
 
 class StorageLevel(enum.IntEnum):
@@ -15,10 +18,9 @@ class StorageLevel(enum.IntEnum):
     A storage level defines how long is the pathpoint kept at SMOK server.
 
     PERMANENT means "hold all values"
-    TREND guarantees that values at least 2 weeks old will be kept.
     """
-    PERMANENT = 0
-    TREND = 1
+    PERMANENT = 0       #: hold all values indefinitely
+    TREND = 1           #: values at most 2 weeks old will be kept
 
 
 class SlaveDeviceInfo(JSONAble):

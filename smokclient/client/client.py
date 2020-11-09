@@ -31,6 +31,9 @@ class SMOKDevice(Closeable):
     :param unknown_pathpoint_provider: a callable that is called with two arguments:
         pathpoint name and pathpoint storage level. It is supposed to return a Pathpoint
         object, or raise KeyError if it doesn't exist.
+
+    :ivar device_id: device ID of this device
+    :ivar environment: environment of this device
     """
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
@@ -57,7 +60,9 @@ class SMOKDevice(Closeable):
         with open(cert, 'rb') as fin:
             cert_data = fin.read()
 
-        self.device_id, self.environment = get_device_info(cert_data)
+        dev_id, env = get_device_info(cert_data)
+        self.device_id = dev_id     # type: str
+        self.environment = env      # type: Environment
         if self.environment == Environment.PRODUCTION:
             self.url = 'https://api.smok.co'
         elif self.environment == Environment.STAGING:
