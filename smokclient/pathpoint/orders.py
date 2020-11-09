@@ -11,6 +11,12 @@ __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
 
 
 class AdviseLevel(enum.IntEnum):
+    """
+    Advise level specifies how hard should the device try to execute this command.
+
+    ADVISE is best-effort, while FORCE nearly guarantees correct delivery, even at
+    cost of blocking the pipeline.
+    """
     ADVISE = 0
     FORCE = 1
 

@@ -38,7 +38,6 @@ class Macro(OmniHashableMixin, ReprableMixin):
         device.api.post('/v1/device/macros/%s/%s' % (self.macro_id, ts))
 
     def execute(self, device: 'SMOKDevice', order_queue: PeekableQueue) -> None:
-        logger.warning(f'Executing {self}')
         while self.should_execute():
             sec = Section([WriteOrder(pathpoint_name, pathpoint_value, AdviseLevel.FORCE)
                            for pathpoint_name, pathpoint_value in self.commands.items()])
@@ -53,11 +52,10 @@ macro_cache = {}        # type: tp.Dict[str, Macro]
 def get_macro(macro_id: str, commands, occurrences):
     global macro_cache
 
-    if not macro_id in macro_cache:
+    if macro_id not in macro_cache:
         macro = Macro(macro_id, commands, occurrences)
         if macro:
             macro_cache[macro_id] = macro
-            logger.warning(f'Registered new macro {macro_cache[macro_id]}')
     else:
         macro = macro_cache[macro_id]
 

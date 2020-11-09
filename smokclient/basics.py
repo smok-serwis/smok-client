@@ -11,6 +11,12 @@ class Environment(enum.IntEnum):
 
 
 class StorageLevel(enum.IntEnum):
+    """
+    A storage level defines how long is the pathpoint kept at SMOK server.
+
+    PERMANENT means "hold all values"
+    TREND guarantees that values at least 2 weeks old will be kept.
+    """
     PERMANENT = 0
     TREND = 1
 
