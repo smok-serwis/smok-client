@@ -4,8 +4,10 @@ from concurrent.futures import wait, Future
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
+from satella.coding.decorators import retry
 
 from smokclient.basics import StorageLevel
+from smokclient.exceptions import ResponseError
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -32,7 +34,6 @@ class OrderExecutorThread(TerminableThread):
         self.data_to_sync = data_to_sync
 
     def execute_a_section(self, section: Section) -> None:
-        logger.warning(f'Executing {section}')
         for order in section.orders:
             if isinstance(order, (WriteOrder, ReadOrder)):
                 pp = order.pathpoint
@@ -43,7 +44,6 @@ class OrderExecutorThread(TerminableThread):
                 if isinstance(order, WriteOrder):
                     if not order.is_valid():
                         continue
-                    logger.warning(f'Executing {repr(order)}')
                     fut = pathpoint.on_write(order.value, order.advise)
                 elif isinstance(order, ReadOrder):
                     fut = pathpoint.on_read(order.advise)       # type: Future
@@ -52,6 +52,7 @@ class OrderExecutorThread(TerminableThread):
             elif isinstance(order, MessageOrder):
 
                 @call_in_separate_thread
+                @retry(6, ResponseError)
                 def execute_a_message(uuid: str) -> Future:
                     self.device.api.post('/v1/device/orders/message/' + uuid)
 
