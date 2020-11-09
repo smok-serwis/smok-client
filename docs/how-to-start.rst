@@ -15,6 +15,10 @@ Then you will need to think of what pathpoints your device supports. SMOK sensor
 a server-side construct, so your device thinks in pathpoints. A pathpoint is a single value,
 that can be read and written to by SMOK. An example pathpoint would be a single MODBUS register.
 
+You can view the example_, or keep on reading these docs.
+
+.. _example: https://github.com/smok-serwis/smok-client/examples/skylab
+
 In that case, you should write:
 
 ::
@@ -47,7 +51,9 @@ A reason has to be given, it is an enum
 .. autoclass:: smokclient.exceptions.OperationFailedReason
     :members:
 
-When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 threads!
+When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 threads and makes
+temporary files with the certificate content, if you provide them not by files, but by file-like
+objects.
 
 ::
 

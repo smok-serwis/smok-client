@@ -35,7 +35,8 @@ class SMOKDevice(Closeable):
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO],
-                 unknown_pathpoint_provider: tp.Callable[[str], Pathpoint] = default_pathpoint):
+                 unknown_pathpoint_provider: tp.Callable[
+                     [str, StorageLevel], Pathpoint] = default_pathpoint):
         super().__init__()
         self.unknown_pathpoint_provider = unknown_pathpoint_provider
         self.pathpoints = DirtyDict()
@@ -74,11 +75,20 @@ class SMOKDevice(Closeable):
         self.getter = CommunicatorThread(self, order_queue, data_to_sync).start()
 
     def register_pathpoint(self, pp: Pathpoint) -> None:
+        """
+        Register a pathpoint with this device.
+
+        This pathpoint will be uploaded to the server (later) and defined there.
+
+        :param pp: pathpoint to register
+        """
         self.pathpoints[pp.name] = pp
 
     def close(self) -> None:
         """
         Close the connection, clean up the resources.
+
+        This may block for up to 10 seconds.
         """
         if super().close():
             self.executor.terminate()
@@ -94,9 +104,10 @@ class SMOKDevice(Closeable):
 
     def get_device_info(self) -> DeviceInfo:
         """
-        :return: current device information
-        """
-        resp = self.api.get('/v1/device')
+        Obtain information about the device.
 
-        return DeviceInfo.from_json(resp)
+        :return: current device information
+        :raises ResponseError: server responded with an invalid message
+        """
+        return DeviceInfo.from_json(self.api.get('/v1/device'))
 
