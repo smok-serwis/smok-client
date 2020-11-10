@@ -15,7 +15,7 @@ from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacro
 from ..pathpoint import Pathpoint
 
 
-def default_pathpoint(path: str, storage_level: StorageLevel) -> None:
+def default_pathpoint(*args) -> None:
     raise KeyError('Pathpoint does not exist')
 
 
@@ -43,7 +43,7 @@ class SMOKDevice(Closeable):
                      [str, StorageLevel], Pathpoint] = default_pathpoint):
         super().__init__()
         self.unknown_pathpoint_provider = unknown_pathpoint_provider
-        self.pathpoints = DirtyDict()
+        self.pathpoints = DirtyDict()       # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
         self._linkstate = None
         self._instrumentation = None
@@ -164,4 +164,3 @@ class SMOKDevice(Closeable):
         :raises ResponseError: server responded with an invalid message
         """
         return DeviceInfo.from_json(self.api.get('/v1/device'))
-

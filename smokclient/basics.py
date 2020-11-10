@@ -1,6 +1,7 @@
 import typing as tp
 import enum
 
+from satella.coding.structures import ReprableMixin
 from satella.json import JSONAble
 
 
@@ -21,7 +22,7 @@ class StorageLevel(enum.IntEnum):
     TREND = 1           #: values at most 2 weeks old will be kept
 
 
-class SlaveDeviceInfo(JSONAble):
+class SlaveDeviceInfo(JSONAble, ReprableMixin):
     """
     Information about a slave device attached to primary device
 
@@ -30,6 +31,8 @@ class SlaveDeviceInfo(JSONAble):
     :ivar responsible_service: service responsible for this device, mostly "rapid"
     :ivar configuration: a string containing configuration for this device
     """
+    _REPR_FIELDS = ('device_id', 'master_controller', 'responsible_service',
+                    'configuration')
     __slots__ = ('device_id', 'master_controller', 'responsible_service',
                  'configuration')
 
@@ -45,13 +48,6 @@ class SlaveDeviceInfo(JSONAble):
         return SlaveDeviceInfo(dct['device_id'], dct['master_controller'],
                                dct['responsible_service'], dct['configuration'])
 
-    def __repr__(self) -> str:
-        tpl = tuple(map(repr, [self.device_id,
-                               self.master_controller,
-                               self.responsible_service,
-                               self.configuration]))
-        return 'SlaveDeviceInfo(%s, %s, %s, %s)' % tpl
-
     def to_json(self) -> dict:
         return {
             'device_id': self.device_id,
@@ -61,7 +57,7 @@ class SlaveDeviceInfo(JSONAble):
         }
 
 
-class DeviceInfo:
+class DeviceInfo(ReprableMixin):
     """
     A class holding device information
 
@@ -74,15 +70,10 @@ class DeviceInfo:
     :ivar units: either `metric` or `imperial`, units used on this device
     :ivar verbose_name: human-readable name of this device
     """
+    _REPR_FIELDS = ('device_id', 'facets', 'language', 'timezone', 'units',
+                    'slaves')
     __slots__ = ('device_id', 'slaves', 'facets', 'language', 'timezone', 'units',
                  'verbose_name')
-
-    def __repr__(self) -> str:
-        tpl = tuple(map(repr, [self.device_id, self.facets,
-                               self.language, self.timezone,
-                               self.units, self.verbose_name,
-                               self.slaves]))
-        return 'DeviceInfo(%s, %s, %s, %s, %s, %s, %s)' % tpl
 
     def __init__(self, device_id: str, facets: tp.Set[str], language: str, timezone: str,
                  units: str, verbose_name: str, slaves: tp.List[SlaveDeviceInfo]):

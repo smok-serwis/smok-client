@@ -17,13 +17,17 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
 
     :ivar name: pathpoint name
     :ivar storage_level: pathpoint's storage level
+    :ivar current_timestamp: a timestamp in seconds of the last read
+    :ivar current_value: last readed value
     """
     _REPR_FIELDS = ('name', 'storage_level')
-    __slots__ = ('name', 'storage_level')
+    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp')
 
     def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):
         self.name = name
         self.storage_level = storage_level
+        self.current_value = None
+        self.current_timestamp = None
 
     @abstractmethod
     def on_read(self, advise: AdviseLevel) -> Future:
@@ -33,6 +37,9 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
         This is called from a separate thread spawned by SMOKDevice.
 
         The future should raise OperationFailedError when the read fails.
+
+        This should also update the :attr:`Pathpoint.current_value` and
+        :attr:`Pathpoint.current_timestamp`
 
         :param advise: advise level of this read operation
         :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
