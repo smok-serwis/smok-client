@@ -38,8 +38,8 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
 
         The future should raise OperationFailedError when the read fails.
 
-        This should also update the :attr:`Pathpoint.current_value` and
-        :attr:`Pathpoint.current_timestamp`
+        This should also update the :attr:`current_value` and
+        :attr:`current_timestamp`
 
         :param advise: advise level of this read operation
         :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
