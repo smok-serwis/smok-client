@@ -44,4 +44,26 @@ It makes more sense to use :class:`~smokclient.sensor.Sensor` s for that,
 because :class:`~smokclient.sensor.Sensor` s represent a concept, while
 pathpoint represents a single endpoint on the client.
 
+Predicates
+----------
+
+You work with predicates in such a way, that you register a bunch of classes
+to handle provided statistics. A predicate is defined on-server, and smok-client will
+take care to instantiate your classes with the proper data.
+Let's see how a predicate is built:
+
+.. autoclass:: smokclient.predicate.BasePredicate
+    :members:
+
+Silencing
+---------
+
+During specified times, the user does not want to bother him with the predicate's alerts.
+Following classes are given as arguments to your constructor:
+
+.. autoclass:: smokclient.predicate.Time
+    :members:
+
+.. autoclass:: smokclient.predicate.DisabledTime
+    :members:
 

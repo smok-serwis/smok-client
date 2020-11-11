@@ -14,3 +14,6 @@ Glossary
       Writing a reparse pathpoint is a no-op.
       You don't need to care about implementing and providing these, smok-client will demand
       you to provide only :term:`native` pathpoints.
+
+    Statistic
+      A base class for predicate.

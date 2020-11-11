@@ -1,10 +1,13 @@
+import datetime
 import os
 import threading
+import time
 import typing as tp
 import io
 import tempfile
 from abc import ABCMeta, abstractmethod
 
+import pytz
 from satella.coding import Closeable, for_argument
 from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
@@ -14,6 +17,7 @@ from ..basics import DeviceInfo, Environment, StorageLevel
 from .certificate import get_device_info
 from ..pathpoint.data_sync_dict import DataSyncDict
 from ..pathpoint.orders import Section
+from ..predicate import BasePredicate
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
 from ..pathpoint import Pathpoint
@@ -63,6 +67,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         super().__init__()
         self.sensor_lock = threading.Lock()
         self.sensor_lock.acquire()
+        self._timezone = None
+        self.predicate_classes = {}      # type: tp.Dict[str, tp.Type[BasePredicate]]
+        self._statistics_updated = False
         self.pathpoints = DirtyDict()       # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
         self.__linkstate = None
@@ -103,6 +110,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.getter = CommunicatorThread(self, self._order_queue, data_to_sync).start()
         self.sensors = {}       # type: tp.Dict[str, Sensor]
 
+    @property
+    def timezone(self) -> pytz.timezone:
+        if self._timezone is None:
+            self.get_device_info()
+        return pytz.timezone(self._timezone)
+
     def execute(self, *secs: Section) -> None:
         """
         Schedule sections to be executed
@@ -126,11 +139,21 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.register_pathpoint(pp)
         return pp
 
+    def register_statistic(self, stat: tp.Type[BasePredicate]):
+        """
+        Register a new statistic
+
+        :param stat: a class (not an instance) to register
+        """
+        assert issubclass(stat, BasePredicate), 'Not a subclass of BasePredicate!'
+        self.predicate_classes[stat.statistic_name] = stat
+        self._statistics_updated = False
+
     def register_pathpoint(self, pp: Pathpoint) -> None:
         """
         Register a pathpoint with this device.
 
-        This pathpoint will be uploaded to the server (later) and defined there.
+        New pathpoints can be added at any time. They will be uploaded to server later.
 
         :param pp: pathpoint to register
         """
@@ -207,7 +230,23 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: current device information
         :raises ResponseError: server responded with an invalid message
         """
-        return DeviceInfo.from_json(self.api.get('/v1/device'))
+        resp = DeviceInfo.from_json(self.api.get('/v1/device'))
+        self._timezone = resp.timezone
+        return resp
+
+    def get_local_time(self) -> datetime.datetime:
+        """
+        Return current local time on target culture context
+
+        :return: a datetime object having the local time for this device
+        """
+        # What is the time on target device?
+        tz = self._timezone
+
+        utc_time = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(time.time()))
+        local_time = utc_time.astimezone(tz)
+
+        return local_time
 
     @for_argument(None, fqtsify)
     def get_sensor(self, tag_name: tp.Union[str, tp.Set[str]]) -> Sensor:
