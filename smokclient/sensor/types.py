@@ -1,7 +1,8 @@
 import typing as tp
 from abc import ABCMeta, abstractmethod
 
-from smokclient.pathpoint import PathpointValueType
+from smokclient.pathpoint import PathpointValueType, PathpointType
+from smokclient.pathpoint.typing import to_type
 
 SensorValueType = tp.Union[str, int, float, list, dict]
 
@@ -12,7 +13,8 @@ class BasicType(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    def sensor_to_pathpoint(self, value: SensorValueType) -> tp.Tuple[PathpointValueType, ...]:
+    def sensor_to_pathpoint(self, value: SensorValueType,
+                            *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
         ...
 
 
@@ -29,9 +31,19 @@ class NumericType(BasicType):
         value = value * self.multiplier + self.offset
         return round(value, self.precision)
 
-    def sensor_to_pathpoint(self, value: SensorValueType) -> tp.Tuple[PathpointValueType, ...]:
+    def sensor_to_pathpoint(self, value: SensorValueType,
+                            *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
         value = (value - self.offset) / self.multiplier
-        return value,
+        return to_type(value, PathpointType.get_type(pathpoint_names[0])),
+
+
+class UnicodeType(BasicType):
+    def sensor_to_pathpoint(self, value: SensorValueType,
+                            *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
+        return str(value),
+
+    def pathpoint_to_sensor(self, *values: PathpointValueType) -> SensorValueType:
+        return str(values[0])
 
 
 CACHE_DICT = {}     # type: tp.Dict[str, NumericType]
@@ -42,6 +54,10 @@ def get_type(type_name: str) -> NumericType:
     if type_name not in CACHE_DICT:
         if type_name == 'std.Number10':
             type_ = NumericType(multiplier=0.1)
+        elif type_name == 'std.Unicode':
+            type_ = UnicodeType()
+        elif type_name == 'frisko.DayOfWeek':
+            type_ = NumericType(offset=-1)
         elif type_name == 'std.Number100':
             type_ = NumericType(multiplier=0.01)
         elif '(' in type_name:

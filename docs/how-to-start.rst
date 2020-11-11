@@ -51,12 +51,19 @@ First of all, you need to subclass SMOKDevice and define the method
 
 Note that first letter of the pathpoint defines it's type. Allowed are:
 
-* `w` - signed 16-bit
-* `W` - unsigned 16-bit
-* `f` - float
-* `d` - double
-* `u` - an Unicode string
-* `B` - a binary value (0 or 1)
+.. autoclass:: smokclient.pathpoint.PathpointType
+    :members:
+
+If you need to coerce a value to target pathpoint's type, use the following method:
+
+.. autofunction:: smokclient.pathpoint.to_type
+
+If the first letter is `r`, then the type of the pathpoint is declared by the second letter.
+This pathpoint will be called a *reparse* pathpoint
+The rest represents an expression, where other pathpoint are taken in brackets and the resulting
+expression is evaluated. This is called a reparse pathpoint, and you don't need to deal directly
+with them. You just need to provide the non-reparse, ie. *native* pathpoints.
+
 
 Both of these calls (ie. `on_read` and `on_write`) must return a Future that will complete
 (or fail) when a call is finished. If you failed an operation, you should raise the following inside
