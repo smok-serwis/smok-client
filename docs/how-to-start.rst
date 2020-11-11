@@ -19,7 +19,8 @@ You can view the example_, or keep on reading these docs.
 
 .. _example: https://github.com/smok-serwis/smok-client/tree/develop/examples/skylab
 
-In that case, you should write:
+First of all, you need to subclass SMOKDevice and define the method
+:meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`.
 
 ::
 
@@ -28,8 +29,6 @@ In that case, you should write:
     from smokclient.pathpoint import Pathpoint, AdviseLevel, PathpointValueType
     from concurrent.futures import Future
 
-    sd = SMOKDevice('path to cert file', 'path to key file')
-
     class MyModbusRegister(Pathpoint):
         def on_read(advise: AdviseLevel) -> Future:
             ...
@@ -37,6 +36,16 @@ In that case, you should write:
         def on_write(value: PathpointValueType, advise: AdviseLevel) -> Future:
             ...
 
+    class MyDevice(SMOKDevice):
+        def __init__(self):
+            super().__init__('path to cert file', 'path to key file')
+
+        def provide_unknown_pathpoint(self, name: str,
+                                      storage_level: StorageLevel = StorageLevel.ADVISE) -> \
+                                            Pathpoint:
+            raise KeyError('pathpoint not found')
+
+    sd = MyDevice()
     pp = MyModbusRegister('W1', StorageLevel.TREND)
     sd.register_pathpoint(pp)
 
@@ -64,6 +73,12 @@ When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 thre
 temporary files with the certificate content, if you provide them not by files, but by file-like
 objects.
 
+During invoking the :meth:`smokclient.pathpoint.Pathpoint.get` you might get the previous exceptions,
+but also a new one:
+
+.. autoclass:: smokclient.exceptions.NotReadedError
+    :members:
+
 ::
 
     sd.close()      # this may block for like 10 seconds
@@ -72,25 +87,38 @@ objects.
 Class droplist
 ==============
 
+SMOKDevice
+----------
 .. autoclass:: smokclient.client.SMOKDevice
     :members:
 
+Pathpoint
+---------
 .. autoclass:: smokclient.pathpoint.Pathpoint
     :members:
 
+Enums
+-----
 .. autoclass:: smokclient.pathpoint.AdviseLevel
     :members:
+
 
 .. autoclass:: smokclient.basics.StorageLevel
     :members:
 
+
 .. autoclass:: smokclient.basics.Environment
     :members:
 
+
+DTO's
+-----
 .. autoclass:: smokclient.basics.DeviceInfo
     :members:
 
+
 .. autoclass:: smokclient.basics.SlaveDeviceInfo
     :members:
+
 
 .. autodata:: smokclient.pathpoint.PathpointValueType

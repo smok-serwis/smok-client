@@ -1,11 +1,14 @@
+import typing as tp
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
 from satella.coding.structures import ReprableMixin
+from satella.coding.typing import Number
 
-from .orders import AdviseLevel
+from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
 from .typing import PathpointValueType
 from ..basics import StorageLevel
+from ..exceptions import OperationFailedError, NotReadedError
 
 
 class Pathpoint(ReprableMixin, metaclass=ABCMeta):
@@ -18,7 +21,7 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     :ivar name: pathpoint name
     :ivar storage_level: pathpoint's storage level
     :ivar current_timestamp: a timestamp in seconds of the last read
-    :ivar current_value: last readed value
+    :ivar current_value: last readed value or an exception instance
     """
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp')
@@ -26,8 +29,8 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):
         self.name = name
         self.storage_level = storage_level
-        self.current_value = None
-        self.current_timestamp = None
+        self.current_value = None       # type: tp.Union[PathpointValueType, ReadFailedError]
+        self.current_timestamp = None   # type: Number
 
     @abstractmethod
     def on_read(self, advise: AdviseLevel) -> Future:
@@ -38,8 +41,8 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
 
         The future should raise OperationFailedError when the read fails.
 
-        This should also update the :attr:`current_value` and
-        :attr:`current_timestamp`
+        .. note:: :attr:`current_timestamp` and :attr:`current_value` will be automatically updated, so
+                  there's no need for the future to do that.
 
         :param advise: advise level of this read operation
         :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
@@ -73,3 +76,46 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
         """
         self.storage_level = new_storage_level
 
+    def get(self) -> tp.Tuple[Number, PathpointValueType]:
+        """
+        Return the current pathpoint value
+
+        :return: a tuple of (last timestamp, when the operation has failed)
+        :raises OperationFailedError: when pathpoint's read has failed
+        """
+        if self.current_value is None:
+            raise NotReadedError()
+        if isinstance(self.current_value, OperationFailedError):
+            raise self.current_value
+        else:
+            return self.current_timestamp, self.current_value
+
+    def read(self, advise_level: AdviseLevel = AdviseLevel.ADVISE) -> Section:
+        """
+        Return an order that reads this pathpoint
+
+        Dispatch them like this:
+
+        >>> my_sd.execute(pp.read(2))
+
+        :param advise_level: required advise level
+        :return: a Section, whose execution will refresh the value in the pathpoint
+        """
+        return Section([ReadOrder(self.name, advise_level)])
+
+    def write(self, value: PathpointValueType, advise_level: AdviseLevel = AdviseLevel.ADVISE,
+              stale_after: tp.Optional[float] = None) -> Section:
+        """
+        Return an order, whose execution will put target value in target pathpoint.
+
+        Dispatch them like this:
+
+        >>> my_sd.execute(pp.write(2))
+
+        :param value: value to write
+        :param advise_level: advise level with which to write
+        :param stale_after: timestamp, that if given, will prevent the write from being executed
+            past it
+        :return: a Section, whose execution will put the target value in the pathpoint
+        """
+        return Section([WriteOrder(self.name, value, advise_level, stale_after)])

@@ -1,6 +1,7 @@
 import time
 import typing as tp
 import enum
+from concurrent.futures import Future
 
 from satella.coding.structures import ReprableMixin
 

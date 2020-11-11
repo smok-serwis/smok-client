@@ -41,3 +41,9 @@ class RequestsAPI:
 
     def put(self, url, **kwargs):
         return self.request('put', url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self.request('patch', url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.request('delete', url, **kwargs)

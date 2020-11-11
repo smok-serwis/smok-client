@@ -1,7 +1,12 @@
-__all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
-           'OperationFailedReason', 'OperationFailedError']
-
+import time
+import typing as tp
 import enum
+
+__all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
+           'OperationFailedReason', 'OperationFailedError',
+           'NotYetReaded']
+
+from satella.coding.typing import Number
 
 
 class SMOKClientError(Exception):
@@ -27,17 +32,31 @@ class ResponseError(SMOKClientError):
 
 
 class OperationFailedReason(enum.Enum):
-    # The target device responded with a malformed protocol frame
-    MALFORMED = 'malformed'
-    # The target device did not respond within given time
-    TIMEOUT = 'timeout'
-    # The target device responded correctly, but told us that this pathpoint is bogus
-    INVALID = 'invalid'
+
+    MALFORMED = 'malformed'  #: The device responded with a malformed protocol frame
+    TIMEOUT = 'timeout'      #: The device did not respond within given time
+    INVALID = 'invalid'      #: The device responded OK, but told us that this pathpoint is bogus
 
 
 class OperationFailedError(SMOKClientError):
     """
     Raised by the pathpoint's on_read and on_write futures when the operation fails
+
+    :ivar reason: reason of failure
+    :ivar timestamp: timestamp of failure
     """
-    def __init__(self, reason: OperationFailedReason):
+    def __init__(self, reason: OperationFailedReason, timestamp: tp.Optional[Number] = None):
         self.reason = reason
+        self.timestamp = timestamp or time.time()
+
+
+class NotReadedError(OperationFailedError):
+    """
+    The value is not available, due to it having not been yet read.
+
+    Note that this is invalid to return in read handling futures!
+
+    :ivar timestamp: timestamp of failure
+    """
+    def __init__(self, timestamp: tp.Optional[float] = None):
+        super().__init__(None, timestamp)

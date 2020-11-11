@@ -1,13 +1,13 @@
 import logging
 import queue
 from concurrent.futures import wait, Future
+import time
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
 from satella.coding.decorators import retry
 
-from smokclient.basics import StorageLevel
-from smokclient.exceptions import ResponseError
+from smokclient.exceptions import ResponseError, NotReadedError
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -20,8 +20,18 @@ def on_read_completed_factory(oet: 'OrderExecutorThread', pp: Pathpoint):
     def on_read_completed(fut: Future):
         if fut.exception() is None:
             oet.data_to_sync.on_readed_successfully(pp.name, fut.result())
+            pp.current_timestamp = time.time()
+            pp.current_value = fut.result()
         else:
-            oet.data_to_sync.on_read_failed(pp.name, fut.exception())
+            exc = fut.exception()
+            if isinstance(exc, NotReadedError):
+                logger.error('A read future for %s returned NotReadedError, this is invalid')
+                return
+            ts = time.time()
+            exc.timestamp = ts
+            oet.data_to_sync.on_read_failed(pp.name, exc)
+            pp.current_timestamp = ts
+            pp.current_value = fut.exception()
     return on_read_completed
 
 
@@ -36,13 +46,11 @@ class OrderExecutorThread(TerminableThread):
     def execute_a_section(self, section: Section) -> None:
         for order in section.orders:
             if isinstance(order, (WriteOrder, ReadOrder)):
-                pp = order.pathpoint
-                if pp not in self.device.pathpoints:
-                    try:
-                        self.device.pathpoints[pp] = self.device.unknown_pathpoint_provider(pp, StorageLevel.TREND)
-                    except KeyError:
-                        continue
-                pathpoint = self.device.pathpoints[pp]
+                try:
+                    pathpoint = self.device.get_pathpoint(order.pathpoint)
+                except KeyError:
+                    logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint, ))
+                    continue
 
                 if isinstance(order, WriteOrder):
                     if not order.is_valid():
@@ -61,7 +69,7 @@ class OrderExecutorThread(TerminableThread):
 
                 fut = execute_a_message(order.uuid)
             else:
-                logger.warning(f'Unknown order type {order}')
+                logger.warning('Unknown order type %s' % (order, ))
                 continue
             self.futures_to_complete.append(fut)
 

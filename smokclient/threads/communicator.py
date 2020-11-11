@@ -1,4 +1,5 @@
 import logging
+import time
 import typing as tp
 import queue
 
@@ -15,8 +16,11 @@ from smokclient.exceptions import ResponseError
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import sections_from_list
 from smokclient.pathpoint.pathpoint import Pathpoint
+from smokclient.sensor import Sensor
 
 logger = logging.getLogger(__name__)
+
+SENSORS_SYNC_INTERVAL = 300
 
 
 @for_argument(returns=jsonify)
@@ -38,6 +42,33 @@ class CommunicatorThread(TerminableThread):
         self.device = device
         self.queue = order_queue
         self.data_to_sync = data_to_sync
+        self.last_sensors_synced = 0
+
+    @retry(3, ResponseError)
+    def sync_sensors(self):
+        resp = self.device.api.get('/v1/device/sensors')
+
+        sensors = []
+        for data in resp:
+            sensors.append(Sensor.from_json(data))
+
+        def update_sensors():
+            nonlocal sensors
+
+            self.device.sensors = {}
+            for sensor in sensors:
+                self.device.sensors[sensor.fqts] = sensor
+
+        if not self.last_sensors_synced:
+            update_sensors()
+            self.device.sensor_lock.release()
+            logger.info('Everything is synchronized for %s' % (self.device.device_id, ))
+        else:
+            with self.device.sensor_lock:
+                update_sensors()
+
+
+        self.last_sensors_synced = time.time()
 
     @retry(3, ResponseError)
     def fetch_orders(self) -> None:
@@ -64,16 +95,13 @@ class CommunicatorThread(TerminableThread):
             resp = self.device.api.put('/v1/device/pathpoints', json=data)
             for pp in resp:
                 name = pp['path']
+                if name.startswith('r'):    # Don't use reparse pathpoints
+                    continue
                 with silence_excs(KeyError):
-                    if name not in pps:
-                        new_pp = self.device.unknown_pathpoint_provider(name,
-                                                                        StorageLevel(
+                    pathpoint = self.device.provide_unknown_pathpoint(name, StorageLevel(
                                                                             pp.get(
                                                                                 'storage_level',
                                                                                 1)))
-                        self.device.pathpoints[name] = new_pp
-                        self.device.pathpoints.clear_dirty()
-                    pathpoint = pps[name]
                     stor_level = StorageLevel(pp.get('storage_level', 1))
                     if stor_level != pathpoint.storage_level:
                         pathpoint.on_new_storage_level(stor_level)
@@ -101,3 +129,7 @@ class CommunicatorThread(TerminableThread):
 
             with silence_excs(WouldWaitMore):
                 self.data_to_sync.updated_condition.wait(timeout=COMMUNICATOR_INTERVAL-measurement())
+
+            if time.time() - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
+                self.sync_sensors()
+
