@@ -59,10 +59,10 @@ If you need to coerce a value to target pathpoint's type, use the following meth
 .. autofunction:: smokclient.pathpoint.to_type
 
 If the first letter is `r`, then the type of the pathpoint is declared by the second letter.
-This pathpoint will be called a *reparse* pathpoint
+This pathpoint will be called a :term:`reparse` pathpoint
 The rest represents an expression, where other pathpoint are taken in brackets and the resulting
 expression is evaluated. This is called a reparse pathpoint, and you don't need to deal directly
-with them. You just need to provide the non-reparse, ie. *native* pathpoints.
+with them. You just need to provide the non-reparse, ie. :term:`native` pathpoints.
 
 
 Both of these calls (ie. `on_read` and `on_write`) must return a Future that will complete
