@@ -70,6 +70,7 @@ Both of these calls (ie. `on_read` and `on_write`) must return a Future that wil
 your future:
 
 .. autoclass:: smokclient.exceptions.OperationFailedError
+    :members:
 
 A reason has to be given, it is an enum
 
