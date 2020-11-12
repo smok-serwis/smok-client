@@ -3,7 +3,11 @@ import typing as tp
 
 from satella.coding.transforms import clip
 
+from smokclient.exceptions import OperationFailedError
+
 PathpointValueType = tp.Union[int, float, str]
+
+ValueOrExcept = tp.Union[PathpointValueType, OperationFailedError]
 
 
 class PathpointType(enum.Enum):

@@ -144,3 +144,6 @@ DTO's
 
 
 .. autodata:: smokclient.pathpoint.PathpointValueType
+
+
+.. autodata:: smokclient.pathpoint.ValueOrExcept

@@ -4,9 +4,7 @@ from abc import ABCMeta, abstractmethod
 from satella.coding.typing import Number
 
 from smokclient.exceptions import OperationFailedError
-from smokclient.pathpoint import PathpointValueType
-
-ValueOrExcept = tp.Union[PathpointValueType, OperationFailedError]
+from smokclient.pathpoint.typing import ValueOrExcept
 
 
 class BaseDataToSynchronize(metaclass=ABCMeta):
@@ -72,7 +70,8 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         """
         Called whenever there's a new value.
 
-        Called by order executor thread.
+        Called by order executor thread and user-threads if you make use of
+        method :meth:`~smokclient.pathpoint.Pathpoint.set_new_value`.
 
         :param pathpoint: :term:`Native` pathpoint that has been written
         :param timestamp: timestamp of the operation

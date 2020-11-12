@@ -7,7 +7,7 @@ from satella.coding.structures import ReprableMixin, OmniHashableMixin
 from satella.coding.typing import Number
 
 from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
-from .typing import PathpointValueType
+from .typing import PathpointValueType, ValueOrExcept
 from ..basics import StorageLevel
 from ..exceptions import OperationFailedError, NotReadedError
 
@@ -35,9 +35,20 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         self.device = weakref.proxy(device)
         self.name = name
         self.storage_level = storage_level
-        self.current_value = None       # type: tp.Union[PathpointValueType, ReadFailedError]
+        self.current_value = None       # type: ValueOrExcept
         self.current_timestamp = None   # type: Number
         device._register_pathpoint(self)
+
+    def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
+        """
+        May be called asynchronously by user threads to asynchronously update a pathpoint
+
+        :param timestamp: new timestamp
+        :param value: new value
+        """
+        self.device.pp_database.on_new_data(timestamp, value)
+        self.current_timestamp = timestamp
+        self.current_value = value
 
     @abstractmethod
     def on_read(self, advise: AdviseLevel) -> Future:

@@ -4,7 +4,7 @@ import enum
 
 __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
            'OperationFailedReason', 'OperationFailedError',
-           'NotYetReaded']
+           'NotReadedError']
 
 from satella.coding.typing import Number
 
