@@ -11,6 +11,7 @@ from smokclient.exceptions import NotReadedError
 from smokclient.pathpoint.orders import AdviseLevel
 from smokclient.pathpoint.pathpoint import Pathpoint
 from smokclient.pathpoint.typing import PathpointValueType
+from smokclient.predicate import BaseStatistic
 
 
 class PP(Pathpoint):
@@ -27,6 +28,13 @@ class PP(Pathpoint):
     def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
         print(f'Written {self.name} with {value}')
         self.value = value
+
+
+class CustomPredicate(BaseStatistic):
+    statistic_name = 'test'
+
+    def on_tick(self) -> None:
+        print('Ticked!')
 
 
 class MyDevice(SMOKDevice):
@@ -46,13 +54,13 @@ if __name__ == '__main__':
     assert sd.environment == Environment.STAGING
     print(repr(sd.get_device_info()))
     sd.instrumentation = '{"ok": True}'
-    a = PP('W1')
-    sd.register_pathpoint(a)
+    a = PP(sd, 'W1')
+    sd.register_statistic(CustomPredicate)
     sd.wait_until_synced()
     sen = sd.get_sensor('val')
     while True:
         with silence_excs(NotReadedError):
             time.sleep(10)
-            print(sen.get(sd)[1])
+            print(sen.get()[1])
             break
     print('Value obtained')

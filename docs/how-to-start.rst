@@ -40,14 +40,16 @@ First of all, you need to subclass SMOKDevice and define the method
         def __init__(self):
             super().__init__('path to cert file', 'path to key file')
 
-        def provide_unknown_pathpoint(self, name: str,
-                                      storage_level: StorageLevel = StorageLevel.ADVISE) -> \
-                                            Pathpoint:
-            raise KeyError('pathpoint not found')
-
     sd = MyDevice()
     pp = MyModbusRegister('W1', StorageLevel.TREND)
-    sd.register_pathpoint(pp)
+    sd._register_pathpoint(pp)
+
+A very important method of your custom class is
+:meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`. When smok-client encounters
+an unknown pathpoint (for example, an order for it was made) it tries to create it.
+This method should provide this pathpoint. Note that it doesn't need to provide pathpoints
+that you will create and register manually. If a predicate cannot be found, it should raise
+`KeyError`.
 
 Note that first letter of the pathpoint defines it's type. Allowed are:
 
@@ -91,6 +93,18 @@ but also a new one:
 
     sd.close()      # this may block for like 10 seconds
 
+Threads
+-------
+
+`SMOKDevice` spawns 3 threads to help it out with it's chores. They are as follows:
+
+* `CommunicatorThread` handles communication with the SMOK server
+* `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived and
+    about executing macros
+* `OrderExecutorThread` handles the loop executing orders.
+
+Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
+threads. It will be documented which thread calls your callback.
 
 Class droplist
 ==============

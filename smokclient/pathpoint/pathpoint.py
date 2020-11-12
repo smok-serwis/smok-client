@@ -1,8 +1,9 @@
 import typing as tp
+import weakref
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
-from satella.coding.structures import ReprableMixin
+from satella.coding.structures import ReprableMixin, OmniHashableMixin
 from satella.coding.typing import Number
 
 from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
@@ -11,9 +12,11 @@ from ..basics import StorageLevel
 from ..exceptions import OperationFailedError, NotReadedError
 
 
-class Pathpoint(ReprableMixin, metaclass=ABCMeta):
+class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     """
     Base class for an user-defined pathpoint.
+
+    Note that pathpoint is registered in the device as part of it's creation.
 
     :param name: pathpoint name.
     :param storage_level: storage level for this pathpoint
@@ -22,15 +25,19 @@ class Pathpoint(ReprableMixin, metaclass=ABCMeta):
     :ivar storage_level: pathpoint's storage level
     :ivar current_timestamp: a timestamp in seconds of the last read
     :ivar current_value: last readed value or an exception instance
+    :ivar device: a weak reference to the device
     """
+    _HASH_FIELDS_TO_USE = ('name', )
     _REPR_FIELDS = ('name', 'storage_level')
-    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp')
+    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device')
 
-    def __init__(self, name: str, storage_level: StorageLevel = StorageLevel.TREND):
+    def __init__(self, device: 'SMOKDevice', name: str, storage_level: StorageLevel = StorageLevel.TREND):
+        self.device = weakref.proxy(device)
         self.name = name
         self.storage_level = storage_level
         self.current_value = None       # type: tp.Union[PathpointValueType, ReadFailedError]
         self.current_timestamp = None   # type: Number
+        device._register_pathpoint(self)
 
     @abstractmethod
     def on_read(self, advise: AdviseLevel) -> Future:

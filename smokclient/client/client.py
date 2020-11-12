@@ -17,14 +17,10 @@ from ..basics import DeviceInfo, Environment, StorageLevel
 from .certificate import get_device_info
 from ..pathpoint.data_sync_dict import DataSyncDict
 from ..pathpoint.orders import Section
-from ..predicate import BasePredicate
+from ..predicate import BaseStatistic
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
 from ..pathpoint import Pathpoint
-
-
-def default_pathpoint(*args) -> None:
-    raise KeyError('Pathpoint does not exist')
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):
@@ -44,31 +40,34 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
     """
-    @abstractmethod
     def provide_unknown_pathpoint(self, name: str,
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         """
         Override this class to generate pathpoints that are referred to by commands, but not defined
         yet.
 
+        The default implementation always raises `KeyError`.
+
         .. note:: this can safely raise `KeyError` upon encountering a predicate that is manually
-                  defined and registered via :meth:`register_pathpoint`
+                  defined and registered via :meth:`_register_pathpoint`
 
         :raises KeyError: pathpoint could not be generated
         """
+        raise KeyError()
 
     def wait_until_synced(self) -> None:
         """Block until everything's synchronized with the server"""
-        self.sensor_lock.acquire()
-        self.sensor_lock.release()
+        self.ready_lock.acquire()
+        self.ready_lock.release()
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO]):
         super().__init__()
-        self.sensor_lock = threading.Lock()
-        self.sensor_lock.acquire()
+        self.ready_lock = threading.Lock()
+        self.ready_lock.acquire()
+        self.predicates = {}        # type: tp.Dict[str, BaseStatistic]
         self._timezone = None
-        self.predicate_classes = {}      # type: tp.Dict[str, tp.Type[BasePredicate]]
+        self.predicate_classes = {}      # type: tp.Dict[str, tp.Type[BaseStatistic]]
         self._statistics_updated = False
         self.pathpoints = DirtyDict()       # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
@@ -136,28 +135,24 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if path in self.pathpoints:
             return self.pathpoints[path]
         pp = self.provide_unknown_pathpoint(path, storage_level)      # raises KeyError
-        self.register_pathpoint(pp)
+        self._register_pathpoint(pp)
         return pp
 
-    def register_statistic(self, stat: tp.Type[BasePredicate]):
+    def register_statistic(self, stat: tp.Type[BaseStatistic]):
         """
-        Register a new statistic
+        Register a new statistic.
+
+        Statistics can be registered at any point. If there are pending predicates,
+        instances will be created for them shortly by the communicator thread.
 
         :param stat: a class (not an instance) to register
         """
-        assert issubclass(stat, BasePredicate), 'Not a subclass of BasePredicate!'
+        assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
         self.predicate_classes[stat.statistic_name] = stat
-        self._statistics_updated = False
 
-    def register_pathpoint(self, pp: Pathpoint) -> None:
-        """
-        Register a pathpoint with this device.
-
-        New pathpoints can be added at any time. They will be uploaded to server later.
-
-        :param pp: pathpoint to register
-        """
-        self.pathpoints[pp.name] = pp
+    def _register_pathpoint(self, pp: Pathpoint) -> None:
+        if pp.name not in self.pathpoints:
+            self.pathpoints[pp.name] = pp
 
     @property
     def linkstate(self) -> str:
@@ -259,6 +254,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: a target Sensor
         :raises KeyError: no target sensor exists
         """
-        with self.sensor_lock:
+        with self.ready_lock:
             return self.sensors[tag_name]       # raises KeyError
 

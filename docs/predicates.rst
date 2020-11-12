@@ -52,7 +52,7 @@ to handle provided statistics. A predicate is defined on-server, and smok-client
 take care to instantiate your classes with the proper data.
 Let's see how a predicate is built:
 
-.. autoclass:: smokclient.predicate.BasePredicate
+.. autoclass:: smokclient.predicate.BaseStatistic
     :members:
 
 Silencing

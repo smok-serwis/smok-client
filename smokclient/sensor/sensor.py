@@ -1,4 +1,5 @@
 import typing as tp
+import weakref
 
 from satella.coding import rethrow_as
 from satella.coding.typing import Number
@@ -35,24 +36,22 @@ class Sensor:
     :ivar type_name: name of the sensor type
     :ivar type: object used for data conversion between pathpoints and sensor values
     """
-    __slots__ = ('fqts', 'path', 'type_name', '_pathpoint_names', 'type')
+    __slots__ = ('fqts', 'path', 'type_name', '_pathpoint_names', 'type', 'device')
 
-    def __init__(self, fqts: str, path: str, type_name: str):
+    def __init__(self, device: 'SMOKDevice', fqts: str, path: str, type_name: str):
+        self.device = weakref.proxy(device)
         self.fqts = fqtsify(fqts)
         self.path = path
         self._pathpoint_names = path.split('~')
         self.type_name = type_name
         self.type = get_type(type_name)
-        print(f'adding {fqts} {path} {type_name}')
 
     @rethrow_as(KeyError, NotReadedError)
-    def _calculate_pathpoint(self, path: str,
-                            device: 'SMOKDevice') -> tp.Tuple[Number, PathpointValueType]:
+    def _calculate_pathpoint(self, path: str) -> tp.Tuple[Number, PathpointValueType]:
         if path[0] == 'r':
             exp, pathpoints = parse(path)
             exp = exp[2:]   # skip reparse declaration and reparse point type
-            print(exp)
-            pathpoint_vals = [self._calculate_pathpoint(pp, device) for pp in pathpoints]
+            pathpoint_vals = [self._calculate_pathpoint(pp) for pp in pathpoints]
             dct, ts = {}, None
             for i, pp_val in enumerate(pathpoint_vals):
                 if ts is None:
@@ -62,10 +61,10 @@ class Sensor:
                 dct['v%s' % (i, )] = pp_val[1]
             return ts, eval(exp, reparse_funs.__dict__, dct)
         else:
-            pp = device.get_pathpoint(path)     # throws KeyError
+            pp = self.device.get_pathpoint(path)     # throws KeyError
             return pp.get()
 
-    def get(self, device: 'SMOKDevice') -> tp.Tuple[Number, SensorValueType]:
+    def get(self) -> tp.Tuple[Number, SensorValueType]:
         """
         Return the value of this sensor
 
@@ -73,7 +72,7 @@ class Sensor:
         :return: a tuple of (timestamp, sensor value)
         :raises OperationFailedError: one of pathpoint failed to provide a value
         """
-        vals = [self._calculate_pathpoint(pp, device) for pp in self._pathpoint_names]
+        vals = [self._calculate_pathpoint(pp) for pp in self._pathpoint_names]
         cur_ts = max(ts[0] for ts in vals)
         return cur_ts, self.type.pathpoint_to_sensor(*(val[1] for val in vals))
 
@@ -81,5 +80,5 @@ class Sensor:
         pass
 
     @classmethod
-    def from_json(cls, x: dict) -> 'Sensor':
-        return Sensor(x['fqts'], x['path'], x['type'])
+    def from_json(cls, device: 'SMOKDevice', x: dict) -> 'Sensor':
+        return Sensor(device, x['fqts'], x['path'], x['type'])

@@ -1,4 +1,4 @@
-from .base import BasePredicate, Time, DisabledTime
+from .base import BaseStatistic, Time, DisabledTime
 
-__all__ = ['BasePredicate', 'Time', 'DisabledTime']
+__all__ = ['BaseStatistic', 'Time', 'DisabledTime']
 
