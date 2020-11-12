@@ -2,7 +2,6 @@ import copy
 import typing as tp
 
 from satella.coding import Monitor
-from satella.coding.predicates import x
 from satella.coding.typing import Number
 
 from .base import BaseDataToSynchronize, BasePathpointDatabase, ValueOrExcept
