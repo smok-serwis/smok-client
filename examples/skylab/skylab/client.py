@@ -63,4 +63,3 @@ if __name__ == '__main__':
             time.sleep(10)
             print(sen.get()[1])
             break
-    print('Value obtained')

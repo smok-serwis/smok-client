@@ -68,7 +68,7 @@ class OrderExecutorThread(TerminableThread):
 
             elif isinstance(order, MessageOrder):
 
-                @call_in_separate_thread
+                @call_in_separate_thread()
                 @retry(6, ResponseError)
                 def execute_a_message(uuid: str) -> Future:
                     self.device.api.post('/v1/device/orders/message/' + uuid)
