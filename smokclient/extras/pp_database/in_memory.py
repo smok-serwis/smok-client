@@ -6,6 +6,7 @@ from satella.coding.typing import Number
 
 from .base import BaseDataToSynchronize, BasePathpointDatabase, ValueOrExcept
 from ...exceptions import OperationFailedError, NotReadedError, OperationFailedReason
+from ...pathpoint import PathpointValueType
 
 
 class InMemoryDataToSynchronize(BaseDataToSynchronize):

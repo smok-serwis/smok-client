@@ -115,12 +115,19 @@ class Disposition(enum.IntEnum):
 
 class Section(ReprableMixin):
     _REPR_FIELDS = ('orders', 'disposition')
-    __slots__ = ('orders', 'disposition')
+    __slots__ = ('orders', 'disposition', 'future')
 
     def __init__(self, orders: tp.List[Order] = None,
                  disposition: Disposition = Disposition.JOINABLE):
+        self.future = Future()
         self.orders = orders or []
         self.disposition = disposition
+
+    def cancel(self) -> bool:
+        return self.future.cancel()
+
+    def result(self, timeout: tp.Optional[float] = None):
+        self.future.result(timeout)
 
     def __bool__(self) -> bool:
         return bool(self.orders)
@@ -133,14 +140,9 @@ class Section(ReprableMixin):
         if isinstance(other, Order):
             self.orders.append(other)
         else:
+            other.future = self.future
             self.orders.extend(other.orders)
         return self
-
-    def __add__(self, other: tp.Union['Section', Order]) -> 'Section':
-        if isinstance(other, Order):
-            return Section(self.orders + [other])
-        else:
-            return Section(self.orders + other.orders)
 
     def is_joinable(self) -> bool:
         return self.disposition == Disposition.JOINABLE

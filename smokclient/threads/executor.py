@@ -1,3 +1,4 @@
+import typing as tp
 import logging
 import queue
 from concurrent.futures import wait, Future
@@ -17,7 +18,8 @@ from smokclient.pathpoint.pathpoint import Pathpoint
 logger = logging.getLogger(__name__)
 
 
-def on_read_completed_factory(oet: 'OrderExecutorThread', pp: Pathpoint):
+def on_read_completed_factory(oet: 'OrderExecutorThread',
+                              pp: Pathpoint) -> tp.Callable[[Future], None]:
     def on_read_completed(fut: Future):
         ts = time.time()
         if fut.exception() is None:
@@ -45,6 +47,9 @@ class OrderExecutorThread(TerminableThread):
         self.data_to_sync = data_to_sync
 
     def execute_a_section(self, section: Section) -> None:
+        if not section.future.set_running_or_notify_cancel():
+            return  # Section cancelled
+
         for order in section.orders:
             if isinstance(order, (WriteOrder, ReadOrder)):
                 try:
@@ -80,6 +85,7 @@ class OrderExecutorThread(TerminableThread):
 
         while self.futures_to_complete and not self.terminating:
             self.futures_to_complete = list(wait(self.futures_to_complete, 5)[1])
+        section.future.set_result(None)
 
     @queue_get('queue', 5)
     def loop(self, section: Section):

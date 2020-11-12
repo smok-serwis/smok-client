@@ -74,7 +74,8 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def on_new_data(self, pathpoint: str, timestamp: Number, value_or_exception: ValueOrExcept):
+    def on_new_data(self, pathpoint: str, timestamp: Number,
+                    value_or_exception: ValueOrExcept) -> None:
         """
         Called whenever there's a new value.
 

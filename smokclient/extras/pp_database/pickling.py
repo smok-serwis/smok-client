@@ -30,7 +30,8 @@ class PicklingPathpointDatabase(InMemoryPathpointDatabase):
             except pickle.PickleError:
                 pass
 
-    def on_new_data(self, pathpoint: str, timestamp: Number, value_or_exception: ValueOrExcept):
+    def on_new_data(self, pathpoint: str, timestamp: Number,
+                    value_or_exception: ValueOrExcept) -> None:
         self.last_pathpoint_value[pathpoint] = timestamp, value_or_exception
         super().on_new_data(pathpoint, timestamp, value_or_exception)
 

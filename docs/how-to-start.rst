@@ -147,3 +147,28 @@ DTO's
 
 
 .. autodata:: smokclient.pathpoint.ValueOrExcept
+
+Executing orders
+----------------
+
+If you want to read given pathpoint, just do the following:
+
+::
+
+    read_order = pathpoint.read()
+    sd.execute(read_order)
+
+Note that any :class:`smokclient.pathpoint.orders.Section` is also a perfectly valid `Future`, so
+you may cancel it and wait for it's result:
+
+::
+
+    read_order.result()
+
+Sadly, the completion of a Section just means that all orders have been executed, it bears
+no relevance **how** they completed. You may even cancel it:
+
+::
+
+    if read_order.cancel():
+        print('Successfully cancelled')
