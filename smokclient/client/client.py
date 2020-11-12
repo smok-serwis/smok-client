@@ -36,6 +36,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
+    :param pp_database: custom pathpoint value databaes. Default value of None defaults to an
+        in-memory implementation
+    :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
 
     :ivar device_id: device ID of this device
     :ivar environment: environment of this device
@@ -64,7 +67,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO],
-                 pp_database: tp.Optional[BasePathpointDatabase] = None):
+                 pp_database: tp.Optional[BasePathpointDatabase] = None,
+                 dont_obtain_orders: bool = False):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         self.ready_lock = threading.Lock()
@@ -109,7 +113,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue).start()
         self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
-        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database).start()
+        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database, dont_obtain_orders).start()
         self.sensors = {}       # type: tp.Dict[str, Sensor]
 
     @property

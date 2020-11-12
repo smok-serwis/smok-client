@@ -16,5 +16,10 @@ classes:
     :members:
 
 And create an instance of `BasePathpointDatabase` and feed it to the third argument
-of :class:`smokclient.client.SMOKDevice'.
+of :class:`~smokclient.client.SMOKDevice`.
 
+If you need quickly a persisting pathpoint database, try
+
+.. autoclass:: smokclient.extras.PicklingPathpointDatabase
+
+It does not however provide for archives.

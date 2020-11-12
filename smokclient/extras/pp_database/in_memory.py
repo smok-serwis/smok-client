@@ -5,7 +5,7 @@ from satella.coding import Monitor
 from satella.coding.typing import Number
 
 from .base import BaseDataToSynchronize, BasePathpointDatabase, ValueOrExcept
-from ...exceptions import OperationFailedError
+from ...exceptions import OperationFailedError, NotReadedError, OperationFailedReason
 
 
 class InMemoryDataToSynchronize(BaseDataToSynchronize):
@@ -32,6 +32,24 @@ class InMemoryPathpointDatabase(BasePathpointDatabase, Monitor):
     def get_archive_data(self, pathpoint: str, start: tp.Optional[Number],
                          stop: tp.Optional[Number]) -> tp.Iterator[tp.Tuple[Number, ValueOrExcept]]:
         return []
+
+    @Monitor.synchronized
+    def get_current_value(self, pathpoint: str) -> tp.Tuple[Number, PathpointValueType]:
+        """
+        Get the current value for given pathpoint
+
+        :param pathpoint: name of the pathpoint
+        :return: a tuple of (timestamp, value or exception)
+        :raises NotReadedError: pathpoint has no last value
+        """
+        if pathpoint not in self.pathpoints:
+            raise NotReadedError()
+
+        lv = self.pathpoints[pathpoint][-1]
+        if 'error_code' in lv:
+            raise OperationFailedError(OperationFailedReason(lv['error_code']), lv['timestamp'])
+        else:
+            return lv['timestamp'], lv['value']
 
     @Monitor.synchronized
     def get_data_to_sync(self) -> tp.Optional[BaseDataToSynchronize]:
@@ -73,3 +91,6 @@ class InMemoryPathpointDatabase(BasePathpointDatabase, Monitor):
     def __init__(self):
         self.pathpoints = {}
         Monitor.__init__(self)
+
+    def checkpoint(self) -> None:
+        pass

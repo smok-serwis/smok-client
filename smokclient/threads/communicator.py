@@ -39,9 +39,10 @@ PREDICATE_SYNC_INTERVAL = 300
 
 class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
-                 data_to_sync: DataSyncDict):
+                 data_to_sync: DataSyncDict, dont_obtain_orders: bool):
         super().__init__(name='order getter')
         self.device = device
+        self.dont_obtain_orders = dont_obtain_orders
         self.queue = order_queue
         self.data_to_sync = data_to_sync
         self.last_sensors_synced = 0
@@ -171,10 +172,14 @@ class CommunicatorThread(TerminableThread):
                 self.sync_predicates()
 
             # Fetch the orders
-            self.fetch_orders()
+            if not self.dont_obtain_orders:
+                self.fetch_orders()
 
             # Tick the predicates
             self.tick_predicates()
+
+            # Checkpoint the DB
+            self.device.pp_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
             with silence_excs(WouldWaitMore):

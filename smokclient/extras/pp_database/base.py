@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from satella.coding.typing import Number
 
 from smokclient.exceptions import OperationFailedError
-from smokclient.pathpoint.typing import ValueOrExcept
+from smokclient.pathpoint.typing import ValueOrExcept, PathpointValueType
 
 
 class BaseDataToSynchronize(metaclass=ABCMeta):
@@ -20,42 +20,44 @@ class BaseDataToSynchronize(metaclass=ABCMeta):
 
     def to_json(self) -> tp.List:
         """
-        Return a JSON structure that looks like this.
+        Return a JSON structure that looks like this (specification expressed in OpenAPI 3.0 format)
 
-        type: array
-        items:
-            type: object
-            properties:
-                path:
-                    type: string
-                    description: Name of the pathpoint to serve
-                values:
-                    type: array
-                    items:
-                        type: object
-                        description: This has either error_code or value
-                        properties:
-                            timestamp:
-                                type: integer
-                                format: int64
-                                description: Timestamp in seconds
-                            error_code:
-                                type: string
-                                description: Reason of error code
-                                enum:
-                                    - malformed
-                                    - timeout
-                                    - invalid
-                            value:
-                                type:
-                                    oneOf:
-                                        - integer
-                                        - string
-                                        - number
-                                description: Value of the pathpoint
-                        required:
-                            - timestamp
-        """
+        ::
+
+            type: array
+            items:
+                type: object
+                properties:
+                    path:
+                        type: string
+                        description: Name of the pathpoint to serve
+                    values:
+                        type: array
+                        items:
+                            type: object
+                            description: This has either error_code or value
+                            properties:
+                                timestamp:
+                                    type: integer
+                                    format: int64
+                                    description: Timestamp in seconds
+                                error_code:
+                                    type: string
+                                    description: Reason of error code
+                                    enum:
+                                        - malformed
+                                        - timeout
+                                        - invalid
+                                value:
+                                    type:
+                                        oneOf:
+                                            - integer
+                                            - string
+                                            - number
+                                    description: Value of the pathpoint
+                            required:
+                                - timestamp
+       """
 
 
 class BasePathpointDatabase(metaclass=ABCMeta):
@@ -64,6 +66,12 @@ class BasePathpointDatabase(metaclass=ABCMeta):
 
     Try to make it reasonably thread-safe. It is documented which call is called by which thread.
     """
+
+    @abstractmethod
+    def checkpoint(self) -> None:
+        """
+        Called by the communicator thread, once every about 20 seconds.
+        """
 
     @abstractmethod
     def on_new_data(self, pathpoint: str, timestamp: Number, value_or_exception: ValueOrExcept):
@@ -76,6 +84,17 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         :param pathpoint: :term:`Native` pathpoint that has been written
         :param timestamp: timestamp of the operation
         :param value_or_exception: a value of the pathpoint or an OperationFailedError instance
+        """
+
+    @abstractmethod
+    def get_current_value(self, pathpoint: str) -> tp.Tuple[Number, PathpointValueType]:
+        """
+        Get the current value for given pathpoint
+
+        :param pathpoint: name of the pathpoint
+        :return: a tuple of timestamp, value
+        :raises OperationFailedError: read of this pathpoint has failed
+        :raises NotReadedError: pathpoint has no last value
         """
 
     @abstractmethod

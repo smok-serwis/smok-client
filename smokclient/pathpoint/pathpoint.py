@@ -9,7 +9,7 @@ from satella.coding.typing import Number
 from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
 from .typing import PathpointValueType, ValueOrExcept
 from ..basics import StorageLevel
-from ..exceptions import OperationFailedError, NotReadedError
+from ..exceptions import OperationFailedError
 
 
 class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
@@ -37,6 +37,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         self.storage_level = storage_level
         self.current_value = None       # type: ValueOrExcept
         self.current_timestamp = None   # type: Number
+        # noinspection PyProtectedMember
         device._register_pathpoint(self)
 
     def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
@@ -102,7 +103,10 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :raises OperationFailedError: when pathpoint's read has failed
         """
         if self.current_value is None:
-            raise NotReadedError()
+            ts, v = self.device.pp_database.get_current_value() # raises NotReadedError
+            self.current_timestamp = ts
+            self.current_value = v
+
         if isinstance(self.current_value, OperationFailedError):
             raise self.current_value
         else:

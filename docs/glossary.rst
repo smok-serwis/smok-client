@@ -16,4 +16,9 @@ Glossary
       you to provide only :term:`native` pathpoints.
 
     Statistic
-      A base class for predicate.
+      A base class for predicate. Generally the logic, that given some configuration watches
+      over an aspect of the system, and reports events when something goes wrong (or just if
+      a condition is reached).
+
+    Predicate
+      An instance of a statistic, identified by it's predicate ID.

@@ -1,3 +1,3 @@
-from .pp_database import BasePathpointDatabase, BaseDataToSynchronize
+from .pp_database import BasePathpointDatabase, BaseDataToSynchronize, PicklingPathpointDatabase
 
-__all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize']
+__all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointDatabase']

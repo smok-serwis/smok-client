@@ -58,6 +58,7 @@ class BaseStatistic(metaclass=ABCMeta):
     :ivar verbose_name: Human-readable name of this predicate
     :ivar silencing: periods during which the predicate shouldn't generate alerts
     :ivar configuration: a dictionary containing the predicate's configuration
+    :cvar statistic_name: name of this statistic
     """
 
     def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str, silencing: tp.List[DisabledTime],
