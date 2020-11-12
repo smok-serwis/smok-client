@@ -7,6 +7,7 @@ Welcome to SMOK Client's documentation!
 
    how-to-start
    predicates
+   extras
    glossary
 
 SMOK devices are devices that consist of a bunch of pathpoints (eg. a single MODBUS register)

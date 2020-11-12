@@ -114,12 +114,15 @@ class CommunicatorThread(TerminableThread):
 
     @retry(3, ResponseError)
     def sync_data(self) -> None:
-        data = self.data_to_sync.to_json()
+        sync = self.data_to_sync.get_data_to_sync()
+        if sync is None:
+            return
         try:
-            self.device.api.post('/v1/device/pathpoints', json=data)
+            self.device.api.post('/v1/device/pathpoints', json=sync.to_json())
+            sync.acknowledge()
         except ResponseError as e:
             logger.debug(f'Failed to sync data', exc_info=e)
-            self.data_to_sync.add_from_json(data)
+            sync.negative_acknowledge()
             raise
 
     @retry(3, ResponseError)
@@ -153,8 +156,7 @@ class CommunicatorThread(TerminableThread):
     def loop(self) -> None:
         with measure() as measurement:
             # Synchronize the data
-            if self.data_to_sync.dirty:
-                self.sync_data()
+            self.sync_data()
 
             # Synchronize the pathpoints
             if self.device.pathpoints.dirty:
@@ -176,6 +178,5 @@ class CommunicatorThread(TerminableThread):
 
             # Wait for variables to refresh, do we need to upload any?
             with silence_excs(WouldWaitMore):
-                if not self.data_to_sync.dirty:
-                    timeout = COMMUNICATOR_INTERVAL - measurement()
-                    self.data_to_sync.updated_condition.wait(timeout=timeout)
+                timeout = COMMUNICATOR_INTERVAL - measurement()
+                self.safe_sleep(timeout)

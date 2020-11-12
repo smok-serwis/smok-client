@@ -8,6 +8,7 @@ from satella.coding.concurrent import TerminableThread, call_in_separate_thread
 from satella.coding.decorators import retry
 
 from smokclient.exceptions import ResponseError, NotReadedError
+from smokclient.extras.pp_database.base import BasePathpointDatabase
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -18,8 +19,9 @@ logger = logging.getLogger(__name__)
 
 def on_read_completed_factory(oet: 'OrderExecutorThread', pp: Pathpoint):
     def on_read_completed(fut: Future):
+        ts = time.time()
         if fut.exception() is None:
-            oet.data_to_sync.on_readed_successfully(pp.name, fut.result())
+            oet.data_to_sync.on_new_data(pp.name, ts, fut.result())
             pp.current_timestamp = time.time()
             pp.current_value = fut.result()
         else:
@@ -27,16 +29,15 @@ def on_read_completed_factory(oet: 'OrderExecutorThread', pp: Pathpoint):
             if isinstance(exc, NotReadedError):
                 logger.error('A read future for %s returned NotReadedError, this is invalid')
                 return
-            ts = time.time()
             exc.timestamp = ts
-            oet.data_to_sync.on_read_failed(pp.name, exc)
+            oet.data_to_sync.on_new_data(pp.name, ts, exc)
             pp.current_timestamp = ts
             pp.current_value = fut.exception()
     return on_read_completed
 
 
 class OrderExecutorThread(TerminableThread):
-    def __init__(self, device, order_queue: queue.Queue, data_to_sync: DataSyncDict):
+    def __init__(self, device, order_queue: queue.Queue, data_to_sync: BasePathpointDatabase):
         super().__init__(name='order executor')
         self.queue = order_queue
         self.futures_to_complete = []

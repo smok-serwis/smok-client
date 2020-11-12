@@ -15,6 +15,8 @@ from satella.coding.structures import DirtyDict
 from .api import RequestsAPI
 from ..basics import DeviceInfo, Environment, StorageLevel
 from .certificate import get_device_info
+from ..extras.pp_database.base import BasePathpointDatabase
+from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..pathpoint.data_sync_dict import DataSyncDict
 from ..pathpoint.orders import Section
 from ..predicate import BaseStatistic
@@ -61,8 +63,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.ready_lock.release()
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
-                 priv_key: tp.Union[str, io.StringIO]):
+                 priv_key: tp.Union[str, io.StringIO],
+                 pp_database: tp.Optional[BasePathpointDatabase] = None):
         super().__init__()
+        self.pp_database = pp_database or InMemoryPathpointDatabase()
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
         self.predicates = {}        # type: tp.Dict[str, BaseStatistic]
@@ -102,11 +106,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.api = RequestsAPI(self)
 
         self._order_queue = PeekableQueue()
-        data_to_sync = DataSyncDict()
 
         self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue).start()
-        self.executor = OrderExecutorThread(self, self._order_queue, data_to_sync).start()
-        self.getter = CommunicatorThread(self, self._order_queue, data_to_sync).start()
+        self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
+        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database).start()
         self.sensors = {}       # type: tp.Dict[str, Sensor]
 
     @property
