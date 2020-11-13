@@ -21,6 +21,7 @@ jobs:
           command: |
             ./cc-test-reporter before-build
             coverage run -m nose2
+            coverage xml
             ./cc-test-reporter format-coverage -t coverage.py -o ./.coverage
             ./cc-test-reporter upload-coverage
             ./cc-test-reporter after-build --exit-code $?

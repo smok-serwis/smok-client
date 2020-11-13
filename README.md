@@ -6,6 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/implementation/smok-client.svg)](https://pypi.python.org/pypi/smok-client)
 [![Documentation Status](https://readthedocs.org/projects/smok-client/badge/?version=latest)](http://smok-client.readthedocs.io/en/latest/?badge=latest)
 [![Maintainability](https://api.codeclimate.com/v1/badges/657b03d115f6e001633c/maintainability)](https://codeclimate.com/github/smok-serwis/smok-client/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/657b03d115f6e001633c/test_coverage)](https://codeclimate.com/github/smok-serwis/smok-client/test_coverage)
 
 `smok-client` is a definitive library to write programs that behave as SMOK devices.
 It is principally a consumer of [the SMOK API](https://api.smok.co/).
