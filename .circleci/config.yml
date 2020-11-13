@@ -12,13 +12,11 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: pip install -r mock coverage nose2
-          name: Install necessary modules
-      - run:
           command: |
+            pip install mock coverage nose2
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-          name: Set up Code Climate
+          name: Install necessary modules
       - run:
           command: |
             ./cc-test-reporter before-build
