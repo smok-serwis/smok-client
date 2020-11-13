@@ -38,3 +38,15 @@ If you need quickly a pickling database, try
 
 .. autoclass:: smokclient.extras.PicklingEventDatabase
     :members:
+
+Macro storage
+-------------
+
+.. autoclass:: smokclient.extras.BaseMacroDatabase
+    :members:
+
+If you need quickly a pickling database, try
+
+.. autoclass:: smokclient.extras.PicklingMacroDatabase
+    :members:
+

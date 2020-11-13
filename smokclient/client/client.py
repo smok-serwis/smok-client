@@ -17,6 +17,8 @@ from .certificate import get_device_info
 from .slave import SlaveDevice
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
+from ..extras.macros_database import BaseMacroDatabase
+from ..extras.macros_database.in_memory import InMemoryMacroDatabase
 from ..extras.pp_database.base import BasePathpointDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..pathpoint import Pathpoint
@@ -41,6 +43,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param evt_database: custom event database. Providing a string defaults to path where predicate
         data will be persisted.
     :param pp_database: custom pathpoint value database. Default value of None defaults to an
+        in-memory implementation
+    :param macro_database: custom macro database. Default value of None will result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
 
@@ -74,6 +78,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  priv_key: tp.Union[str, io.StringIO],
                  evt_database: tp.Union[str, BaseEventDatabase],
                  pp_database: tp.Optional[BasePathpointDatabase] = None,
+                 macro_database: tp.Optional[BaseMacroDatabase] = None,
                  dont_obtain_orders: bool = False):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
@@ -81,6 +86,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.evt_database = InMemoryEventDatabase(evt_database)
         else:
             self.evt_database = evt_database
+        self.macros_database = macro_database or InMemoryMacroDatabase()
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
         self.predicates = {}  # type: tp.Dict[str, BaseStatistic]

@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import ListDeleter
+from satella.coding import ListDeleter, silence_excs
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -10,8 +10,7 @@ from smokclient.exceptions import ResponseError
 from smokclient.pathpoint.orders import Section
 from smokclient.threads.archives_and_macros.archive import archiving_entries_from_json, \
     ArchivingEntry
-from smokclient.threads.archives_and_macros.macro import macro_parameters_from_json, get_macro, \
-    Macro, clean_cache
+from smokclient.macro import Macro
 
 ARCHIVE_UPDATING_INTERVAL = 600
 MACROS_UPDATING_INTERVAL = 600
@@ -43,11 +42,9 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
             start, stop
         ))
-        macros = [macro_parameters_from_json(macro) for macro in resp]
-        self.macros_to_execute = []
-        for macro in macros:
-            if macro:
-                self.macros_to_execute.append(get_macro(*macro))
+        macros = [Macro.from_json(self.device, macro) for macro in resp]
+        macros_to_execute = [macro for macro in macros if macro]
+        self.device.macros_database.set_macros(macros_to_execute)
         self.macros_updated_on = time.time()
 
     @retry(3, exc_classes=ResponseError)
@@ -65,18 +62,21 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     def loop(self) -> None:
         if self.should_update_macros():
             self.update_macros()
-            clean_cache()
 
         if self.should_update_archives():
             self.update_archives()
 
-        with ListDeleter(self.macros_to_execute) as ld:
-            for macro in ld:
-                if macro.should_execute():
-                    macro.execute(self.device, self.order_queue)
-                    if not macro:
-                        ld.delete()
-                        clean_cache()
+        mdb = self.device.macros_database
+
+        for macro in mdb.get_macros():
+            if macro.should_execute():
+                macro.execute()
+
+        for macro_id, ts in mdb.get_done_macros():
+            logger.warning(f'Syncing {macro_id} {ts}')
+            with silence_excs(ResponseError):
+                self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
+                mdb.notify_macro_synced(macro_id, ts)
 
         sec = Section()
         for a_entry in self.archiving_entries:

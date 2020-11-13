@@ -19,6 +19,21 @@ You can view the example_, or keep on reading these docs.
 
 .. _example: https://github.com/smok-serwis/smok-client/tree/develop/examples/skylab
 
+What exactly does smok-client handle for me
+--------------------------------------------
+
+It handles:
+
+* executing read and write orders
+* executing message and wait orders
+* handling archiving of pathpoints
+* handling scheduled execution of macros
+* buffering data about executed macros, opened events and readed data until a contact
+  with the server can be made
+
+Starting with some code
+-----------------------
+
 First of all, you need to subclass SMOKDevice and define the method
 :meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`.
 
@@ -104,7 +119,7 @@ Threads
 
 * `CommunicatorThread` handles communication with the SMOK server
 * `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived and
-    about executing macros
+  about executing macros
 * `OrderExecutorThread` handles the loop executing orders.
 
 Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
