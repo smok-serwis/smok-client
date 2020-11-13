@@ -1,6 +1,6 @@
+import enum
 import time
 import typing as tp
-import enum
 
 __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
            'OperationFailedReason', 'OperationFailedError',
@@ -23,6 +23,7 @@ class ResponseError(SMOKClientError):
     """
     Server replied with a wrong code
     """
+
     def __str__(self) -> str:
         return 'ResponseError(%s, "%s")' % (self.status_code, self.status)
 
@@ -32,10 +33,9 @@ class ResponseError(SMOKClientError):
 
 
 class OperationFailedReason(enum.Enum):
-
     MALFORMED = 'malformed'  #: The device responded with a malformed protocol frame
-    TIMEOUT = 'timeout'      #: The device did not respond within given time
-    INVALID = 'invalid'      #: The device responded OK, but told us that this pathpoint is bogus
+    TIMEOUT = 'timeout'  #: The device did not respond within given time
+    INVALID = 'invalid'  #: The device responded OK, but told us that this pathpoint is bogus
 
 
 class OperationFailedError(SMOKClientError):
@@ -45,6 +45,7 @@ class OperationFailedError(SMOKClientError):
     :ivar reason: reason of failure
     :ivar timestamp: timestamp of failure
     """
+
     def __init__(self, reason: OperationFailedReason, timestamp: tp.Optional[Number] = None):
         self.reason = reason
         self.timestamp = timestamp or time.time()
@@ -58,5 +59,6 @@ class NotReadedError(OperationFailedError):
 
     :ivar timestamp: timestamp of failure
     """
+
     def __init__(self, timestamp: tp.Optional[float] = None):
         super().__init__(None, timestamp)

@@ -1,6 +1,6 @@
+import enum
 import time
 import typing as tp
-import enum
 from concurrent.futures import Future
 
 from satella.coding.structures import ReprableMixin
@@ -15,8 +15,8 @@ class AdviseLevel(enum.IntEnum):
     """
     Advise level specifies how hard should the device try to execute this command.
     """
-    ADVISE = 0      #: Best-effort
-    FORCE = 1       #: Nearly guarantees correct delivery, up to blocking the pipeline if need be
+    ADVISE = 0  #: Best-effort
+    FORCE = 1  #: Nearly guarantees correct delivery, up to blocking the pipeline if need be
 
 
 class Order:
@@ -31,8 +31,8 @@ class Order:
 
 
 class MessageOrder(Order, ReprableMixin):
-    _REPR_FIELDS = ('uuid', )
-    __slots__ = ('uuid', )
+    _REPR_FIELDS = ('uuid',)
+    __slots__ = ('uuid',)
 
     def __init__(self, uuid: str):
         self.uuid = uuid
@@ -43,8 +43,8 @@ class MessageOrder(Order, ReprableMixin):
 
 
 class WaitOrder(Order, ReprableMixin):
-    _REPR_FIELDS = ('period', )
-    __slots__ = ('period', )
+    _REPR_FIELDS = ('period',)
+    __slots__ = ('period',)
 
     def __init__(self, period: float):
         self.period = period

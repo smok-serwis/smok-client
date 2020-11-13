@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 
 from satella.coding.typing import Number
 
-from smokclient.exceptions import OperationFailedError
 from smokclient.pathpoint.typing import ValueOrExcept, PathpointValueType
 
 

@@ -56,7 +56,7 @@ class CommunicatorThread(TerminableThread):
 
     @retry(3, ResponseError)
     def sync_events(self):
-        evt_to_sync = self.device.evt_database.get_data_to_sync()   # type: BaseEventSynchronization
+        evt_to_sync = self.device.evt_database.get_data_to_sync()  # type: BaseEventSynchronization
         if evt_to_sync is None:
             return
         try:
@@ -81,7 +81,8 @@ class CommunicatorThread(TerminableThread):
                     self.device.predicates[predicate_id].on_offline()
                     del self.device.predicates[predicate_id]
             else:
-                silencing = [DisabledTime.from_json(dct) for dct in predicate_dict.get('silencing', ())]
+                silencing = [DisabledTime.from_json(dct) for dct in
+                             predicate_dict.get('silencing', ())]
 
                 if predicate_id not in self.device.predicates:
                     stat_name = predicate_dict['statistic']

@@ -46,7 +46,8 @@ class UnicodeType(BasicType):
         return str(values[0])
 
 
-CACHE_DICT = {}     # type: tp.Dict[str, NumericType]
+CACHE_DICT = {}  # type: tp.Dict[str, NumericType]
+
 
 def get_type(type_name: str) -> NumericType:
     global CACHE_DICT
@@ -63,10 +64,9 @@ def get_type(type_name: str) -> NumericType:
         elif '(' in type_name:
             arguments = type_name.split('(', 1)[1]
             arguments = arguments.rsplit(')', 1)[0]
-            type_ = eval('NumericType(%s)' % (arguments, ), {'NumericType': NumericType})
+            type_ = eval('NumericType(%s)' % (arguments,), {'NumericType': NumericType})
         else:
             type_ = NumericType()
         CACHE_DICT[type_name] = type_
 
     return CACHE_DICT[type_name]
-

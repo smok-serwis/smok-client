@@ -11,12 +11,12 @@ ValueOrExcept = tp.Union[PathpointValueType, OperationFailedError]
 
 
 class PathpointType(enum.Enum):
-    B = 'B'     #: binary, 0 or 1
-    W = 'W'     #: unsigned 16-bit
-    w = 'w'     #: signed 16-bit
-    f = 'f'     #: IEEE 754 float
-    d = 'd'     #: IEEE 754 double
-    u = 'u'     #: an Unicode string
+    B = 'B'  #: binary, 0 or 1
+    W = 'W'  #: unsigned 16-bit
+    w = 'w'  #: signed 16-bit
+    f = 'f'  #: IEEE 754 float
+    d = 'd'  #: IEEE 754 double
+    u = 'u'  #: an Unicode string
 
     @staticmethod
     def get_type(path: str) -> 'PathpointType':

@@ -6,7 +6,7 @@ from satella.coding.concurrent import Condition
 from satella.coding.structures import DirtyDict
 
 from .typing import PathpointValueType
-from ..exceptions import OperationFailedError, OperationFailedReason, ResponseError
+from ..exceptions import OperationFailedError, OperationFailedReason
 
 
 class DataSyncDict(DirtyDict, Monitor):
@@ -48,10 +48,10 @@ class DataSyncDict(DirtyDict, Monitor):
             values = []
             for timestamp, value in pathpoint_values:
                 if isinstance(value, OperationFailedError):
-                    values.append({'timestamp': int(timestamp*1000),
+                    values.append({'timestamp': int(timestamp * 1000),
                                    'error_code': value.reason.value})
                 else:
-                    values.append({'timestamp': int(timestamp*1000),
+                    values.append({'timestamp': int(timestamp * 1000),
                                    'value': value})
             output.append({'path': pathpoint,
                            'values': values})

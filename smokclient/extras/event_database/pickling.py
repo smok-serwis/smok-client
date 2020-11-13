@@ -1,6 +1,6 @@
-import typing as tp
 import os
 import pickle
+import typing as tp
 
 from satella.coding import silence_excs, Monitor
 
@@ -23,6 +23,7 @@ class PicklingEventDatabase(InMemoryEventDatabase):
     :param cache_path: path to cache with predicate's data
     :param data_path: path to cache with event data
     """
+
     def __init__(self, cache_path: str, data_path: str):
         super().__init__(cache_path)
         self.data_path = data_path

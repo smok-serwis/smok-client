@@ -4,15 +4,13 @@ import typing as tp
 import weakref
 
 from satella.coding import Monitor, silence_excs
-from satella.time import time_as_int
 
 from .base import BaseEventDatabase, BaseEventSynchronization
 from ...predicate.event import Event
 
 
 class InMemoryEventSynchronization(BaseEventSynchronization):
-
-    __slots__ = ('event_db', 'events', )
+    __slots__ = ('event_db', 'events',)
 
     def __init__(self, event_db: 'InMemoryEventDatabase', events: tp.List[Event]):
         self.event_db = weakref.proxy(event_db)

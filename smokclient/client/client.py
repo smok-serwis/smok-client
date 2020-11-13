@@ -1,11 +1,11 @@
 import datetime
+import io
 import os
+import tempfile
 import threading
 import time
 import typing as tp
-import io
-import tempfile
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 
 import pytz
 from satella.coding import Closeable, for_argument
@@ -13,18 +13,17 @@ from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
 
 from .api import RequestsAPI
-from ..basics import DeviceInfo, Environment, StorageLevel
 from .certificate import get_device_info
+from ..basics import DeviceInfo, Environment, StorageLevel
 from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
 from ..extras.pp_database.base import BasePathpointDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
-from ..pathpoint.data_sync_dict import DataSyncDict
+from ..pathpoint import Pathpoint
 from ..pathpoint.orders import Section
 from ..predicate import BaseStatistic
 from ..predicate.event import Event
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
-from ..pathpoint import Pathpoint
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):
@@ -49,6 +48,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
     """
+
     def provide_unknown_pathpoint(self, name: str,
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         """
@@ -82,11 +82,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.evt_database = evt_database
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
-        self.predicates = {}        # type: tp.Dict[str, BaseStatistic]
+        self.predicates = {}  # type: tp.Dict[str, BaseStatistic]
         self._timezone = None
-        self.predicate_classes = {}      # type: tp.Dict[str, tp.Type[BaseStatistic]]
+        self.predicate_classes = {}  # type: tp.Dict[str, tp.Type[BaseStatistic]]
         self._statistics_updated = False
-        self.pathpoints = DirtyDict()       # type: tp.Dict[str, Pathpoint]
+        self.pathpoints = DirtyDict()  # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
         self.__linkstate = None
         self.__instrumentation = None
@@ -107,8 +107,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             cert_data = fin.read()
 
         dev_id, env = get_device_info(cert_data)
-        self.device_id = dev_id     # type: str
-        self.environment = env      # type: Environment
+        self.device_id = dev_id  # type: str
+        self.environment = env  # type: Environment
         if self.environment == Environment.PRODUCTION:
             self.url = 'https://api.smok.co'
         elif self.environment == Environment.STAGING:
@@ -122,8 +122,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue).start()
         self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
-        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database, dont_obtain_orders).start()
-        self.sensors = {}       # type: tp.Dict[str, Sensor]
+        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
+                                         dont_obtain_orders).start()
+        self.sensors = {}  # type: tp.Dict[str, Sensor]
 
     @property
     def timezone(self) -> pytz.timezone:
@@ -160,7 +161,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         if path in self.pathpoints:
             return self.pathpoints[path]
-        pp = self.provide_unknown_pathpoint(path, storage_level)      # raises KeyError
+        pp = self.provide_unknown_pathpoint(path, storage_level)  # raises KeyError
         self._register_pathpoint(pp)
         return pp
 
@@ -186,7 +187,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :returns: current link state
         """
         if self.__linkstate is None:
-            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id, ))
+            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id,))
             self.__linkstate = resp['linkstate']
             self.__instrumentation = resp['instrumentation']
         return self._linkstate
@@ -198,7 +199,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :param v: new link state
         """
-        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id, ), json={
+        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id,), json={
             'linkstate': v
         })
         self.__linkstate = v
@@ -209,7 +210,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: current instrumentation
         """
         if self.__instrumentation is None:
-            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id, ))
+            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id,))
             self.__linkstate = resp['linkstate']
             self.__instrumentation = resp['instrumentation']
         return self.__instrumentation
@@ -221,7 +222,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :param v: new value for the instrumentation
         """
-        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id, ), json={
+        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id,), json={
             'instrumentation': v
         })
         self.__instrumentation = v
@@ -281,5 +282,4 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :raises KeyError: no target sensor exists
         """
         with self.ready_lock:
-            return self.sensors[tag_name]       # raises KeyError
-
+            return self.sensors[tag_name]  # raises KeyError

@@ -1,7 +1,7 @@
 import logging
 import typing as tp
-from .base import BaseStatistic
 
+from .base import BaseStatistic
 
 logger = logging.getLogger(__name__)
 

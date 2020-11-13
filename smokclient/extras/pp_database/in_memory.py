@@ -20,7 +20,7 @@ class InMemoryDataToSynchronize(BaseDataToSynchronize):
         return self.data
 
     def acknowledge(self) -> None:
-        timestamps_for_pathpoints = {}     # type: tp.Dict[str, Number]
+        timestamps_for_pathpoints = {}  # type: tp.Dict[str, Number]
         for pp in self.data:
             max_ts = max(v['timestamp'] for v in pp['values'])
             timestamps_for_pathpoints[pp['path']] = max_ts

@@ -1,8 +1,8 @@
-import typing as tp
 import logging
 import queue
-from concurrent.futures import wait, Future
 import time
+import typing as tp
+from concurrent.futures import wait, Future
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
@@ -12,7 +12,6 @@ from smokclient.exceptions import ResponseError, NotReadedError
 from smokclient.extras.pp_database.base import BasePathpointDatabase
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
-
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +33,7 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
             oet.data_to_sync.on_new_data(pp.name, ts, exc)
             pp.current_timestamp = ts
             pp.current_value = fut.exception()
+
     return on_read_completed
 
 
@@ -54,7 +54,7 @@ class OrderExecutorThread(TerminableThread):
                 try:
                     pathpoint = self.device.get_pathpoint(order.pathpoint)
                 except KeyError:
-                    logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint, ))
+                    logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint,))
                     continue
 
                 if isinstance(order, WriteOrder):
@@ -62,7 +62,7 @@ class OrderExecutorThread(TerminableThread):
                         continue
                     fut = pathpoint.on_write(order.value, order.advise)
                 elif isinstance(order, ReadOrder):
-                    fut = pathpoint.on_read(order.advise)       # type: Future
+                    fut = pathpoint.on_read(order.advise)  # type: Future
                     fut.add_done_callback(on_read_completed_factory(self, pathpoint))
 
             elif isinstance(order, MessageOrder):
@@ -74,7 +74,7 @@ class OrderExecutorThread(TerminableThread):
 
                 fut = execute_a_message(order.uuid)
             else:
-                logger.warning('Unknown order type %s' % (order, ))
+                logger.warning('Unknown order type %s' % (order,))
                 continue
             self.futures_to_complete.append(fut)
 
@@ -90,7 +90,7 @@ class OrderExecutorThread(TerminableThread):
     def loop(self, section: Section):
         print(section)
         if self.queue.qsize():
-            sec = self.queue.peek()     # type: Section
+            sec = self.queue.peek()  # type: Section
             if section.is_joinable() and sec.is_joinable():
                 section += self.queue.get()
 

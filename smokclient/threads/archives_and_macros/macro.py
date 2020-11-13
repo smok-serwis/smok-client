@@ -1,6 +1,7 @@
+import collections
 import logging
 import time
-import collections
+import typing as tp
 
 from satella.coding import silence_excs, DictDeleter
 from satella.coding.concurrent import PeekableQueue
@@ -10,13 +11,12 @@ from satella.coding.structures import OmniHashableMixin, ReprableMixin
 from smokclient.exceptions import ResponseError
 from smokclient.pathpoint.orders import Section, WriteOrder, AdviseLevel
 from smokclient.pathpoint.typing import PathpointValueType
-import typing as tp
 
 logger = logging.getLogger(__name__)
 
 
 class Macro(OmniHashableMixin, ReprableMixin):
-    _HASH_FIELDS_TO_USE = ('macro_id', )
+    _HASH_FIELDS_TO_USE = ('macro_id',)
     _REPR_FIELDS = ('macro_id', 'commands', 'occurrences_not_done')
     __slots__ = ('macro_id', 'commands', 'occurrences_not_done')
 
@@ -46,7 +46,7 @@ class Macro(OmniHashableMixin, ReprableMixin):
             self.mark_as_complete(self.occurrences_not_done.popleft(), device)
 
 
-macro_cache = {}        # type: tp.Dict[str, Macro]
+macro_cache = {}  # type: tp.Dict[str, Macro]
 
 
 def get_macro(macro_id: str, commands, occurrences):

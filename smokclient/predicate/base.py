@@ -1,7 +1,7 @@
+import logging
 import time
 import typing as tp
 import weakref
-import logging
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
@@ -61,7 +61,7 @@ class DisabledTime(OmniHashableMixin):
         :return: True if the time is inside
         """
         return self.start.to_tuple() <= (time.isoweekday(), time.hour, time.minute) \
-                <= self.stop.to_tuple()
+               <= self.stop.to_tuple()
 
 
 class BaseStatistic(metaclass=ABCMeta):
@@ -78,7 +78,8 @@ class BaseStatistic(metaclass=ABCMeta):
     :cvar statistic_name: name of this statistic
     """
 
-    def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str, silencing: tp.List[DisabledTime],
+    def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str,
+                 silencing: tp.List[DisabledTime],
                  configuration: tp.Optional[dict], statistic: tp.Optional[str] = None,
                  group: str = 'B'):
         self.device = weakref.proxy(device)
@@ -93,7 +94,7 @@ class BaseStatistic(metaclass=ABCMeta):
     @property
     @classmethod
     @abstractmethod
-    def statistic_name(cls) -> str:     #: obtain the :term:`statistic` name
+    def statistic_name(cls) -> str:  #: obtain the :term:`statistic` name
         ...
 
     @abstractmethod

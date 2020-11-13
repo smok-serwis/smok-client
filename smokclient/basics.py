@@ -1,5 +1,5 @@
-import typing as tp
 import enum
+import typing as tp
 
 from satella.coding.structures import ReprableMixin
 from satella.json import JSONAble
@@ -9,17 +9,17 @@ class Environment(enum.IntEnum):
     """
     An environment in which this device runs
     """
-    PRODUCTION = 0              #: production
-    STAGING = 1                 #: testing environment
-    LOCAL_DEVELOPMENT = 2       #: CI or local development
+    PRODUCTION = 0  #: production
+    STAGING = 1  #: testing environment
+    LOCAL_DEVELOPMENT = 2  #: CI or local development
 
 
 class StorageLevel(enum.IntEnum):
     """
     A storage level defines how long is the pathpoint kept at SMOK server.
     """
-    PERMANENT = 0       #: hold all values indefinitely
-    TREND = 1           #: values at most 2 weeks old will be kept
+    PERMANENT = 0  #: hold all values indefinitely
+    TREND = 1  #: values at most 2 weeks old will be kept
 
 
 class SlaveDeviceInfo(JSONAble, ReprableMixin):

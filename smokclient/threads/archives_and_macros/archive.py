@@ -1,8 +1,7 @@
-import typing as tp
 import time
+import typing as tp
 
 from satella.coding import for_argument
-from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import OmniHashableMixin, ReprableMixin
 from satella.coding.typing import Number
 
@@ -11,7 +10,7 @@ from smokclient.pathpoint.orders import Section, ReadOrder, AdviseLevel
 
 class ArchivingEntry(OmniHashableMixin, ReprableMixin):
     _REPR_FIELDS = ('pathpoint_name', 'interval')
-    _HASH_FIELDS_TO_USE = ('pathpoint_name', )
+    _HASH_FIELDS_TO_USE = ('pathpoint_name',)
     __slots__ = ('pathpoint_name', 'interval', 'last_updated')
 
     def __init__(self, pathpoint_name: str, interval: Number):

@@ -7,9 +7,9 @@ from satella.coding.typing import Number
 from smokclient.exceptions import NotReadedError
 from smokclient.pathpoint import AdviseLevel, PathpointValueType
 from smokclient.pathpoint.orders import Section, ReadOrder
-from smokclient.sensor.reparse import reparse_to_native_components, parse
 from smokclient.sensor import reparse_funs
-from smokclient.sensor.types import NumericType, SensorValueType, get_type
+from smokclient.sensor.reparse import parse
+from smokclient.sensor.types import SensorValueType, get_type
 
 
 def fqtsify(tag_name: tp.Union[str, tp.Set[str]]) -> str:
@@ -50,7 +50,7 @@ class Sensor:
     def _calculate_pathpoint(self, path: str) -> tp.Tuple[Number, PathpointValueType]:
         if path[0] == 'r':
             exp, pathpoints = parse(path)
-            exp = exp[2:]   # skip reparse declaration and reparse point type
+            exp = exp[2:]  # skip reparse declaration and reparse point type
             pathpoint_vals = [self._calculate_pathpoint(pp) for pp in pathpoints]
             dct, ts = {}, None
             for i, pp_val in enumerate(pathpoint_vals):
@@ -58,10 +58,10 @@ class Sensor:
                     ts = pp_val[0]
                 elif pp_val[0] < ts:
                     ts = pp_val[0]
-                dct['v%s' % (i, )] = pp_val[1]
+                dct['v%s' % (i,)] = pp_val[1]
             return ts, eval(exp, reparse_funs.__dict__, dct)
         else:
-            pp = self.device.get_pathpoint(path)     # throws KeyError
+            pp = self.device.get_pathpoint(path)  # throws KeyError
             return pp.get()
 
     def get(self) -> tp.Tuple[Number, SensorValueType]:

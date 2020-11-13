@@ -1,5 +1,5 @@
-import typing as tp
 import enum
+import typing as tp
 import uuid
 
 from satella.coding import update_key_if_true
@@ -8,9 +8,9 @@ from satella.time import time_as_int
 
 
 class Color(enum.IntEnum):
-    WHITE = 0       #: least severe event
-    YELLOW = 1      #: event of medium severity
-    RED = 2         #: most severe event
+    WHITE = 0  #: least severe event
+    YELLOW = 1  #: event of medium severity
+    RED = 2  #: most severe event
 
 
 class Event(JSONAble):
@@ -56,7 +56,7 @@ class Event(JSONAble):
         self.metadata = metadata
 
     def to_json(self) -> dict:
-        dct ={
+        dct = {
             'started_on': self.started_on,
             'color': self.color.value,
             'alarm_type': 1 if self.is_point else 0,

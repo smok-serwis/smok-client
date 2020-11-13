@@ -4,4 +4,3 @@ from .pickling import PicklingEventDatabase
 
 __all__ = ['BaseEventDatabase', 'BaseEventSynchronization', 'InMemoryEventDatabase',
            'PicklingEventDatabase']
-

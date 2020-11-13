@@ -18,7 +18,8 @@ class PP(Pathpoint):
     """
     A typical memory-backed pathpoint
     """
-    def __init__(self, device, name, storage_level = StorageLevel.TREND):
+
+    def __init__(self, device, name, storage_level=StorageLevel.TREND):
         super().__init__(device, name, storage_level)
         self.value = 5
 

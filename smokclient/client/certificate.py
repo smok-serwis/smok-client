@@ -1,14 +1,13 @@
-import typing as tp
 import logging
+import typing as tp
 
 import pkg_resources
+from OpenSSL import crypto
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from OpenSSL import crypto
 from pyasn1.codec.der.decoder import decode
 from pyasn1.error import PyAsn1Error
 from satella.coding import rethrow_as
-
 from satella.coding.structures import Singleton
 
 from smokclient.basics import Environment
@@ -26,10 +25,10 @@ x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 
 @Singleton
 class DevRootCertificateStore:
-    __slots__ = ('store', )
+    __slots__ = ('store',)
 
     def add_certificate(self, name: str):
-        ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name, ))
+        ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name,))
         with open(ca_file, 'rb') as f_in:
             cert_pem_data = f_in.read()
             cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem_data)

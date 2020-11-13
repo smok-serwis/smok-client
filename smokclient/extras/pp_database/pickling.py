@@ -1,14 +1,13 @@
-import typing as tp
+import os.path
 import pickle
+import typing as tp
 
 from satella.coding import Monitor
 from satella.coding.typing import Number
 
 from smokclient.exceptions import NotReadedError, OperationFailedError
-from .in_memory import InMemoryPathpointDatabase
-import os.path
-
 from smokclient.pathpoint import PathpointValueType, ValueOrExcept
+from .in_memory import InMemoryPathpointDatabase
 
 
 class PicklingPathpointDatabase(InMemoryPathpointDatabase):
@@ -19,6 +18,7 @@ class PicklingPathpointDatabase(InMemoryPathpointDatabase):
 
     :param path: path to file containing pickled data.
     """
+
     def __init__(self, path: str):
         super().__init__()
         self.path = path

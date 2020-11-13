@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import silence_excs, ListDeleter
+from satella.coding import ListDeleter
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -23,10 +23,10 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         super().__init__(60)
         self.device = device
         self.order_queue = order_queue
-        self.archives_updated_on = 0            # type: int
-        self.macros_updated_on = 0              # type: int
-        self.macros_to_execute = []             # type: tp.List[Macro]
-        self.archiving_entries = set()             # type: tp.Set[ArchivingEntry]
+        self.archives_updated_on = 0  # type: int
+        self.macros_updated_on = 0  # type: int
+        self.macros_to_execute = []  # type: tp.List[Macro]
+        self.archiving_entries = set()  # type: tp.Set[ArchivingEntry]
 
     def should_update_archives(self) -> bool:
         return time.time() - self.archives_updated_on > ARCHIVE_UPDATING_INTERVAL
@@ -38,7 +38,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     def update_macros(self) -> None:
         start = self.macros_updated_on
         if start == 0:
-            start = time_as_int() - 2*MACROS_UPDATING_INTERVAL
+            start = time_as_int() - 2 * MACROS_UPDATING_INTERVAL
         stop = start + 5 * MACROS_UPDATING_INTERVAL
         resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
             start, stop

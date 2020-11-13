@@ -27,16 +27,17 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     :ivar current_value: last readed value or an exception instance
     :ivar device: a weak reference to the device
     """
-    _HASH_FIELDS_TO_USE = ('name', )
+    _HASH_FIELDS_TO_USE = ('name',)
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device')
 
-    def __init__(self, device: 'SMOKDevice', name: str, storage_level: StorageLevel = StorageLevel.TREND):
+    def __init__(self, device: 'SMOKDevice', name: str,
+                 storage_level: StorageLevel = StorageLevel.TREND):
         self.device = weakref.proxy(device)
         self.name = name
         self.storage_level = storage_level
-        self.current_value = None       # type: ValueOrExcept
-        self.current_timestamp = None   # type: Number
+        self.current_value = None  # type: ValueOrExcept
+        self.current_timestamp = None  # type: Number
         # noinspection PyProtectedMember
         device._register_pathpoint(self)
 
@@ -103,7 +104,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :raises OperationFailedError: when pathpoint's read has failed
         """
         if self.current_value is None:
-            ts, v = self.device.pp_database.get_current_value() # raises NotReadedError
+            ts, v = self.device.pp_database.get_current_value()  # raises NotReadedError
             self.current_timestamp = ts
             self.current_value = v
 

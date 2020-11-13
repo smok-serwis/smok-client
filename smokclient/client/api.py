@@ -21,11 +21,11 @@ class RequestsAPI:
     def request(self, request_type, url, **kwargs):
         op = getattr(requests, request_type)
         if self.environment == Environment.STAGING:
-            resp = op(self.base_url+url, headers={
+            resp = op(self.base_url + url, headers={
                 'X-SSL-Client-Certificate': self.cert
             }, **kwargs)
         else:
-            resp = op(self.base_url+url, cert=self.cert, **kwargs)
+            resp = op(self.base_url + url, cert=self.cert, **kwargs)
         if resp.status_code not in (200, 201):
             raise ResponseError(resp.status_code, resp.json()['status'])
         try:
