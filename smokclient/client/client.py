@@ -48,6 +48,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param macro_database: custom macro database. Default value of None will result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
+    :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
+    :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
+
+    If both dont_do_macros and dont_do_archives are True, the archiving & macro thread
+    won't be started.
 
     :ivar device_id: device ID of this device
     :ivar environment: environment of this device
@@ -81,7 +86,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  evt_database: tp.Union[str, BaseEventDatabase],
                  pp_database: tp.Optional[BasePathpointDatabase] = None,
                  macro_database: tp.Optional[BaseMacroDatabase] = None,
-                 dont_obtain_orders: bool = False):
+                 dont_obtain_orders: bool = False,
+                 dont_do_macros: bool = False,
+                 dont_do_archives: bool = False):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         if isinstance(evt_database, str):
@@ -127,7 +134,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         self._order_queue = PeekableQueue()
 
-        self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue).start()
+        if not (dont_do_archives and dont_do_macros):
+            self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue,
+                                                           dont_do_macros, dont_do_archives).start()
+        else:
+            self.arch_and_macros = None
         self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
         self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
                                          dont_obtain_orders).start()
@@ -207,14 +218,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if super().close():
             self.executor.terminate()
             self.getter.terminate()
-            self.arch_and_macros.terminate()
+            if self.arch_and_macros is not None:
+                self.arch_and_macros.terminate()
             if self.temp_file_for_cert:
                 os.unlink(self.temp_file_for_cert)
             if self.temp_file_for_key:
                 os.unlink(self.temp_file_for_key)
             self.executor.join()
             self.getter.join()
-            self.arch_and_macros.join()
+            if self.arch_and_macros is not None:
+                self.arch_and_macros.join()
 
     @for_argument(returns=list)
     def get_slaves(self) -> tp.List[SlaveDevice]:

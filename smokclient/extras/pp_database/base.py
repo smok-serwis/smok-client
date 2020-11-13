@@ -7,6 +7,8 @@ from smokclient.pathpoint.typing import ValueOrExcept, PathpointValueType
 
 
 class BaseDataToSynchronize(metaclass=ABCMeta):
+    __slots__ = ()
+
     def acknowledge(self) -> None:
         """
         Mark the data as successfully synchronized
@@ -65,6 +67,7 @@ class BasePathpointDatabase(metaclass=ABCMeta):
 
     Try to make it reasonably thread-safe. It is documented which call is called by which thread.
     """
+    __slots__ = ()
 
     @abstractmethod
     def checkpoint(self) -> None:

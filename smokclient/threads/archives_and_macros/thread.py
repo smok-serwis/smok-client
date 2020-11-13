@@ -18,8 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class ArchivingAndMacroThread(IntervalTerminableThread):
-    def __init__(self, device: 'SMOKDevice', order_queue: PeekableQueue):
+    def __init__(self, device: 'SMOKDevice', order_queue: PeekableQueue, dont_do_macros,
+                 dont_do_archives):
         super().__init__(60)
+        self.dont_do_macros = dont_do_macros
+        self.dont_do_archives = dont_do_archives
         self.device = device
         self.order_queue = order_queue
         self.archives_updated_on = 0  # type: int
@@ -60,27 +63,29 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         self.archives_updated_on = time.time()
 
     def loop(self) -> None:
-        if self.should_update_macros():
-            self.update_macros()
+        if not self.dont_do_macros:
+            if self.should_update_macros():
+                self.update_macros()
 
-        if self.should_update_archives():
-            self.update_archives()
+            mdb = self.device.macros_database
 
-        mdb = self.device.macros_database
+            for macro in mdb.get_macros():
+                if macro.should_execute():
+                    macro.execute()
 
-        for macro in mdb.get_macros():
-            if macro.should_execute():
-                macro.execute()
+            for macro_id, ts in mdb.get_done_macros():
+                logger.warning(f'Syncing {macro_id} {ts}')
+                with silence_excs(ResponseError):
+                    self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
+                    mdb.notify_macro_synced(macro_id, ts)
 
-        for macro_id, ts in mdb.get_done_macros():
-            logger.warning(f'Syncing {macro_id} {ts}')
-            with silence_excs(ResponseError):
-                self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
-                mdb.notify_macro_synced(macro_id, ts)
+        if not self.dont_do_archives:
+            if self.should_update_archives():
+                self.update_archives()
 
-        sec = Section()
-        for a_entry in self.archiving_entries:
-            if a_entry.should_update():
-                sec += a_entry.update()
-        if sec:
-            self.order_queue.put(sec)
+            sec = Section()
+            for a_entry in self.archiving_entries:
+                if a_entry.should_update():
+                    sec += a_entry.update()
+            if sec:
+                self.order_queue.put(sec)

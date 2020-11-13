@@ -5,6 +5,8 @@ from smokclient.macro import Macro
 
 
 class BaseMacroDatabase(metaclass=ABCMeta):
+    __slots__ = ()
+
     @abstractmethod
     def get_done_macros(self) -> tp.Iterator[tp.Tuple[str, int]]:
         """

@@ -15,7 +15,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.5
 
-* _TBA_
+* added an option not to start macros and archives
+* added __slots__ to BaseDatabases
 
 ### v0.0.4
 
