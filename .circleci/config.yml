@@ -12,7 +12,9 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: python setup.py test
+          command: pip install -r mock coverage nose2
+      - run:
+          command: coverage run -m nose2
           name: Test
 
 workflows:
