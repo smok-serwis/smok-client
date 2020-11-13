@@ -5,6 +5,7 @@ import tempfile
 import threading
 import time
 import typing as tp
+import weakref
 from abc import ABCMeta
 
 import pytz
@@ -57,14 +58,15 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     def provide_unknown_pathpoint(self, name: str,
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         """
-        Override this class to generate pathpoints that are referred to by commands, but not defined
-        yet.
+        Override this method to generate pathpoints that are referred to by incoming commands,
+        but not defined yet.
 
         The default implementation always raises `KeyError`.
 
         .. note:: this can safely raise `KeyError` upon encountering a predicate that is manually
-                  defined and registered via :meth:`_register_pathpoint`
+                  defined and registered via :class:`~smokclient.pathpoint.Pathpoint`
 
+        :return: a Pathpoint instance corresponding to what was ordered
         :raises KeyError: pathpoint could not be generated
         """
         raise KeyError()
@@ -167,7 +169,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if path in self.pathpoints:
             return self.pathpoints[path]
         pp = self.provide_unknown_pathpoint(path, storage_level)  # raises KeyError
-        self._register_pathpoint(pp)
+        self.register_pathpoint(pp)
         return pp
 
     def register_statistic(self, stat: tp.Type[BaseStatistic]):
@@ -182,8 +184,18 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
         self.predicate_classes[stat.statistic_name] = stat
 
-    def _register_pathpoint(self, pp: Pathpoint) -> None:
+    def register_pathpoint(self, pp: Pathpoint) -> None:
+        """
+        Register a pathpoint for usage with this SMOKDevice.
+
+        Normally, you shouldn't need to use it, as the :class:`~smokclient.pathpoint.Pathpoint`
+        constructor does that for you. However, if you provide it's `SMOKDevice` parameter as None,
+        this call is still required
+
+        :param pp: pathpoint to register
+        """
         if pp.name not in self.pathpoints:
+            pp.device = weakref.proxy(self)
             self.pathpoints[pp.name] = pp
 
     def close(self) -> None:
