@@ -13,6 +13,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.0.6
+
+* _TBA_
+
 ### v0.0.5
 
 * added an option not to start macros and archives
