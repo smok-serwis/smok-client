@@ -58,7 +58,7 @@ First of all, you need to subclass SMOKDevice and define the method
 
     sd = MyDevice()
     pp = MyModbusRegister('W1', StorageLevel.TREND)
-    sd._register_pathpoint(pp)
+    sd.register_pathpoint(pp)
 
 A very important method of your custom class is
 :meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`. When smok-client encounters
@@ -159,6 +159,8 @@ Other values and exceptions
 .. autoclass:: smokclient.exceptions.SInvalidCredentials
 
 .. autoclass:: smokclient.exception.ResponseFailedError
+
+.. autoclass:: smokclient.exception.InstanceNotReady
 
 .. autodata:: smokclient.pathpoint.PathpointValueType
 

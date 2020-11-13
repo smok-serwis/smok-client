@@ -3,13 +3,23 @@ import weakref
 from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
+from satella.coding import wraps
 from satella.coding.structures import ReprableMixin, OmniHashableMixin
 from satella.coding.typing import Number
 
 from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
 from .typing import PathpointValueType, ValueOrExcept
 from ..basics import StorageLevel
-from ..exceptions import OperationFailedError
+from ..exceptions import OperationFailedError, InstanceNotReady
+
+
+def must_have_device(fun):
+    @wraps(fun)
+    def inner(self, *args, **kwargs):
+        if not self.device:
+            raise InstanceNotReady('You need to attach this pathpoint to a device first')
+        return fun(self, *args, **kwargs)
+    return inner
 
 
 class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
@@ -18,6 +28,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
 
     Note that pathpoint is registered in the device as part of it's creation.
 
+    :param device: device that this pathpoint should be attached to. None is also a valid option.
     :param name: pathpoint name.
     :param storage_level: storage level for this pathpoint
 
@@ -31,7 +42,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device')
 
-    def __init__(self, device: 'SMOKDevice', name: str,
+    def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND):
         self.device = weakref.proxy(device)
         self.name = name
@@ -39,8 +50,10 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         self.current_value = None  # type: ValueOrExcept
         self.current_timestamp = None  # type: Number
         # noinspection PyProtectedMember
-        device._register_pathpoint(self)
+        if device is not None:
+            device.register_pathpoint(self)
 
+    @must_have_device
     def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
         """
         May be called asynchronously by user threads to asynchronously update a pathpoint
@@ -96,6 +109,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         """
         self.storage_level = new_storage_level
 
+    @must_have_device
     def get(self) -> tp.Tuple[Number, PathpointValueType]:
         """
         Return the current pathpoint value

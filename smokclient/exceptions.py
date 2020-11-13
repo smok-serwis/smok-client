@@ -4,7 +4,7 @@ import typing as tp
 
 __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
            'OperationFailedReason', 'OperationFailedError',
-           'NotReadedError']
+           'NotReadedError', 'InstanceNotReady']
 
 from satella.coding.typing import Number
 
@@ -16,6 +16,12 @@ class SMOKClientError(Exception):
 class InvalidCredentials(SMOKClientError):
     """
     The certificate files that you provided were invalid
+    """
+
+
+class InstanceNotReady(SMOKClientError):
+    """
+    Some operation must be done before you can call that method
     """
 
 
