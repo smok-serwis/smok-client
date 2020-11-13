@@ -1,5 +1,6 @@
-SMOK-Client
-===========
+
+# SMOK-Client
+
 [![PyPI](https://img.shields.io/pypi/pyversions/smok-client.svg)](https://pypi.python.org/pypi/smok-client)
 [![PyPI version](https://badge.fury.io/py/smok-client.svg)](https://badge.fury.io/py/smok-client)
 [![PyPI](https://img.shields.io/pypi/implementation/smok-client.svg)](https://pypi.python.org/pypi/smok-client)
@@ -9,13 +10,13 @@ SMOK-Client
 `smok-client` is a definitive library to write programs that behave as SMOK devices.
 It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
-# Change log
+## Change log
 
-## v0.0.4
+### v0.0.4
 
 * _TBA_
 
-## v0.0.3
+### v0.0.3
 
 * added pluggable pathpoint value databases
 * `Section` is now a `Future`

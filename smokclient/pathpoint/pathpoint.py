@@ -61,8 +61,8 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
 
         The future should raise OperationFailedError when the read fails.
 
-        .. note:: :attr:`current_timestamp` and :attr:`current_value` will be automatically updated, so
-                  there's no need for the future to do that.
+        .. note:: :attr:`current_timestamp` and :attr:`current_value` will be automatically
+                  updated, so there's no need for the future to do that.
 
         :param advise: advise level of this read operation
         :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
