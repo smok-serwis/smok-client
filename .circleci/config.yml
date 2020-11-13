@@ -13,8 +13,19 @@ jobs:
       - python/save-cache
       - run:
           command: pip install -r mock coverage nose2
+          name: Install necessary modules
       - run:
-          command: coverage run -m nose2
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+          name: Set up Code Climate
+      - run:
+          command: |
+            ./cc-test-reporter before-build
+            coverage run -m nose2
+            ./cc-test-reporter format-coverage -t coverage.py -o ./.coverage
+            ./cc-test-reporter upload-coverage
+            ./cc-test-reporter after-build --exit-code $?
           name: Test
 
 workflows:

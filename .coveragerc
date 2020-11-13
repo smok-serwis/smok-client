@@ -1,0 +1,15 @@
+[run]
+branch=1
+source=
+  smokclient
+concurrency=thread
+omit=
+  tests/*
+  .eggs/*
+  setup.py
+  smokclient/__init__.py
+
+[report]
+include=
+    smokclient/*
+
