@@ -20,7 +20,8 @@ def ked(real, ref):
     real and ref are respective
     returns zero if referential value is below 20
     """
-    if real < 20: return 0
+    if real < 20:
+        return 0
     return d(real, ref)
 
 
@@ -33,7 +34,10 @@ def huba505(voltage):
     3.5V    -   4 bar
     """
     pressure = 4 * (voltage - 0.5) / 3
-    return pressure if pressure > 0 else 0
+    if pressure > 0:
+        return pressure
+    else:
+        return 0
 
 
 KTY81 = [
@@ -64,19 +68,19 @@ def kty81(r):
     if r >= 3276:
         return 94.4
 
-    ptemp, presist = KTY81[0]
+    p_temp, p_resistance = KTY81[0]
 
-    for rtemp, rresist in KTY81[1:]:
-        if presist < r < rresist:
-            return (rtemp - ptemp) * (r - presist) / (rresist - presist) + ptemp
+    for r_temp, r_resistance in KTY81[1:]:
+        if p_resistance < r < r_resistance:
+            return (r_temp - p_temp) * (r - p_resistance) / (r_resistance - p_resistance) + p_temp
 
-        ptemp, presist = rtemp, rresist
+        p_temp, p_resistance = r_temp, r_resistance
 
 
 PT100 = [80.31, 82.29, 84.27, 86.25, 88.22, 90.19, 92.16, 94.12, 96.09, 98.04,
-             100.0, 101.95, 103.9, 105.85, 107.79, 109.73, 111.67, 113.61, 115.54, 117.47,
-             119.4, 121.32, 123.24, 125.16, 127.07, 128.98, 130.89, 132.8, 134.7, 136.6,
-             138.5, 140.39, 142.29, 157.31, 175.84, 195.84]
+         100.0, 101.95, 103.9, 105.85, 107.79, 109.73, 111.67, 113.61, 115.54, 117.47,
+         119.4, 121.32, 123.24, 125.16, 127.07, 128.98, 130.89, 132.8, 134.7, 136.6,
+         138.5, 140.39, 142.29, 157.31, 175.84, 195.84]
 
 
 def pt1000(r):

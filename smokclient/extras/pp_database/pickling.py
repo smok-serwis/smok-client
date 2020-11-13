@@ -36,7 +36,7 @@ class PicklingPathpointDatabase(InMemoryPathpointDatabase):
         super().on_new_data(pathpoint, timestamp, value_or_exception)
 
     def get_current_value(self, pathpoint: str) -> tp.Tuple[Number, PathpointValueType]:
-        if not pathpoint in self.last_pathpoint_value:
+        if pathpoint not in self.last_pathpoint_value:
             raise NotReadedError()
         val = self.last_pathpoint_value[pathpoint]
         if isinstance(val[1], OperationFailedError):
