@@ -72,6 +72,8 @@ if __name__ == '__main__':
     sd.register_statistic(CustomPredicate)
     sd.wait_until_synced()
     sen = sd.get_sensor('val')
+    sd.get_slaves()[0].linkstate = {'status': True}
+    assert sd.get_slaves()[0].linkstate == {'status': True}, 'Invalid linkstate!'
     while True:
         with silence_excs(NotReadedError):
             time.sleep(10)

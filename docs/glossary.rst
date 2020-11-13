@@ -22,3 +22,11 @@ Glossary
 
     Predicate
       An instance of a statistic, identified by it's predicate ID.
+
+    Slave device
+      A slave device is a device that works under it's :term:`master controller`. Meaning
+      it writes pathpoint values with the device ID of it's master controller.
+
+    Master controller
+      A single device, that is seen by the user as whole.
+      Composed at least of a single :term:`slave`

@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.4
 
-* _TBA_
+* added setting and reading linkstate and instrumentation metadata for slave devices
 
 ### v0.0.3
 

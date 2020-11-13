@@ -6,6 +6,7 @@ Welcome to SMOK Client's documentation!
    :caption: Contents:
 
    how-to-start
+   slave_devices
    predicates
    extras
    glossary

@@ -14,6 +14,7 @@ from satella.coding.structures import DirtyDict
 
 from .api import RequestsAPI
 from .certificate import get_device_info
+from .slave import SlaveDevice
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
 from ..extras.pp_database.base import BasePathpointDatabase
@@ -88,8 +89,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self._statistics_updated = False
         self.pathpoints = DirtyDict()  # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
-        self.__linkstate = None
-        self.__instrumentation = None
         if not isinstance(cert, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as cert_file:
                 cert_file.write(cert.read())
@@ -181,52 +180,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if pp.name not in self.pathpoints:
             self.pathpoints[pp.name] = pp
 
-    @property
-    def linkstate(self) -> str:
-        """
-        :returns: current link state
-        """
-        if self.__linkstate is None:
-            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id,))
-            self.__linkstate = resp['linkstate']
-            self.__instrumentation = resp['instrumentation']
-        return self._linkstate
-
-    @linkstate.setter
-    def linkstate(self, v: str) -> None:
-        """
-        Set a new link state
-
-        :param v: new link state
-        """
-        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id,), json={
-            'linkstate': v
-        })
-        self.__linkstate = v
-
-    @property
-    def instrumentation(self) -> str:
-        """
-        :return: current instrumentation
-        """
-        if self.__instrumentation is None:
-            resp = self.client.get('/v1/device/instrumentation/%s' % (self.device_id,))
-            self.__linkstate = resp['linkstate']
-            self.__instrumentation = resp['instrumentation']
-        return self.__instrumentation
-
-    @instrumentation.setter
-    def instrumentation(self, v: str) -> None:
-        """
-        Set a new instrumentation
-
-        :param v: new value for the instrumentation
-        """
-        self.api.patch('/v1/device/instrumentation/%s' % (self.device_id,), json={
-            'instrumentation': v
-        })
-        self.__instrumentation = v
-
     def close(self) -> None:
         """
         Close the connection, clean up the resources.
@@ -244,6 +197,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.executor.join()
             self.getter.join()
             self.arch_and_macros.join()
+
+    @for_argument(returns=list)
+    def get_slaves(self) -> tp.List[SlaveDevice]:
+        slaves = self.get_device_info().slaves
+        for slave in slaves:
+            yield SlaveDevice(self, slave)
 
     def get_device_info(self) -> DeviceInfo:
         """

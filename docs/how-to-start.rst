@@ -110,8 +110,8 @@ Threads
 Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
 threads. It will be documented which thread calls your callback.
 
-Class droplist
-==============
+List of basic classes
+=====================
 
 SMOKDevice
 ----------
@@ -136,16 +136,14 @@ Enums
 .. autoclass:: smokclient.basics.Environment
     :members:
 
+Other values and exceptions
+---------------------------
 
-DTO's
------
-.. autoclass:: smokclient.basics.DeviceInfo
-    :members:
+.. autoclass:: smokclient.exceptions.SMOKClientError
 
+.. autoclass:: smokclient.exceptions.SInvalidCredentials
 
-.. autoclass:: smokclient.basics.SlaveDeviceInfo
-    :members:
-
+.. autoclass:: smokclient.exception.ResponseFailedError
 
 .. autodata:: smokclient.pathpoint.PathpointValueType
 
