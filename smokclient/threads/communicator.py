@@ -56,7 +56,7 @@ class CommunicatorThread(TerminableThread):
 
     @retry(3, ResponseError)
     def sync_events(self):
-        evt_to_sync = self.device.evt_database.get_data_to_sync()  # type: BaseEventSynchronization
+        evt_to_sync = self.device.evt_database.get_events_to_sync()  # type: BaseEventSynchronization
         if evt_to_sync is None:
             return
         try:

@@ -33,7 +33,7 @@ class PicklingEventDatabase(InMemoryEventDatabase):
                 self.events, self.events_to_sync = pickle.load(f_in)
 
     @Monitor.synchronized
-    def get_data_to_sync(self) -> tp.Optional[PicklingEventSynchronization]:
+    def get_events_to_sync(self) -> tp.Optional[PicklingEventSynchronization]:
         if not self.events_to_sync:
             return None
         else:

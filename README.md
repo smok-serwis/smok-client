@@ -15,7 +15,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.6
 
-* _TBA_
+* renamed `BaseEventDatabase.get_data_to_sync` to
+`BaseEventDatabase.get_events_to_sync`
 
 ### v0.0.5
 

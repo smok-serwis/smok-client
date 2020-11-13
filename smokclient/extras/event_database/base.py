@@ -58,7 +58,7 @@ class BaseEventDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def get_data_to_sync(self) -> tp.Optional[BaseEventSynchronization]:
+    def get_events_to_sync(self) -> tp.Optional[BaseEventSynchronization]:
         """
         At most a single instance of BaseEventSynchronization will be alive at a time.
 

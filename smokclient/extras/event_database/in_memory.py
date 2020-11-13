@@ -45,7 +45,7 @@ class InMemoryEventDatabase(BaseEventDatabase, Monitor):
         self.events_to_sync.append(event)
 
     @Monitor.synchronized
-    def get_data_to_sync(self) -> tp.Optional[BaseEventSynchronization]:
+    def get_events_to_sync(self) -> tp.Optional[BaseEventSynchronization]:
         if not self.events_to_sync:
             return None
         else:
