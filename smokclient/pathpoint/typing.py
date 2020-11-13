@@ -40,14 +40,16 @@ def to_type(value: PathpointValueType, type_: PathpointType) -> PathpointValueTy
     :return: a coerced value
     """
     if type_ == PathpointType.B:
-        return bool(int(value))
+        v = bool(int(value))
     elif type_ == PathpointType.W:
-        return clip(int(value), 0, 65535)
+        v = clip(int(value), 0, 65535)
     elif type_ == PathpointType.w:
-        return clip(int(value), -32768, 32767)
+        v = clip(int(value), -32768, 32767)
     elif type_ in (PathpointType.f, PathpointType.d):
-        return float(value)
+        v = float(value)
     elif type_ == PathpointType.u:
-        return str(value)
+        v = str(value)
     else:
         raise ValueError('Invalid type given')
+    return v
+
