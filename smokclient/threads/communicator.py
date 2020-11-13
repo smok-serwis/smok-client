@@ -3,7 +3,7 @@ import queue
 import time
 import typing as tp
 
-from satella.coding import silence_excs, for_argument
+from satella.coding import silence_excs, for_argument, log_exceptions
 from satella.coding.concurrent import TerminableThread
 from satella.coding.decorators import retry
 from satella.coding.transforms import jsonify
@@ -12,6 +12,7 @@ from satella.time import measure
 
 from smokclient.basics import StorageLevel
 from smokclient.exceptions import ResponseError
+from smokclient.extras.event_database import BaseEventSynchronization
 from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import sections_from_list
 from smokclient.pathpoint.pathpoint import Pathpoint
@@ -50,7 +51,22 @@ class CommunicatorThread(TerminableThread):
 
     def tick_predicates(self):
         for predicate in self.device.predicates.values():
-            predicate.on_tick()
+            # noinspection PyProtectedMember
+            predicate._call_method('on_tick')
+
+    @retry(3, ResponseError)
+    def sync_events(self):
+        evt_to_sync = self.device.evt_database.get_data_to_sync()   # type: BaseEventSynchronization
+        if evt_to_sync is None:
+            return
+        try:
+            resp = self.device.api.post('/v1/device/alarms',
+                                        json=[evt.to_json() for evt in evt_to_sync.get_events()])
+            evt_to_sync.acknowledge(*(data['uuid'] for data in resp))
+        except ResponseError as e:
+            logger.error('Failure syncing events', exc_info=e)
+            evt_to_sync.negative_acknowledge()
+            raise
 
     @retry(3, ResponseError)
     def sync_predicates(self):
@@ -114,6 +130,7 @@ class CommunicatorThread(TerminableThread):
                 self.queue.put(section)
 
     @retry(3, ResponseError)
+    @log_exceptions(logger, logging.WARNING, 'Failed to sync data: {e}')
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
@@ -178,8 +195,12 @@ class CommunicatorThread(TerminableThread):
             # Tick the predicates
             self.tick_predicates()
 
+            # Sync the events
+            self.sync_events()
+
             # Checkpoint the DB
             self.device.pp_database.checkpoint()
+            self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
             with silence_excs(WouldWaitMore):

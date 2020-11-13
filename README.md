@@ -9,5 +9,13 @@ SMOK-Client
 `smok-client` is a definitive library to write programs that behave as SMOK devices.
 It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
+# Change log
+
+## v0.0.3
+
+* added pluggable pathpoint value databases
+* `Section` is now a `Future`
+* **bugfix**: timestamp from restored data would be needlessly bumped up
+* added option to create `Events`
 
 

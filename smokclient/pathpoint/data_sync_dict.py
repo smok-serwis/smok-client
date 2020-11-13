@@ -6,7 +6,7 @@ from satella.coding.concurrent import Condition
 from satella.coding.structures import DirtyDict
 
 from .typing import PathpointValueType
-from ..exceptions import OperationFailedError, OperationFailedReason
+from ..exceptions import OperationFailedError, OperationFailedReason, ResponseError
 
 
 class DataSyncDict(DirtyDict, Monitor):
@@ -39,7 +39,7 @@ class DataSyncDict(DirtyDict, Monitor):
                     val = OperationFailedError(OperationFailedReason(value['error_code']))
                 else:
                     val = value['value']
-                self.append(pp_name, value['timestamp'], val)
+                self.append(pp_name, value['timestamp'] / 1000, val)
 
     @Monitor.synchronized
     def to_json(self):

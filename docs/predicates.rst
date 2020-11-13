@@ -55,6 +55,28 @@ Let's see how a predicate is built:
 .. autoclass:: smokclient.predicate.BaseStatistic
     :members:
 
+.. autoclass:: smokclient.predicate.Event
+    :members:
+
+.. autoclass:: smokclient.predicate.Color
+    :members:
+
+Example:
+
+::
+    class MyStatistic(BaseStatistic):
+        statistic_name = 'my'
+
+        def on_tick(self):
+            sen = self.device.get_sensor('value')
+            if sen.get()[1] > 0 and self.state is None:
+                self.state = self.open_event('Hello world!', Color.RED)
+            elif self.state is not None and sen.get()[1] == 0:
+                self.close_event(self.state)
+                self.state = None
+
+    sd.register_statistic(MyStatistic)
+
 Silencing
 ---------
 
@@ -67,3 +89,37 @@ Following classes are given as arguments to your constructor:
 .. autoclass:: smokclient.predicate.DisabledTime
     :members:
 
+Opening, closing events and state
+---------------------------------
+
+Every predicate has a magic property of :attr:`~smokclient.predicate.BaseStatistic.state`.
+It will be restored between calls to :meth:`~smokclient.predicate.BaseStatistic.on_tick`
+and saved after it. You best store the :class:`~smokclient.predicate.Event` that you're created
+via :meth:`~smokclient.predicate.BaseStatistic.open_event`.
+
+You open new events via :meth:`~smokclient.predicate.BaseStatistic.open_event`
+and close them with :meth:`~smokclient.predicate.BaseStatistic.close_event`. Example code could look like:
+
+::
+    from satella.coding import silence_excs
+    from smokclient.predicate import BaseStatistic, Color, Event
+    from smokclient.exceptions import OperationFailedError
+
+    class CustomPredicate(BaseStatistic):
+        """
+        A predicate that watches for
+        """
+        statistic_name = 'test'
+
+        @silence_excs(KeyError, OperationFailedError)
+        def on_tick(self) -> None:
+            sensor = self.device.get_sensor('value')
+            self.device.execute(sensor.read())
+            ts, v = sensor.get()
+            if v == 10 and self.state is None:
+                self.state = self.open_event('Value is equal to 10', Color.RED)     # type: Event
+            elif v != 10 and self.state is not None:
+                self.close_event(self.state)
+                self.state = None
+
+    sd.register_statistic(CustomPredicate)

@@ -38,7 +38,8 @@ First of all, you need to subclass SMOKDevice and define the method
 
     class MyDevice(SMOKDevice):
         def __init__(self):
-            super().__init__('path to cert file', 'path to key file')
+            super().__init__('path to cert file', 'path to key file',
+                             'path to pickle for predicates')
 
     sd = MyDevice()
     pp = MyModbusRegister('W1', StorageLevel.TREND)
@@ -50,6 +51,9 @@ an unknown pathpoint (for example, an order for it was made) it tries to create 
 This method should provide this pathpoint. Note that it doesn't need to provide pathpoints
 that you will create and register manually. If a predicate cannot be found, it should raise
 `KeyError`.
+
+The pickle for predicates will be used for persisting the state of alarm detectors, aka
+:term:`predicate` .
 
 Note that first letter of the pathpoint defines it's type. Allowed are:
 

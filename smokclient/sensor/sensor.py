@@ -6,7 +6,7 @@ from satella.coding.typing import Number
 
 from smokclient.exceptions import NotReadedError
 from smokclient.pathpoint import AdviseLevel, PathpointValueType
-from smokclient.pathpoint.orders import Section
+from smokclient.pathpoint.orders import Section, ReadOrder
 from smokclient.sensor.reparse import reparse_to_native_components, parse
 from smokclient.sensor import reparse_funs
 from smokclient.sensor.types import NumericType, SensorValueType, get_type
@@ -77,7 +77,7 @@ class Sensor:
         return cur_ts, self.type.pathpoint_to_sensor(*(val[1] for val in vals))
 
     def read(self, advise: AdviseLevel = AdviseLevel.ADVISE) -> Section:
-        pass
+        return Section([ReadOrder(y, advise) for y in self._pathpoint_names])
 
     @classmethod
     def from_json(cls, device: 'SMOKDevice', x: dict) -> 'Sensor':

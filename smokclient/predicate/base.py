@@ -1,10 +1,13 @@
+import time
 import typing as tp
 import weakref
 import logging
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 
 from satella.coding.structures import OmniHashableMixin
 
+from smokclient.predicate.event import Color, Event
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +32,9 @@ class Time(OmniHashableMixin):
     def from_json(cls, dct: dict) -> 'Time':
         return Time(dct['day'], dct['hour'], dct['minute'])
 
+    def to_tuple(self) -> tp.Tuple[int, int, int]:
+        return self.day_of_week, self.hour, self.minute
+
 
 class DisabledTime(OmniHashableMixin):
     """
@@ -48,6 +54,15 @@ class DisabledTime(OmniHashableMixin):
     def from_json(cls, x: dict) -> 'DisabledTime':
         return DisabledTime(Time.from_json(x['start']), Time.from_json(x['stop']))
 
+    def is_in_time(self, time: datetime) -> bool:
+        """
+        Check whether provided time is inside the range of this silencing period.
+
+        :return: True if the time is inside
+        """
+        return self.start.to_tuple() <= (time.isoweekday(), time.hour, time.minute) \
+                <= self.stop.to_tuple()
+
 
 class BaseStatistic(metaclass=ABCMeta):
     """
@@ -58,17 +73,22 @@ class BaseStatistic(metaclass=ABCMeta):
     :ivar verbose_name: Human-readable name of this predicate
     :ivar silencing: periods during which the predicate shouldn't generate alerts
     :ivar configuration: a dictionary containing the predicate's configuration
+    :ivar group: notification group
+    :ivar state: state of the predicate, persisted between calls
     :cvar statistic_name: name of this statistic
     """
 
     def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str, silencing: tp.List[DisabledTime],
-                 configuration: tp.Optional[dict], statistic: tp.Optional[str] = None):
+                 configuration: tp.Optional[dict], statistic: tp.Optional[str] = None,
+                 group: str = 'B'):
         self.device = weakref.proxy(device)
         self.predicate_id = predicate_id
         self.verbose_name = verbose_name
         self.silencing = silencing
         self.configuration = configuration
         self.statistic = statistic
+        self.group = group
+        self.state = None
 
     @property
     @classmethod
@@ -76,11 +96,60 @@ class BaseStatistic(metaclass=ABCMeta):
     def statistic_name(cls) -> str:     #: obtain the :term:`statistic` name
         ...
 
+    @abstractmethod
     def on_tick(self) -> None:
         """
         Called about each 20 seconds by the communicator thread. This should commence any required
         analyses.
+
+        :attr:`state` is loaded before this call and persisted after it finishes
         """
+
+    def _call_method(self, method: str, *args, **kwargs):
+        """
+        Securely call a method of this object with provided arguments
+        """
+        try:
+            self.state = self.device.evt_database.get_cache(self.predicate_id)
+        except KeyError:
+            self.state = None
+        try:
+            getattr(self, method)(*args, **kwargs)
+        finally:
+            self.device.evt_database.set_cache(self.predicate_id, self.state)
+
+    def close_event(self, event: Event) -> None:
+        """
+        Close an event
+
+        :param event: event to close
+        """
+        if not event.is_closed():
+            event.ended_on = time.time()
+        self.device.evt_database.close_event(event)
+
+    def open_event(self, msg: str, color: Color) -> tp.Optional[Event]:
+        """
+        Open an event.
+
+        :param msg: extra message for the event
+        :param color: color of the event
+        :return: an Event if silencing is not in effect, else None
+        """
+        # Check the silencing rules
+        localtime = self.device.get_local_time()
+        for silencing_period in self.silencing:
+            if silencing_period.is_in_time(localtime):
+                return
+
+        message = self.verbose_name
+        if msg:
+            message = '%s: %s' % (message, msg)
+
+        evt = Event(None, None, None, color, False, self.statistic, self.group,
+                    message, None, {'predicate_id': self.predicate_id})
+        self.device.evt_database.add_event(evt)
+        return evt
 
     def on_configuration_changed(self, new_config: dict) -> None:
         """

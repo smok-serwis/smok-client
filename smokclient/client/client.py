@@ -15,11 +15,13 @@ from satella.coding.structures import DirtyDict
 from .api import RequestsAPI
 from ..basics import DeviceInfo, Environment, StorageLevel
 from .certificate import get_device_info
+from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
 from ..extras.pp_database.base import BasePathpointDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..pathpoint.data_sync_dict import DataSyncDict
 from ..pathpoint.orders import Section
 from ..predicate import BaseStatistic
+from ..predicate.event import Event
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
 from ..pathpoint import Pathpoint
@@ -36,7 +38,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
-    :param pp_database: custom pathpoint value databaes. Default value of None defaults to an
+    :param evt_database: custom event database. Providing a string defaults to path where predicate
+        data will be persisted.
+    :param pp_database: custom pathpoint value database. Default value of None defaults to an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
 
@@ -67,10 +71,15 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO],
+                 evt_database: tp.Union[str, BaseEventDatabase],
                  pp_database: tp.Optional[BasePathpointDatabase] = None,
                  dont_obtain_orders: bool = False):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
+        if isinstance(evt_database, str):
+            self.evt_database = InMemoryEventDatabase(evt_database)
+        else:
+            self.evt_database = evt_database
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
         self.predicates = {}        # type: tp.Dict[str, BaseStatistic]
@@ -121,6 +130,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if self._timezone is None:
             self.get_device_info()
         return pytz.timezone(self._timezone)
+
+    def get_open_event(self, event_id: str) -> Event:
+        """
+        :return: a particular event
+        :raises KeyError: event not found, or already closed
+        """
+        for event in self.evt_database.get_open_events():
+            if event.uuid_matches(event_id):
+                return event
+        raise KeyError()
 
     def execute(self, *secs: Section) -> None:
         """
@@ -243,7 +262,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: a datetime object having the local time for this device
         """
         # What is the time on target device?
-        tz = self._timezone
+        tz = self.timezone
 
         utc_time = pytz.UTC.localize(datetime.datetime.utcfromtimestamp(time.time()))
         local_time = utc_time.astimezone(tz)

@@ -10,7 +10,6 @@ from satella.coding.decorators import retry
 
 from smokclient.exceptions import ResponseError, NotReadedError
 from smokclient.extras.pp_database.base import BasePathpointDatabase
-from smokclient.pathpoint.data_sync_dict import DataSyncDict
 from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
 from smokclient.pathpoint.pathpoint import Pathpoint
 
@@ -89,6 +88,7 @@ class OrderExecutorThread(TerminableThread):
 
     @queue_get('queue', 5)
     def loop(self, section: Section):
+        print(section)
         if self.queue.qsize():
             sec = self.queue.peek()     # type: Section
             if section.is_joinable() and sec.is_joinable():
