@@ -27,7 +27,8 @@ from ..pathpoint.orders import Section
 from ..predicate import BaseStatistic
 from ..predicate.event import Event
 from ..sensor import Sensor, fqtsify
-from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread
+from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
+    LogPublisherThread
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):
@@ -139,9 +140,15 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                                                            dont_do_macros, dont_do_archives).start()
         else:
             self.arch_and_macros = None
-        self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
-        self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
-                                         dont_obtain_orders).start()
+
+        if not dont_obtain_orders:
+            self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
+            self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
+                                             dont_obtain_orders).start()
+        else:
+            self.executor = None
+            self.getter = None
+        self.log_publisher = LogPublisherThread(self).start()
         self.sensors = {}  # type: tp.Dict[str, Sensor]
 
     @property
@@ -216,16 +223,20 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         This may block for up to 10 seconds.
         """
         if super().close():
-            self.executor.terminate()
-            self.getter.terminate()
+            if self.executor is not None:
+                self.executor.terminate()
+                self.getter.terminate()
+            self.log_publisher.terminate()
             if self.arch_and_macros is not None:
                 self.arch_and_macros.terminate()
             if self.temp_file_for_cert:
                 os.unlink(self.temp_file_for_cert)
             if self.temp_file_for_key:
                 os.unlink(self.temp_file_for_key)
-            self.executor.join()
-            self.getter.join()
+            if self.executor is not None:
+                self.executor.join()
+                self.getter.join()
+            self.log_publisher.join()
             if self.arch_and_macros is not None:
                 self.arch_and_macros.join()
 

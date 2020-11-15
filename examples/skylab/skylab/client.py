@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 from concurrent.futures import Future
 
@@ -8,6 +9,7 @@ from satella.coding.concurrent import call_in_separate_thread
 from smokclient.basics import Environment, StorageLevel
 from smokclient.client import SMOKDevice
 from smokclient.exceptions import NotReadedError, OperationFailedError
+from smokclient.logging import SMOKLogHandler
 from smokclient.pathpoint.orders import AdviseLevel
 from smokclient.pathpoint.pathpoint import Pathpoint
 from smokclient.pathpoint.typing import PathpointValueType
@@ -63,7 +65,11 @@ class MyDevice(SMOKDevice):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('urllib3.connectionpool').setLevel(logging.WARN)
     sd = MyDevice()
+    handler = SMOKLogHandler(sd, 'client')
+    logging.getLogger().addHandler(handler)
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
     assert sd.device_id == 'skylab'
     assert sd.environment == Environment.STAGING
     print(repr(sd.get_device_info()))

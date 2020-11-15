@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.7
 
-* _TBA_
+* added logging
 
 ### v0.0.6
 

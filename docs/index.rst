@@ -9,6 +9,7 @@ Welcome to SMOK Client's documentation!
    slave_devices
    predicates
    extras
+   logging
    glossary
 
 SMOK devices are devices that consist of a bunch of pathpoints (eg. a single MODBUS register)

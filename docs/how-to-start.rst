@@ -121,6 +121,7 @@ Threads
 * `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived and
   about executing macros
 * `OrderExecutorThread` handles the loop executing orders.
+* `LogPublisherThread` handles publishing your logs to the SMOK server
 
 Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
 threads. It will be documented which thread calls your callback.
