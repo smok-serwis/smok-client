@@ -33,11 +33,10 @@ class SMOKLogHandler(Handler, Monitor):
 
         ts = time_us()
         with Monitor.acquire(self):
-            if self.last_timestamp_in_us is None:
-                self.last_timestamp_in_us = ts
-            elif self.last_timestamp_in_us >= ts:
-                ts = self.last_timestamp_in_us + 1
-                self.last_timestamp_in_us = ts
+            if self.last_timestamp_in_us is not None:
+                if ts <= self.last_timestamp_in_us:
+                    ts = self.last_timestamp_in_us + 1
+            self.last_timestamp_in_us = ts
 
         dct = {
             'service': self.service_name,
