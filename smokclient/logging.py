@@ -2,6 +2,7 @@ import base64
 import gzip
 from logging import LogRecord, Handler
 
+from satella.coding import Monitor
 from satella.coding.transforms import stringify
 from satella.instrumentation import Traceback, frame_from_traceback
 from satella.time import time_us
@@ -9,7 +10,7 @@ from satella.time import time_us
 __all__ = ['SMOKLogHandler']
 
 
-class SMOKLogHandler(Handler):
+class SMOKLogHandler(Handler, Monitor):
     """
     A logging handler for SMOK
 
@@ -18,6 +19,8 @@ class SMOKLogHandler(Handler):
     """
     def __init__(self, device: 'SMOKDevice', service_name: str):
         super().__init__()
+        Monitor.__init__(self)
+
         self.service_name = service_name
         self.device = device
         # So timestamps inserted will be monotonically increasing
@@ -29,11 +32,12 @@ class SMOKLogHandler(Handler):
             jsonified_extra.update(args=stringify(record.args))
 
         ts = time_us()
-        if self.last_timestamp_in_us is None:
-            self.last_timestamp_in_us = ts
-        elif self.last_timestamp_in_us >= ts:
-            ts = self.last_timestamp_in_us + 1
-            self.last_timestamp_in_us = ts
+        with Monitor.acquire(self):
+            if self.last_timestamp_in_us is None:
+                self.last_timestamp_in_us = ts
+            elif self.last_timestamp_in_us >= ts:
+                ts = self.last_timestamp_in_us + 1
+                self.last_timestamp_in_us = ts
 
         dct = {
             'service': self.service_name,
