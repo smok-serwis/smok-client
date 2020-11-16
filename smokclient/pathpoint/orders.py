@@ -43,6 +43,11 @@ class MessageOrder(Order, ReprableMixin):
 
 
 class WaitOrder(Order, ReprableMixin):
+    """
+    Order to wait a given amount of seconds
+
+    :param period: seconds to wait
+    """
     _REPR_FIELDS = ('period',)
     __slots__ = ('period',)
 
@@ -55,6 +60,15 @@ class WaitOrder(Order, ReprableMixin):
 
 
 class WriteOrder(Order, ReprableMixin):
+    """
+    Order to write a target value to target pathpoint
+
+    :param pathpoint: name of pathpoint to write to
+    :param value: value to write
+    :param advise: advise level
+    :param stale_after: optional timestamp in seconds, after which this write
+        will be discarded
+    """
     _REPR_FIELDS = ('pathpoint', 'value', 'advise', 'stale_after')
     __slots__ = ('pathpoint', 'value', 'advise', 'stale_after')
 
@@ -77,6 +91,12 @@ class WriteOrder(Order, ReprableMixin):
 
 
 class ReadOrder(Order, ReprableMixin):
+    """
+    An order to read a pathpoint
+
+    :param pathpoint: pathpoint to read
+    :param advise: advise level
+    """
     _REPR_FIELDS = ('pathpoint', 'advise')
 
     def __init__(self, pathpoint: str, advise: AdviseLevel):
@@ -114,6 +134,14 @@ class Disposition(enum.IntEnum):
 
 
 class Section(ReprableMixin):
+    """
+    A collection of orders.
+
+    :param orders: a list of orders
+    :param disposition: if Disposition.JOINABLE then this section can be joined with
+        other sections. If Disposition.CANNOT_JOIN then all orders from this section
+        will be executed before proceeding to next one
+    """
     _REPR_FIELDS = ('orders', 'disposition')
     __slots__ = ('orders', 'disposition', 'future')
 

@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.8
 
-* _TBA_
+* exposed orders
 
 ### v0.0.7
 
