@@ -3,6 +3,7 @@ import gzip
 from logging import LogRecord, Handler
 
 from satella.coding import Monitor
+from satella.coding.concurrent import SequentialIssuer
 from satella.coding.transforms import stringify
 from satella.instrumentation import Traceback, frame_from_traceback
 from satella.time import time_us
@@ -24,24 +25,19 @@ class SMOKLogHandler(Handler, Monitor):
         self.service_name = service_name
         self.device = device
         # So timestamps inserted will be monotonically increasing
-        self.last_timestamp_in_us = None
+        self.timestamper = SequentialIssuer(time_us())
 
     def record_to_json(self, record: LogRecord):
         jsonified_extra = {}
         if record.args:
             jsonified_extra.update(args=stringify(record.args))
 
-        ts = time_us()
-        with Monitor.acquire(self):
-            if self.last_timestamp_in_us is not None:
-                if ts <= self.last_timestamp_in_us:
-                    ts = self.last_timestamp_in_us + 1
-            self.last_timestamp_in_us = ts
+        ts = self.timestamper.no_less_than(time_us())
 
         dct = {
             'service': self.service_name,
             'when': ts,
-            'message': f'[{record.name},{record.thread}] [{record.pathname}:{record.lineno}:] {record.msg}',
+            'message': f'[{record.name},{record.thread}] [{record.pathname}:{record.lineno}] {record.msg}',
             'level': record.levelno,
         }
         if jsonified_extra:
