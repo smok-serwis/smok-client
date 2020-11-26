@@ -13,6 +13,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.0.9
+
+* _TBA_v
+
 ### v0.0.8
 
 * added support for plain metadata
