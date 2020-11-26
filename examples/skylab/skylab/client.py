@@ -77,6 +77,10 @@ if __name__ == '__main__':
     a = PP(sd, 'W2')
     sd.register_statistic(CustomPredicate)
     sd.wait_until_synced()
+    n_tn_run = int(sd.metadata.get('n_th.run', '0'))
+    n_tn_run += 1
+    print('This is the %s-th run' % (n_tn_run, ))
+    sd.metadata['n_th.run'] = n_tn_run
     sen = sd.get_sensor('val')
     sd.get_slaves()[0].linkstate = {'status': True}
     assert sd.get_slaves()[0].linkstate == {'status': True}, 'Invalid linkstate!'

@@ -50,3 +50,8 @@ If you need quickly a pickling database, try
 .. autoclass:: smokclient.extras.PicklingMacroDatabase
     :members:
 
+Metadata store
+--------------
+
+.. autoclass:: smokclient.extras.BaseMetadataDatabase
+    :members:

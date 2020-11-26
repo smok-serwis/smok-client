@@ -79,6 +79,8 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
                     self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
                     mdb.notify_macro_synced(macro_id, ts)
 
+        self.device.metadata.try_update()
+
         if not self.dont_do_archives:
             if self.should_update_archives():
                 self.update_archives()

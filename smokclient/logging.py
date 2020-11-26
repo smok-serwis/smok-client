@@ -2,6 +2,7 @@ import base64
 import gzip
 from logging import LogRecord, Handler
 
+import ujson
 from satella.coding import Monitor
 from satella.coding.concurrent import SequentialIssuer
 from satella.coding.transforms import stringify
@@ -46,7 +47,7 @@ class SMOKLogHandler(Handler, Monitor):
         if record.exc_info:
             f = frame_from_traceback(record.exc_info[2])
             tb = Traceback(f)
-            tb_json = base64.b64encode(gzip.compress(tb.to_json().encode('utf-8'), 9)).decode('utf-8')
+            tb_json = base64.b64encode(gzip.compress(ujson.dumps(tb.to_json()).encode('utf-8'), 9)).decode('utf-8')
             dct.update(exception_text=tb.pretty_format(),
                        exception_traceback=tb_json)
 

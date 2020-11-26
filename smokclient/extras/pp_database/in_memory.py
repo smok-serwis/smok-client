@@ -10,6 +10,9 @@ from ...pathpoint import PathpointValueType
 
 
 class InMemoryDataToSynchronize(BaseDataToSynchronize):
+    def negative_acknowledge(self) -> None:
+        pass
+
     __slots__ = ('in_memory', 'data')
 
     def __init__(self, in_memory: 'InMemoryPathpointDatabase', data: tp.List):

@@ -9,16 +9,19 @@ from smokclient.pathpoint.typing import ValueOrExcept, PathpointValueType
 class BaseDataToSynchronize(metaclass=ABCMeta):
     __slots__ = ()
 
+    @abstractmethod
     def acknowledge(self) -> None:
         """
         Mark the data as successfully synchronized
         """
 
+    @abstractmethod
     def negative_acknowledge(self) -> None:
         """
         Mark the data as failed to synchronize
         """
 
+    @abstractmethod
     def to_json(self) -> tp.List:
         """
         Return a JSON structure that looks like this (specification expressed in OpenAPI 3.0 format)
@@ -41,7 +44,7 @@ class BaseDataToSynchronize(metaclass=ABCMeta):
                                 timestamp:
                                     type: integer
                                     format: int64
-                                    description: Timestamp in seconds
+                                    description: Timestamp in milliseconds
                                 error_code:
                                     type: string
                                     description: Reason of error code
@@ -85,7 +88,7 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         method :meth:`~smokclient.pathpoint.Pathpoint.set_new_value`.
 
         :param pathpoint: :term:`Native` pathpoint that has been written
-        :param timestamp: timestamp of the operation
+        :param timestamp: timestamp of the operation in milliseconds
         :param value_or_exception: a value of the pathpoint or an OperationFailedError instance
         """
 
@@ -109,8 +112,8 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         Called by user threads.
 
         :param pathpoint: name of the pathpoint
-        :param start: start of the period, in seconds since Epoch, or the absolute beginning if None
-        :param stop: stop of the period, in seconds since Epoch, or up to the latest data if None
+        :param start: start of the period, in milliseconds since Epoch, or the absolute beginning if None
+        :param stop: stop of the period, in milliseconds since Epoch, or up to the latest data if None
         :return: an iterator of two-tuple (timestamp, value of OperationReadError instance)
         """
 

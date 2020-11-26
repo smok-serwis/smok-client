@@ -20,8 +20,10 @@ from ..basics import DeviceInfo, Environment, StorageLevel
 from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
 from ..extras.macros_database import BaseMacroDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
+from ..extras.metadata_database import BaseMetadataDatabase, InMemoryMetadataDatabase
 from ..extras.pp_database.base import BasePathpointDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
+from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint
 from ..pathpoint.orders import Section
 from ..predicate import BaseStatistic
@@ -48,6 +50,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         in-memory implementation
     :param macro_database: custom macro database. Default value of None will result in an
         in-memory implementation
+    :param meta_database: custom meta database. Default value of None will result in an
+        in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
@@ -59,6 +63,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar environment: environment of this device
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
+    :ivar metadata: plain metadata for this device
+        (class :class:`smokclient.metadata.PlainMetadata`)
     """
 
     def provide_unknown_pathpoint(self, name: str,
@@ -87,6 +93,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  evt_database: tp.Union[str, BaseEventDatabase],
                  pp_database: tp.Optional[BasePathpointDatabase] = None,
                  macro_database: tp.Optional[BaseMacroDatabase] = None,
+                 meta_database: tp.Optional[BaseMetadataDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_archives: bool = False):
@@ -97,6 +104,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             self.evt_database = evt_database
         self.macros_database = macro_database or InMemoryMacroDatabase()
+        self.meta_database = meta_database or InMemoryMetadataDatabase()
+        self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
         self.predicates = {}  # type: tp.Dict[str, BaseStatistic]
@@ -150,6 +159,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
         self.sensors = {}  # type: tp.Dict[str, Sensor]
+
 
     @property
     def timezone(self) -> pytz.timezone:

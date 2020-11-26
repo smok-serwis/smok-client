@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.8
 
-* exposed orders
+* added support for plain metadata
 
 ### v0.0.7
 
