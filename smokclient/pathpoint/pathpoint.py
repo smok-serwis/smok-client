@@ -53,6 +53,21 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         if device is not None:
             device.register_pathpoint(self)
 
+    def get_archive(self,
+                    starting_at: int,
+                    stopping_at: tp.Optional[int] = None) -> tp.Iterator[tp.Tuple[int,
+                                                                                    PathpointValueType]]:
+        """
+        Get archive readings.
+
+        This will be readed entirely from the device's data, the server will not be queried
+
+        :param starting_at: timestamp of start, in milliseconds
+        :param stopping_at: timestamp of end, in milliseconds, or None for the end of the park
+        :return: an iterator of tuple (timestamp in milliseconds, pathpoint value)
+        """
+        yield from self.device.pp_database.get_archive_data(self.name, starting_at, stopping_at)
+
     @must_have_device
     def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
         """

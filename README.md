@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.10
 
-* _TBA_
+* added `Pathpoint.get_archive`
 
 ### v0.0.9
 

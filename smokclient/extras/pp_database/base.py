@@ -114,7 +114,7 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         :param pathpoint: name of the pathpoint
         :param start: start of the period, in milliseconds since Epoch, or the absolute beginning if None
         :param stop: stop of the period, in milliseconds since Epoch, or up to the latest data if None
-        :return: an iterator of two-tuple (timestamp, value of OperationReadError instance)
+        :return: an iterator of two-tuple (timestamp in milliseconds, value of OperationReadError instance)
         """
 
     @abstractmethod
