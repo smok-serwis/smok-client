@@ -157,7 +157,7 @@ Other values and exceptions
 
 .. autoclass:: smokclient.exceptions.SMOKClientError
 
-.. autoclass:: smokclient.exceptions.SInvalidCredentials
+.. autoclass:: smokclient.exceptions.InvalidCredentials
 
 .. autoclass:: smokclient.exception.ResponseFailedError
 

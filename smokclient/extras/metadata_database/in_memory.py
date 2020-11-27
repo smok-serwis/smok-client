@@ -37,7 +37,7 @@ class InMemoryMetadataDatabase(BaseMetadataDatabase):
 
     def get_all_plain(self) -> tp.Iterator[tp.Tuple[str, str, float]]:
         for key, row in self.db_plain.items():
-            yield key, *row
+            yield (key, *row)
 
     def put_set(self, key: str, value: tp.Set[str], timestamp: tp.Optional[float] = None) -> None:
         self.db_set[key] = value, timestamp or time.time()
@@ -53,5 +53,5 @@ class InMemoryMetadataDatabase(BaseMetadataDatabase):
 
     def get_all_set(self) -> tp.Iterator[tp.Tuple[str, tp.Set[str], float]]:
         for key, row in self.db_set.items():
-            yield key, *row
+            yield (key, *row)
 
