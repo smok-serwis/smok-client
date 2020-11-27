@@ -22,6 +22,9 @@ What `smok-client` does for you is:
 
 * Automate pathpoint management
 * Client-side archiving and macro execution
+* Ability to create events locally and later sync them with server.
+
+Generally `smok-client` is fully prepared to work offline.
 
 
 Indices and tables

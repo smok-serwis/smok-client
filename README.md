@@ -15,7 +15,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.9
 
-* _TBA_v
+* added `PicklingMetadataDatabase`
 
 ### v0.0.8
 

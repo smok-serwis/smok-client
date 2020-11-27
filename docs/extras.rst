@@ -55,3 +55,8 @@ Metadata store
 
 .. autoclass:: smokclient.extras.BaseMetadataDatabase
     :members:
+
+If you need quickly a pickling database, try
+
+.. autoclass:: smokclient.extras.PicklingMetadataDatabase
+    :members:
