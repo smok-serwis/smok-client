@@ -62,6 +62,9 @@ class MyDevice(SMOKDevice):
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         return PP(self, name, storage_level)
 
+    def sync_sections(self):
+        print('Sections synchronized')
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

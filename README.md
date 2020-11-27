@@ -16,6 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 ### v0.0.9
 
 * added `PicklingMetadataDatabase`
+* added `SMOKDevice.sync_sections`
 
 ### v0.0.8
 

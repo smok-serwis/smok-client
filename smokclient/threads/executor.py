@@ -10,7 +10,7 @@ from satella.coding.decorators import retry
 
 from smokclient.exceptions import ResponseError, NotReadedError
 from smokclient.extras.pp_database.base import BasePathpointDatabase
-from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder
+from smokclient.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder, Disposition
 from smokclient.pathpoint.pathpoint import Pathpoint
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,11 @@ class OrderExecutorThread(TerminableThread):
         self.data_to_sync = data_to_sync
 
     def execute_a_section(self, section: Section) -> None:
+
+        # Do we need to sync all sections?
+        if section.disposition == Disposition.CANNOT_JOIN:
+            self.device.sync_sections()
+
         if not section.future.set_running_or_notify_cancel():
             return  # Section cancelled
 
@@ -90,8 +95,8 @@ class OrderExecutorThread(TerminableThread):
     def loop(self, section: Section):
         print(section)
         if self.queue.qsize():
-            sec = self.queue.peek()  # type: Section
-            if section.is_joinable() and sec.is_joinable():
+            next_section = self.queue.peek()  # type: Section
+            if section.is_joinable() and next_section.is_joinable():
                 section += self.queue.get()
 
         self.execute_a_section(section)

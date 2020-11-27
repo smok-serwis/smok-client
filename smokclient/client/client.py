@@ -83,6 +83,19 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         raise KeyError()
 
+    def sync_sections(self):
+        """
+        A CANNOT_JOIN section is about to be executed.
+
+        This needs to block until all orders issued up to this point are finished.
+
+        Called by the order executor thread, that's why it can safely block.
+
+        Sections should be synchronized in bounded time.
+
+        Override this method. Default does nothing.
+        """
+
     def wait_until_synced(self) -> None:
         """Block until everything's synchronized with the server"""
         self.ready_lock.acquire()
