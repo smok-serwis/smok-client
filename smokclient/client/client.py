@@ -108,6 +108,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         If this is not overloaded, standard executor logic will be applied.
 
+        Called by the order executor thread.
+
         :param section: section to execute
         """
 
