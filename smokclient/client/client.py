@@ -102,6 +102,15 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.ready_lock.acquire()
         self.ready_lock.release()
 
+    def execute_section(self, section: Section) -> None:
+        """
+        Overload to implement custom section execution.
+
+        If this is not overloaded, standard executor logic will be applied.
+
+        :param section: section to execute
+        """
+
     def __init__(self, cert: tp.Union[str, io.StringIO],
                  priv_key: tp.Union[str, io.StringIO],
                  evt_database: tp.Union[str, BaseEventDatabase],

@@ -46,50 +46,54 @@ class OrderExecutorThread(TerminableThread):
         self.data_to_sync = data_to_sync
 
     def execute_a_section(self, section: Section) -> None:
+        from smokclient.client import SMOKDevice
 
-        # Do we need to sync all sections?
-        if section.disposition == Disposition.CANNOT_JOIN:
-            self.device.sync_sections()
+        if self.device.execute_section is SMOKDevice.execute_section:
+            # Do we need to sync all sections?
+            if section.disposition == Disposition.CANNOT_JOIN:
+                self.device.sync_sections()
 
-        if not section.future.set_running_or_notify_cancel():
-            return  # Section cancelled
+            if not section.future.set_running_or_notify_cancel():
+                return  # Section cancelled
 
-        for order in section.orders:
-            if isinstance(order, (WriteOrder, ReadOrder)):
-                try:
-                    pathpoint = self.device.get_pathpoint(order.pathpoint)
-                except KeyError:
-                    logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint,))
-                    continue
-
-                if isinstance(order, WriteOrder):
-                    if not order.is_valid():
+            for order in section.orders:
+                if isinstance(order, (WriteOrder, ReadOrder)):
+                    try:
+                        pathpoint = self.device.get_pathpoint(order.pathpoint)
+                    except KeyError:
+                        logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint,))
                         continue
-                    fut = pathpoint.on_write(order.value, order.advise)
-                elif isinstance(order, ReadOrder):
-                    fut = pathpoint.on_read(order.advise)  # type: Future
-                    fut.add_done_callback(on_read_completed_factory(self, pathpoint))
 
-            elif isinstance(order, MessageOrder):
+                    if isinstance(order, WriteOrder):
+                        if not order.is_valid():
+                            continue
+                        fut = pathpoint.on_write(order.value, order.advise)
+                    elif isinstance(order, ReadOrder):
+                        fut = pathpoint.on_read(order.advise)  # type: Future
+                        fut.add_done_callback(on_read_completed_factory(self, pathpoint))
 
-                @call_in_separate_thread()
-                @retry(6, ResponseError)
-                def execute_a_message(uuid: str) -> Future:
-                    self.device.api.post('/v1/device/orders/message/' + uuid)
+                elif isinstance(order, MessageOrder):
 
-                fut = execute_a_message(order.uuid)
-            else:
-                logger.warning('Unknown order type %s' % (order,))
-                continue
-            self.futures_to_complete.append(fut)
+                    @call_in_separate_thread()
+                    @retry(6, ResponseError)
+                    def execute_a_message(uuid: str) -> Future:
+                        self.device.api.post('/v1/device/orders/message/' + uuid)
 
-        time_to_wait = section.max_wait()
-        if time_to_wait is not None:
-            self.safe_sleep(time_to_wait)
+                    fut = execute_a_message(order.uuid)
+                else:
+                    logger.warning('Unknown order type %s' % (order,))
+                    continue
+                self.futures_to_complete.append(fut)
 
-        while self.futures_to_complete and not self.terminating:
-            self.futures_to_complete = list(wait(self.futures_to_complete, 5)[1])
-        section.future.set_result(None)
+            time_to_wait = section.max_wait()
+            if time_to_wait is not None:
+                self.safe_sleep(time_to_wait)
+
+            while self.futures_to_complete and not self.terminating:
+                self.futures_to_complete = list(wait(self.futures_to_complete, 5)[1])
+            section.future.set_result(None)
+        else:
+            self.device.execute_section(section)
 
     @queue_get('queue', 5)
     def loop(self, section: Section):

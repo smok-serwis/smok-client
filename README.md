@@ -16,6 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 ### v0.0.10
 
 * added `Pathpoint.get_archive`
+* added custom `SMOKDevice.execute_section`
 
 ### v0.0.9
 
