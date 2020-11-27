@@ -58,6 +58,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     If both dont_do_macros and dont_do_archives are True, the archiving & macro thread
     won't be started.
+    If dont_obtain_orders is True, then order executor and order getter threads won't be started.
 
     :ivar device_id: device ID of this device
     :ivar environment: environment of this device
