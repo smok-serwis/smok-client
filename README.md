@@ -17,6 +17,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * added `PicklingMetadataDatabase`
 * added `SMOKDevice.sync_sections`
+* added `SMOKDevice.open_event` and `SMOKDevice.close_event`
+    and `SMOKDevice.get_all_open_events`
 
 ### v0.0.8
 

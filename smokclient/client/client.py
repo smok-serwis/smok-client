@@ -5,6 +5,7 @@ import tempfile
 import threading
 import time
 import typing as tp
+import uuid
 import weakref
 from abc import ABCMeta
 
@@ -26,8 +27,7 @@ from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint
 from ..pathpoint.orders import Section
-from ..predicate import BaseStatistic
-from ..predicate.event import Event
+from ..predicate import BaseStatistic, Event, Color
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
@@ -183,6 +183,15 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.get_device_info()
         return pytz.timezone(self._timezone)
 
+    def close_event(self, event: Event) -> None:
+        """
+            Close the provided event
+
+        :param event: event to close
+        """
+        assert not event.is_closed()
+        self.evt_database.close_event(event)
+
     def get_open_event(self, event_id: str) -> Event:
         """
         Return a particular opened event
@@ -196,6 +205,24 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             if event.uuid_matches(event_id):
                 return event
         raise KeyError()
+
+    def get_all_open_events(self) -> tp.Iterator[Event]:
+        """
+        Get all open events
+        """
+        return self.evt_database.get_open_events()
+
+    def open_event(self, started_on: int, ended_on: tp.Optional[int],
+                   color: Color, is_point: bool, token: str, group: str, message: str,
+                   metadata: tp.Dict[str, str]) -> Event:
+        """
+        Create a new event
+        """
+        evt_uuid = uuid.uuid4().hex
+        event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
+                      None, metadata)
+        self.evt_database.add_event(event)
+        return event
 
     def execute(self, *secs: Section) -> None:
         """
