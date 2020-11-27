@@ -40,7 +40,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     You should subclass it, to provide your own device.
 
     Note that instantiating this object spawns two non-daemon thread. This object must be
-    close()d before termination (or __del__eted).
+    close()d before termination (or garbage collected).
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
@@ -173,17 +173,23 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.log_publisher = LogPublisherThread(self).start()
         self.sensors = {}  # type: tp.Dict[str, Sensor]
 
-
     @property
     def timezone(self) -> pytz.timezone:
+        """
+        :return: the timezone this device is in
+        """
         if self._timezone is None:
             self.get_device_info()
         return pytz.timezone(self._timezone)
 
     def get_open_event(self, event_id: str) -> Event:
         """
+        Return a particular opened event
+
+        :param event_id: opened event UUID
         :return: a particular event
         :raises KeyError: event not found, or already closed
+        :rtype: Event
         """
         for event in self.evt_database.get_open_events():
             if event.uuid_matches(event_id):
@@ -204,6 +210,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Obtain a pathpoint. Creates one and registers it if not available.
 
+        :param path: path of the pathpoint
+        :param storage_level: target storage level
         :return: a pathpoint having provided name
         :raises KeyError: pathpoint not available
         """
@@ -213,7 +221,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.register_pathpoint(pp)
         return pp
 
-    def register_statistic(self, stat: tp.Type[BaseStatistic]):
+    def register_statistic(self, stat: tp.Type[BaseStatistic]) -> None:
         """
         Register a new statistic.
 
@@ -265,6 +273,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     @for_argument(returns=list)
     def get_slaves(self) -> tp.List[SlaveDevice]:
+        """
+        Return information about slave devices
+
+        :return: a list of slave devices
+        :raises ResponseError: server responded (or not) with an invalid message
+        """
         slaves = self.get_device_info().slaves
         for slave in slaves:
             yield SlaveDevice(self, slave)
@@ -274,7 +288,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Obtain information about the device.
 
         :return: current device information
-        :raises ResponseError: server responded with an invalid message
+        :raises ResponseError: server responded (or not) with an invalid message
         """
         resp = DeviceInfo.from_json(self.api.get('/v1/device'))
         self._timezone = resp.timezone
