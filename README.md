@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.0.12
+
+* _TBA_
+
 ### v0.0.11
 
 * fixed closing `Event`s
