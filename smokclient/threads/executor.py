@@ -21,9 +21,12 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
     def on_read_completed(fut: Future):
         ts = time.time()
         if fut.exception() is None:
-            oet.data_to_sync.on_new_data(pp.name, ts, fut.result())
+            res = fut.result()
+            if res is None:
+                return
+            oet.data_to_sync.on_new_data(pp.name, ts, res)
             pp.current_timestamp = time.time()
-            pp.current_value = fut.result()
+            pp.current_value = res
         else:
             exc = fut.exception()
             if isinstance(exc, NotReadedError):
