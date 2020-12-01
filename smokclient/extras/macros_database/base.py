@@ -30,6 +30,8 @@ class BaseMacroDatabase(metaclass=ABCMeta):
         """
         Notify the DB that the device has executed a given macro.
 
+        This should update the database's macro definition as well.
+
         Called by archive & macro thread
         """
 
