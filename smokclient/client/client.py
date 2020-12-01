@@ -201,6 +201,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param event: event to close
         """
         assert not event.is_closed()
+        if event.ended_on is None:
+            event.ended_on = time.time()
         self.evt_database.close_event(event)
 
     def get_open_event(self, event_id: str) -> Event:

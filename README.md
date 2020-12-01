@@ -16,7 +16,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.11
 
-* _TBA_
+* fixed closing `Event`s
+* added pickling `Event` and `Macro`
 
 ### v0.0.10
 

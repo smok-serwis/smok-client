@@ -1,5 +1,6 @@
 import collections
 import logging
+import pickle
 import time
 import typing as tp
 import weakref
@@ -41,6 +42,16 @@ class Macro(OmniHashableMixin, ReprableMixin):
         self.macro_id = macro_id
         self.commands = commands
         self.occurrences_not_done = collections.deque(sorted(occurrences_not_done))
+
+    def to_pickle(self) -> bytes:
+        """
+        :return: self, pickled
+        """
+        return pickle.dumps(self, pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def from_pickle(cls, y: bytes) -> 'Macro':
+        return pickle.loads(y)
 
     def __bool__(self) -> bool:
         return bool(self.occurrences_not_done)

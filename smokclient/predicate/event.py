@@ -1,4 +1,5 @@
 import enum
+import pickle
 import typing as tp
 import uuid
 
@@ -20,6 +21,24 @@ class Event(JSONAble):
     __slots__ = ('uuid', 'provisional_uuid', 'started_on', 'ended_on',
                  'color', 'is_point', 'token', 'group', 'message', 'handled_by',
                  'metadata')
+
+    def to_pickle(self) -> bytes:
+        """
+        :return: pickled self
+        """
+        return pickle.dumps(self, pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def from_pickle(cls, y: bytes) -> 'Event':
+        """
+        Load an event from a pickle
+
+        :param y: pickled Event
+        :type y: bytes
+        :return: unpickled Event
+        :rtype: Event
+        """
+        return pickle.loads(y)
 
     def get_uuid(self) -> str:
         if self.uuid:
