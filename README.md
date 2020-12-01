@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.0.11
+
+* _TBA_
+
 ### v0.0.10
 
 * added `Pathpoint.get_archive`
