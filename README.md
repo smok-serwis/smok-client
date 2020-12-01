@@ -18,6 +18,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * fixed closing `Event`s
 * added pickling `Event` and `Macro`
+* `on_read` Future can now return `None`
 
 ### v0.0.10
 

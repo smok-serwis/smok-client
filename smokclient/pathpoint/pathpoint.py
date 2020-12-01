@@ -93,7 +93,9 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
                   updated, so there's no need for the future to do that.
 
         :param advise: advise level of this read operation
-        :returns: a Future that returns the value of this pathpoint or raises OperationFailedError
+        :returns: a Future that returns the value of this pathpoint or raises OperationFailedError.
+            This Future can also return None, if the value will be set later via
+            :meth:`~smokclient.pathpoint.Pathpoint.set_new_value`
         """
 
     @abstractmethod
