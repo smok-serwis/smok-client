@@ -39,19 +39,3 @@ class InMemoryMetadataDatabase(BaseMetadataDatabase):
         for key, row in self.db_plain.items():
             yield (key, *row)
 
-    def put_set(self, key: str, value: tp.Set[str], timestamp: tp.Optional[float] = None) -> None:
-        self.db_set[key] = value, timestamp or time.time()
-
-    def get_set(self, key: str) -> tp.Set[str]:
-        return self.db_set[key][0]
-
-    def update_set(self, key: str, value: tp.Set[str], timestamp: float) -> None:
-        if key not in self.db_set:
-            self.db_set[key] = value, timestamp
-        elif self.db_set[key][1] < timestamp:
-            self.db_set[key] = value, timestamp
-
-    def get_all_set(self) -> tp.Iterator[tp.Tuple[str, tp.Set[str], float]]:
-        for key, row in self.db_set.items():
-            yield (key, *row)
-

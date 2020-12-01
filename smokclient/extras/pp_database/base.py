@@ -95,12 +95,12 @@ class BasePathpointDatabase(metaclass=ABCMeta):
     @abstractmethod
     def get_current_value(self, pathpoint: str) -> tp.Tuple[Number, PathpointValueType]:
         """
-        Get the current value for given pathpoint
+        Get the current value for given pathpoint.
 
         :param pathpoint: name of the pathpoint
         :return: a tuple of timestamp, value
         :raises OperationFailedError: read of this pathpoint has failed
-        :raises NotReadedError: pathpoint has no last value
+        :raises NotReadedError: pathpoint has no last value (or does not exist)
         """
 
     @abstractmethod
