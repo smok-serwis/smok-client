@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.3
+
+* _TBA_
+
 ### v0.2
 
 * renamed from smok-client to smok
