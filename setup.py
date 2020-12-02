@@ -5,8 +5,8 @@ from smok import __version__
 
 setup(version=__version__,
       url='https://github.com/smok-serwis/smok-client/',
-      packages=find_packages(include=['smokclient', 'smokclient.*']),
-      package_data={'smokclient': ['certs/dev.crt', 'certs/root.crt']},
+      packages=find_packages(include=['smok', 'smok.*']),
+      package_data={'smok': ['certs/dev.crt', 'certs/root.crt']},
       install_requires=['requests', 'satella>=2.14.12', 'pytz',
                         'pyasn1', 'cryptography', 'pyopenssl',
                         'ujson'],
