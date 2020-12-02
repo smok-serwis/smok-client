@@ -1,7 +1,7 @@
 import unittest
 import mock
-from smokclient.basics import Environment
-from smokclient.client import SMOKDevice
+from smok.basics import Environment
+from smok.client import SMOKDevice
 
 from .utils import FakeCall
 

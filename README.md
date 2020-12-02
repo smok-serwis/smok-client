@@ -1,9 +1,9 @@
 
 # SMOK-Client
 
-[![PyPI](https://img.shields.io/pypi/pyversions/smok-client.svg)](https://pypi.python.org/pypi/smok-client)
-[![PyPI version](https://badge.fury.io/py/smok-client.svg)](https://badge.fury.io/py/smok-client)
-[![PyPI](https://img.shields.io/pypi/implementation/smok-client.svg)](https://pypi.python.org/pypi/smok-client)
+[![PyPI](https://img.shields.io/pypi/pyversions/smok.svg)](https://pypi.python.org/pypi/smok)
+[![PyPI version](https://badge.fury.io/py/smok.svg)](https://badge.fury.io/py/smok)
+[![PyPI](https://img.shields.io/pypi/implementation/smok.svg)](https://pypi.python.org/pypi/smok)
 [![Documentation Status](https://readthedocs.org/projects/smok-client/badge/?version=latest)](http://smok-client.readthedocs.io/en/latest/?badge=latest)
 [![Maintainability](https://api.codeclimate.com/v1/badges/657b03d115f6e001633c/maintainability)](https://codeclimate.com/github/smok-serwis/smok-client/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/657b03d115f6e001633c/test_coverage)](https://codeclimate.com/github/smok-serwis/smok-client/test_coverage)
@@ -16,7 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.0.12
 
-* _TBA_
+* renamed from smok-client to smok
 
 ### v0.0.11
 

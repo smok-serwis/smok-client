@@ -1,6 +1,6 @@
 from setuptools import find_packages
 from distutils.core import setup
-from smokclient import __version__
+from smok import __version__
 
 
 setup(version=__version__,

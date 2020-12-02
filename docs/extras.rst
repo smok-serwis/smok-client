@@ -9,54 +9,54 @@ Pathpoint value storage
 If you want to store your pathpoint values in a way that would survive restarts, just define both
 classes:
 
-.. autoclass:: smokclient.extras.BasePathpointDatabase
+.. autoclass:: smok.extras.BasePathpointDatabase
     :members:
 
-.. autoclass:: smokclient.extras.BaseDataToSynchronize
+.. autoclass:: smok.extras.BaseDataToSynchronize
     :members:
 
 And create an instance of `BasePathpointDatabase` and feed it to argument
-of :class:`~smokclient.client.SMOKDevice`.
+of :class:`~smok.client.SMOKDevice`.
 
 If you need quickly a persisting pathpoint database, try
 
-.. autoclass:: smokclient.extras.PicklingPathpointDatabase
+.. autoclass:: smok.extras.PicklingPathpointDatabase
 
 It does not however provide for archives.
 
 Event storage
 -------------
 
-.. autoclass:: smokclient.extras.BaseEventSynchronization
+.. autoclass:: smok.extras.BaseEventSynchronization
     :members:
 
-.. autoclass:: smokclient.extras.BaseEventDatabase
+.. autoclass:: smok.extras.BaseEventDatabase
     :members:
 
 
 If you need quickly a pickling database, try
 
-.. autoclass:: smokclient.extras.PicklingEventDatabase
+.. autoclass:: smok.extras.PicklingEventDatabase
     :members:
 
 Macro storage
 -------------
 
-.. autoclass:: smokclient.extras.BaseMacroDatabase
+.. autoclass:: smok.extras.BaseMacroDatabase
     :members:
 
 If you need quickly a pickling database, try
 
-.. autoclass:: smokclient.extras.PicklingMacroDatabase
+.. autoclass:: smok.extras.PicklingMacroDatabase
     :members:
 
 Metadata store
 --------------
 
-.. autoclass:: smokclient.extras.BaseMetadataDatabase
+.. autoclass:: smok.extras.BaseMetadataDatabase
     :members:
 
 If you need quickly a pickling database, try
 
-.. autoclass:: smokclient.extras.PicklingMetadataDatabase
+.. autoclass:: smok.extras.PicklingMetadataDatabase
     :members:

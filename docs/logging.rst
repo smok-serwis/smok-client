@@ -1,12 +1,12 @@
 Logging
 =======
 
-SMOKClient can also intercept your Python logs and send them to the server.
+smok can also intercept your Python logs and send them to the server.
 
 First you should create a `SMOKDevice` instance, then create an instance of
 and register this handler:
 
-.. autoclass:: smokclient.logging.SMOKLogHandler
+.. autoclass:: smok.logging.SMOKLogHandler
 
 Then you should add it to your list of handlers:
 

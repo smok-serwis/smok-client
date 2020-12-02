@@ -19,20 +19,20 @@ does away with units, and returns sensor values only as JSONable values.
 
 Let's look at the sensor class:
 
-.. autoclass:: smokclient.sensor.Sensor
+.. autoclass:: smok.sensor.Sensor
     :members:
 
 And a type of it's value:
 
-.. autodata:: smokclient.sensor.SensorValueType
+.. autodata:: smok.sensor.SensorValueType
 
-:attr:`~smokclient.sensor.Sensor.fqts` is the basic of the sensor naming system. Each name
+:attr:`~smok.sensor.Sensor.fqts` is the basic of the sensor naming system. Each name
 is a set of words, separated by a whitespace. `fqts` is these words split by a space, sorted and
 then joined, ensuring that the names stay unique and not depend on order (since a set has no order).
 
 The correct operation to standarize a sensor's name is below:
 
-.. autofunction:: smokclient.sensor.fqtsify
+.. autofunction:: smok.sensor.fqtsify
 
 .. note:: **Why tags?**
           Most SCADA system order their sensors in a hierarchical manner. SMOK does not use
@@ -40,8 +40,8 @@ The correct operation to standarize a sensor's name is below:
           arbitrary-dimensional hierarchies.
 
 You are more than welcome to make direct use of Sensors, especially when facing output to client.
-It makes more sense to use :class:`~smokclient.sensor.Sensor` s for that,
-because :class:`~smokclient.sensor.Sensor` s represent a concept, while
+It makes more sense to use :class:`~smok.sensor.Sensor` s for that,
+because :class:`~smok.sensor.Sensor` s represent a concept, while
 pathpoint represents a single endpoint on the client.
 
 Predicates
@@ -52,13 +52,13 @@ to handle provided statistics. A predicate is defined on-server, and smok-client
 take care to instantiate your classes with the proper data.
 Let's see how a predicate is built:
 
-.. autoclass:: smokclient.predicate.BaseStatistic
+.. autoclass:: smok.predicate.BaseStatistic
     :members:
 
-.. autoclass:: smokclient.predicate.Event
+.. autoclass:: smok.predicate.Event
     :members:
 
-.. autoclass:: smokclient.predicate.Color
+.. autoclass:: smok.predicate.Color
     :members:
 
 Example:
@@ -83,27 +83,27 @@ Silencing
 During specified times, the user does not want to bother him with the predicate's alerts.
 Following classes are given as arguments to your constructor:
 
-.. autoclass:: smokclient.predicate.Time
+.. autoclass:: smok.predicate.Time
     :members:
 
-.. autoclass:: smokclient.predicate.DisabledTime
+.. autoclass:: smok.predicate.DisabledTime
     :members:
 
 Opening, closing events and state
 ---------------------------------
 
-Every predicate has a magic property of :attr:`~smokclient.predicate.BaseStatistic.state`.
-It will be restored between calls to :meth:`~smokclient.predicate.BaseStatistic.on_tick`
-and saved after it. You best store the :class:`~smokclient.predicate.Event` that you're created
-via :meth:`~smokclient.predicate.BaseStatistic.open_event`.
+Every predicate has a magic property of :attr:`~smok.predicate.BaseStatistic.state`.
+It will be restored between calls to :meth:`~smok.predicate.BaseStatistic.on_tick`
+and saved after it. You best store the :class:`~smok.predicate.Event` that you're created
+via :meth:`~smok.predicate.BaseStatistic.open_event`.
 
-You open new events via :meth:`~smokclient.predicate.BaseStatistic.open_event`
-and close them with :meth:`~smokclient.predicate.BaseStatistic.close_event`. Example code could look like:
+You open new events via :meth:`~smok.predicate.BaseStatistic.open_event`
+and close them with :meth:`~smok.predicate.BaseStatistic.close_event`. Example code could look like:
 
 ::
     from satella.coding import silence_excs
-    from smokclient.predicate import BaseStatistic, Color, Event
-    from smokclient.exceptions import OperationFailedError
+    from smok.predicate import BaseStatistic, Color, Event
+    from smok.exceptions import OperationFailedError
 
     class CustomPredicate(BaseStatistic):
         """

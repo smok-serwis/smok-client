@@ -22,7 +22,7 @@ copyright = '2020, Piotr Maślanka'
 author = 'Piotr Maślanka'
 
 # The full version, including alpha/beta/rc tags
-from smokclient import __version__
+from smok import __version__
 release = __version__
 
 # -- General configuration ---------------------------------------------------

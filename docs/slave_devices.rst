@@ -19,24 +19,24 @@ Consider such a device
 Obtaining further info
 ----------------------
 
-To get the list of slave devices, use :meth:`smokclient.client.SMOKDevice.get_device_info`.
+To get the list of slave devices, use :meth:`smok.client.SMOKDevice.get_device_info`.
 It will return you such a class:
 
-.. autoclass:: smokclient.basics.DeviceInfo
+.. autoclass:: smok.basics.DeviceInfo
     :members:
 
-Which attribute :attr:`~smokclient.basics.DeviceInfo.slaves` will contain a list of such classes:
+Which attribute :attr:`~smok.basics.DeviceInfo.slaves` will contain a list of such classes:
 
-.. autoclass:: smokclient.basics.SlaveDeviceInfo
+.. autoclass:: smok.basics.SlaveDeviceInfo
     :members:
 
 Interfacing with slave devices
 -------------------------------
 
 
-You can get your interface to slave devices via :meth:`smokclient.client.SMOKDevice.get_slaves`.
+You can get your interface to slave devices via :meth:`smok.client.SMOKDevice.get_slaves`.
 This will return you a list of this class:
 
-.. autoclass:: smokclient.client.SlaveDevice
+.. autoclass:: smok.client.SlaveDevice
     :members:
 

@@ -6,14 +6,14 @@ from concurrent.futures import Future
 from satella.coding import silence_excs
 from satella.coding.concurrent import call_in_separate_thread
 
-from smokclient.basics import Environment, StorageLevel
-from smokclient.client import SMOKDevice
-from smokclient.exceptions import NotReadedError, OperationFailedError
-from smokclient.logging import SMOKLogHandler
-from smokclient.pathpoint.orders import AdviseLevel
-from smokclient.pathpoint.pathpoint import Pathpoint
-from smokclient.pathpoint.typing import PathpointValueType
-from smokclient.predicate import BaseStatistic, Color
+from smok.basics import Environment, StorageLevel
+from smok.client import SMOKDevice
+from smok.exceptions import NotReadedError, OperationFailedError
+from smok.logging import SMOKLogHandler
+from smok.pathpoint.orders import AdviseLevel
+from smok.pathpoint.pathpoint import Pathpoint
+from smok.pathpoint.typing import PathpointValueType
+from smok.predicate import BaseStatistic, Color
 
 
 class PP(Pathpoint):

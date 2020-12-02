@@ -35,13 +35,13 @@ Starting with some code
 -----------------------
 
 First of all, you need to subclass SMOKDevice and define the method
-:meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`.
+:meth:`~smok.client.SMOKDevice.provide_unknown_pathpoint`.
 
 ::
 
-    from smokclient.client import SMOKDevice
-    from smokclient.basics import StorageLevel
-    from smokclient.pathpoint import Pathpoint, AdviseLevel, PathpointValueType
+    from smok.client import SMOKDevice
+    from smok.basics import StorageLevel
+    from smok.pathpoint import Pathpoint, AdviseLevel, PathpointValueType
     from concurrent.futures import Future
 
     class MyModbusRegister(Pathpoint):
@@ -61,7 +61,7 @@ First of all, you need to subclass SMOKDevice and define the method
     sd.register_pathpoint(pp)
 
 A very important method of your custom class is
-:meth:`~smokclient.client.SMOKDevice.provide_unknown_pathpoint`. When smok-client encounters
+:meth:`~smok.client.SMOKDevice.provide_unknown_pathpoint`. When smok-client encounters
 an unknown pathpoint (for example, an order for it was made) it tries to create it.
 This method should provide this pathpoint. Note that it doesn't need to provide pathpoints
 that you will create and register manually. If a predicate cannot be found, it should raise
@@ -72,12 +72,12 @@ The pickle for predicates will be used for persisting the state of alarm detecto
 
 Note that first letter of the pathpoint defines it's type. Allowed are:
 
-.. autoclass:: smokclient.pathpoint.PathpointType
+.. autoclass:: smok.pathpoint.PathpointType
     :members:
 
 If you need to coerce a value to target pathpoint's type, use the following method:
 
-.. autofunction:: smokclient.pathpoint.to_type
+.. autofunction:: smok.pathpoint.to_type
 
 If the first letter is `r`, then the type of the pathpoint is declared by the second letter.
 This pathpoint will be called a :term:`reparse` pathpoint
@@ -90,22 +90,22 @@ Both of these calls (ie. `on_read` and `on_write`) must return a Future that wil
 (or fail) when a call is finished. If you failed an operation, you should raise the following inside
 your future:
 
-.. autoclass:: smokclient.exceptions.OperationFailedError
+.. autoclass:: smok.exceptions.OperationFailedError
     :members:
 
 A reason has to be given, it is an enum
 
-.. autoclass:: smokclient.exceptions.OperationFailedReason
+.. autoclass:: smok.exceptions.OperationFailedReason
     :members:
 
 When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 threads and makes
 temporary files with the certificate content, if you provide them not by files, but by file-like
 objects.
 
-During invoking the :meth:`smokclient.pathpoint.Pathpoint.get` you might get the previous exceptions,
+During invoking the :meth:`smok.pathpoint.Pathpoint.get` you might get the previous exceptions,
 but also a new one:
 
-.. autoclass:: smokclient.exceptions.NotReadedError
+.. autoclass:: smok.exceptions.NotReadedError
     :members:
 
 ::
@@ -131,42 +131,42 @@ List of basic classes
 
 SMOKDevice
 ----------
-.. autoclass:: smokclient.client.SMOKDevice
+.. autoclass:: smok.client.SMOKDevice
     :members:
 
 Pathpoint
 ---------
-.. autoclass:: smokclient.pathpoint.Pathpoint
+.. autoclass:: smok.pathpoint.Pathpoint
     :members:
 
 Enums
 -----
-.. autoclass:: smokclient.pathpoint.AdviseLevel
+.. autoclass:: smok.pathpoint.AdviseLevel
     :members:
 
 
-.. autoclass:: smokclient.basics.StorageLevel
+.. autoclass:: smok.basics.StorageLevel
     :members:
 
 
-.. autoclass:: smokclient.basics.Environment
+.. autoclass:: smok.basics.Environment
     :members:
 
 Other values and exceptions
 ---------------------------
 
-.. autoclass:: smokclient.exceptions.SMOKClientError
+.. autoclass:: smok.exceptions.smokError
 
-.. autoclass:: smokclient.exceptions.InvalidCredentials
+.. autoclass:: smok.exceptions.InvalidCredentials
 
-.. autoclass:: smokclient.exception.ResponseFailedError
+.. autoclass:: smok.exception.ResponseFailedError
 
-.. autoclass:: smokclient.exception.InstanceNotReady
+.. autoclass:: smok.exception.InstanceNotReady
 
-.. autodata:: smokclient.pathpoint.PathpointValueType
+.. autodata:: smok.pathpoint.PathpointValueType
 
 
-.. autodata:: smokclient.pathpoint.ValueOrExcept
+.. autodata:: smok.pathpoint.ValueOrExcept
 
 Executing orders
 ----------------
@@ -178,7 +178,7 @@ If you want to read given pathpoint, just do the following:
     read_order = pathpoint.read()
     sd.execute(read_order)
 
-Note that any :class:`smokclient.pathpoint.orders.Section` is also a perfectly valid `Future`, so
+Note that any :class:`smok.pathpoint.orders.Section` is also a perfectly valid `Future`, so
 you may cancel it and wait for it's result:
 
 ::
