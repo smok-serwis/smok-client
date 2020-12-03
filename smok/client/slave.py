@@ -9,10 +9,10 @@ class SlaveDevice:
     """
     A device that's attached to it's master
 
-    :ivar device_id: slave device ID
-    :ivar configuration: a string configuring this device
-    :ivar responsible_service: should always be "rapid"
-    :ivar master_controller: device ID of it's master device
+    :ivar device_id: slave device ID (str)
+    :ivar configuration: a string configuring this device (str)
+    :ivar responsible_service: should always be "rapid" (str)
+    :ivar master_controller: device ID of it's master device (str)
     """
     __slots__ = ('device_id', 'sd', '__linkstate', '__instrumentation',
                  'configuration', 'responsible_service', 'master_controller')

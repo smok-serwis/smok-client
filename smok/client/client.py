@@ -45,7 +45,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
     :param evt_database: custom event database. Providing a string defaults to path where predicate
-        data will be persisted.
+        data will be persisted. Since events are persistent, a store needs to be given.
     :param pp_database: custom pathpoint value database. Default value of None defaults to an
         in-memory implementation
     :param macro_database: custom macro database. Default value of None will result in an
