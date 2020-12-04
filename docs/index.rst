@@ -11,6 +11,7 @@ Welcome to SMOK Client's documentation!
    predicates
    extras
    logging
+   exceptions
    glossary
 
 SMOK devices are devices that consist of a bunch of pathpoints (eg. a single MODBUS register)

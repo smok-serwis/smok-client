@@ -27,7 +27,7 @@ class InstanceNotReady(SMOKClientError):
 
 class ResponseError(SMOKClientError):
     """
-    Server replied with a wrong code
+    Server replied with a wrong code or didn't reply at all.
     """
 
     def __str__(self) -> str:
