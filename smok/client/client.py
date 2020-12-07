@@ -18,6 +18,7 @@ from .api import RequestsAPI
 from .certificate import get_device_info
 from .slave import SlaveDevice
 from ..basics import DeviceInfo, Environment, StorageLevel
+from ..exceptions import ResponseError
 from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
 from ..extras.macros_database import BaseMacroDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
@@ -26,7 +27,7 @@ from ..extras.pp_database.base import BasePathpointDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint
-from ..pathpoint.orders import Section
+from ..pathpoint.orders import Section, MessageOrder
 from ..predicate import BaseStatistic, Event, Color
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
@@ -108,7 +109,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         If this is not overloaded, standard executor logic will be applied.
 
-        Called by the order executor thread.
+        Called by the order executor thread. If this is defined, then
+        :meth:`~smok.client.SMOKDevice.sync_sections` is necessary as well, so this should just
+        execute the orders themselves.
 
         :param section: section to execute
         """
@@ -184,6 +187,19 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
         self.sensors = {}  # type: tp.Dict[str, Sensor]
+
+    def _execute_message_order(self, order: MessageOrder) -> None:
+        """
+        Tell the server to execute provided :class:`~smok.pathpoint.orders.MessageOrder`
+
+        :param order: order to execute
+        :meta public:
+        """
+        for i in range(3):
+            try:
+                self.api.post('/v1/device/orders/message/' + order.uuid)
+            except ResponseError:
+                pass
 
     @property
     def timezone(self) -> pytz.timezone:
