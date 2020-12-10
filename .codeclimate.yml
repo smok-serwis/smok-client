@@ -16,7 +16,7 @@ exclude_paths:
   - docs/**
 ratings:
   paths:
-    - smokclient/**
+    - smok/**
 checks:
   argument-count:
     config:
