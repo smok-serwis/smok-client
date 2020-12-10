@@ -17,6 +17,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 ### v0.3
 
 * added `SMOKDevice._execute_message_order`
+* log publisher has now a timeout
 
 ### v0.2
 

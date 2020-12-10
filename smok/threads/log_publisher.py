@@ -30,7 +30,7 @@ class LogPublisherThread(TerminableThread):
 
     @retry(3, exc_classes=ResponseError)
     def sync(self, lst: tp.List[dict]):
-        self.device.api.put('/v1/device/device_logs', json=lst)
+        self.device.api.put('/v1/device/device_logs', json=lst, timeout=20)
 
     def cleanup(self):
         while self.queue.qsize() > 0:
