@@ -18,6 +18,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * added `SMOKDevice._execute_message_order`
 * log publisher has now a timeout
+* clarified Pathpoint.get_archive
 
 ### v0.2
 

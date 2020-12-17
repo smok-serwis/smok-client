@@ -55,8 +55,8 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
 
     def get_archive(self,
                     starting_at: int,
-                    stopping_at: tp.Optional[int] = None) -> tp.Iterator[tp.Tuple[int,
-                                                                                    PathpointValueType]]:
+                    stopping_at: tp.Optional[int] = None) -> tp.Iterator[
+            tp.Tuple[int, ValueOrExcept]]:
         """
         Get archive readings.
 
@@ -64,7 +64,8 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
 
         :param starting_at: timestamp of start, in milliseconds
         :param stopping_at: timestamp of end, in milliseconds, or None for the end of the park
-        :return: an iterator of tuple (timestamp in milliseconds, pathpoint value)
+        :return: an iterator of tuple (timestamp in milliseconds,
+                                       pathpoint value or exception instance)
         """
         yield from self.device.pp_database.get_archive_data(self.name, starting_at, stopping_at)
 
