@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.4
+
+* _TBA_
+
 ### v0.3
 
 * added `SMOKDevice._execute_message_order`
