@@ -24,7 +24,8 @@ class BaseDataToSynchronize(metaclass=ABCMeta):
     @abstractmethod
     def to_json(self) -> tp.List:
         """
-        Return a JSON structure that looks like this (specification expressed in OpenAPI 3.0 format)
+        Return a JSON structure that looks like this
+        (specification expressed in OpenAPI 3.0 format)
 
         ::
 
@@ -97,6 +98,8 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         """
         Get the current value for given pathpoint.
 
+        Called by user threads.
+
         :param pathpoint: name of the pathpoint
         :return: a tuple of timestamp, value
         :raises OperationFailedError: read of this pathpoint has failed
@@ -112,9 +115,12 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         Called by user threads.
 
         :param pathpoint: name of the pathpoint
-        :param start: start of the period, in milliseconds since Epoch, or the absolute beginning if None
-        :param stop: stop of the period, in milliseconds since Epoch, or up to the latest data if None
-        :return: an iterator of two-tuple (timestamp in milliseconds, value of OperationReadError instance)
+        :param start: start of the period, in milliseconds since Epoch,
+            or the earliest timestamp that is registered if None
+        :param stop: stop of the period, in milliseconds since Epoch,
+            or the latest timestamp that is registered if None
+        :return: an iterator of two-tuple (timestamp in milliseconds, value or
+            OperationReadError instance)
         """
 
     @abstractmethod
