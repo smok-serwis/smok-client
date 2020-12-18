@@ -27,7 +27,14 @@ class RequestsAPI:
         else:
             resp = op(self.base_url + url, cert=self.cert, **kwargs)
         if resp.status_code not in (200, 201):
-            raise ResponseError(resp.status_code, resp.json()['status'])
+            try:
+                error_json = resp.json()['status']
+            except (json.decoder.JSONDecodeError, ValueError):
+                try:
+                    error_json = resp.text
+                except AttributeError:
+                    error_json = repr(resp.content)
+            raise ResponseError(resp.status_code, error_json)
         try:
             return resp.json()
         except json.decoder.JSONDecodeError:
