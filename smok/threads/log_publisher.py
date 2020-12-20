@@ -34,5 +34,5 @@ class LogPublisherThread(TerminableThread):
 
     def cleanup(self):
         while self.queue.qsize() > 0:
-            msgs = self.get_all_messages()
+            msgs = self.get_all_messages(self.queue.get())
             self.sync(msgs)

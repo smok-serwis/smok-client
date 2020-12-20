@@ -16,7 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.4
 
-* _TBA_
+* fixed a bug where `LogPublisherThread` would throw during shutdown
 
 ### v0.3
 
