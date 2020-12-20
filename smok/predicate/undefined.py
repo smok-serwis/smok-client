@@ -24,9 +24,8 @@ class UndefinedStatistic(BaseStatistic):
             if isinstance(pred, UndefinedStatistic):
                 statistic_name = pred.statistic
                 if statistic_name in self.device.predicate_classes:
-                    logger.info(f'Initialized missing predicate ID %s statistic %s' % (
-                        predicate_id, statistic_name
-                    ))
+                    logger.info(f'Initialized missing predicate ID %s statistic %s', predicate_id,
+                                statistic_name)
                     statistic_class = self.device.predicate_classes[statistic_name]
                     self.device.predicates[predicate_id] = pred.initialize(statistic_class)
 

@@ -30,7 +30,7 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
         else:
             exc = fut.exception()
             if isinstance(exc, NotReadedError):
-                logger.error('A read future for %s returned NotReadedError, this is invalid')
+                logger.error('A read future for %s returned NotReadedError, this is invalid', pp.name)
                 return
             exc.timestamp = ts
             oet.data_to_sync.on_new_data(pp.name, ts, exc)
@@ -64,7 +64,7 @@ class OrderExecutorThread(TerminableThread):
                     try:
                         pathpoint = self.device.get_pathpoint(order.pathpoint)
                     except KeyError:
-                        logger.warning('Got order for unavailable pathpoint %s' % (order.pathpoint,))
+                        logger.info('Got order for unavailable pathpoint %s', order.pathpoint)
                         continue
 
                     if isinstance(order, WriteOrder):

@@ -61,7 +61,7 @@ class Macro(OmniHashableMixin, ReprableMixin):
         return time.time() > self.occurrences_not_done[0]
 
     def execute(self) -> None:
-        logger.warning(f'Executing macro {self.macro_id} with commands {self.commands}')
+        logger.debug(f'Executing macro %s with commands %s', self.macro_id, self.commands)
         while self.should_execute():
             ts = self.occurrences_not_done.popleft()
             sec = Section([WriteOrder(pathpoint_name, pathpoint_value, AdviseLevel.FORCE)
