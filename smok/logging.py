@@ -35,10 +35,17 @@ class SMOKLogHandler(Handler, Monitor):
 
         ts = self.timestamper.no_less_than(time_us())
 
+        msg = f'[{record.name},{record.thread}] [{record.pathname}:{record.lineno}] {record.msg}'
+        if '%' in msg:
+            try:
+                msg = msg % record.args
+            except TypeError:
+                pass
+
         dct = {
             'service': self.service_name,
             'when': ts,
-            'message': f'[{record.name},{record.thread}] [{record.pathname}:{record.lineno}] {record.msg}',
+            'message': msg,
             'level': record.levelno,
         }
         if jsonified_extra:

@@ -18,6 +18,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * fixed a bug where `LogPublisherThread` would throw during shutdown
 * API will return a `ResponseError` if something fails
+* fixed a bug where log records sent to the server were not formatted correctly
 
 ### v0.3
 
