@@ -55,7 +55,7 @@ class OrderExecutorThread(TerminableThread):
         if section.disposition == Disposition.CANNOT_JOIN:
             self.device.sync_sections()
 
-        if self.device.execute_section is SMOKDevice.execute_section:
+        if self.device.__class__.execute_section is SMOKDevice.execute_section:
             if not section.future.set_running_or_notify_cancel():
                 return  # Section cancelled
 
