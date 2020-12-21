@@ -5,7 +5,6 @@ from logging import LogRecord, Handler
 import ujson
 from satella.coding import Monitor
 from satella.coding.concurrent import SequentialIssuer
-from satella.coding.transforms import stringify
 from satella.instrumentation import Traceback, frame_from_traceback
 from satella.time import time_us
 
@@ -29,18 +28,13 @@ class SMOKLogHandler(Handler, Monitor):
         self.timestamper = SequentialIssuer(time_us())
 
     def record_to_json(self, record: LogRecord):
-        jsonified_extra = {}
-        if record.args:
-            jsonified_extra.update(args=stringify(record.args))
-
         ts = self.timestamper.no_less_than(time_us())
 
-        msg = f'[{record.name},{record.thread}] [{record.pathname}:{record.lineno}] {record.msg}'
-        if '%' in msg:
-            try:
-                msg = msg % record.args
-            except TypeError:
-                pass
+        # noinspection PyBroadException
+        try:
+            msg = self.format(record)
+        except Exception as e:
+            msg = record.message
 
         dct = {
             'service': self.service_name,
@@ -48,8 +42,6 @@ class SMOKLogHandler(Handler, Monitor):
             'message': msg,
             'level': record.levelno,
         }
-        if jsonified_extra:
-            dct['extra'] = jsonified_extra
 
         if record.exc_info:
             f = frame_from_traceback(record.exc_info[2])
