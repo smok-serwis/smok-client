@@ -77,7 +77,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :param timestamp: new timestamp
         :param value: new value
         """
-        self.device.pp_database.on_new_data(timestamp, value)
+        self.device.pp_database.on_new_data(self.name, timestamp, value)
         self.current_timestamp = timestamp
         self.current_value = value
 
@@ -136,7 +136,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :raises OperationFailedError: when pathpoint's read has failed
         """
         if self.current_value is None:
-            ts, v = self.device.pp_database.get_current_value()  # raises NotReadedError
+            ts, v = self.device.pp_database.get_current_value(self.name)  # raises NotReadedError
             self.current_timestamp = ts
             self.current_value = v
 

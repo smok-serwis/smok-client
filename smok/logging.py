@@ -33,8 +33,8 @@ class SMOKLogHandler(Handler, Monitor):
         # noinspection PyBroadException
         try:
             msg = self.format(record)
-        except Exception as e:
-            msg = record.message
+        except (TypeError, ValueError):
+            msg = record.message + ' '+','.join(map(repr, record.args))
 
         dct = {
             'service': self.service_name,

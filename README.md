@@ -20,6 +20,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * API will return a `ResponseError` if something fails
 * fixed a bug where log records sent to the server were not formatted correctly
 * logging was adjusted
+* when formatting the log record fails, it's message will be appended along with it's args
+* fixed a critical bug with storing pathpoint values
 
 ### v0.3
 
