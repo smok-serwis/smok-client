@@ -24,6 +24,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * fixed a critical bug with storing pathpoint values
 * fixed a bug with executor not recognizing the default `execute_a_section`
 * fixed a bug wherein timestamps were written 1000 times larger than necessary
+* pathpoints will be uploaded as soon as there's new data
 
 ### v0.3
 

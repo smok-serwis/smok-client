@@ -4,7 +4,7 @@ import time
 import typing as tp
 
 from satella.coding import silence_excs, for_argument, log_exceptions
-from satella.coding.concurrent import TerminableThread
+from satella.coding.concurrent import TerminableThread, Condition
 from satella.coding.decorators import retry
 from satella.coding.transforms import jsonify
 from satella.exceptions import WouldWaitMore
@@ -48,6 +48,7 @@ class CommunicatorThread(TerminableThread):
         self.data_to_sync = data_to_sync
         self.last_sensors_synced = 0
         self.last_predicates_synced = 0
+        self.data_to_update = Condition()
 
     def tick_predicates(self):
         for predicate in self.device.predicates.values():
@@ -204,6 +205,11 @@ class CommunicatorThread(TerminableThread):
             self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
-            with silence_excs(WouldWaitMore):
-                timeout = COMMUNICATOR_INTERVAL - measurement()
-                self.safe_sleep(timeout)
+            time_to_wait = COMMUNICATOR_INTERVAL - measurement()
+            while time_to_wait > 0.1:       # for float roundings
+                try:
+                    ttw = min(time_to_wait, 5)
+                    self.data_to_update.wait(timeout=ttw)
+                    break
+                except WouldWaitMore:
+                    time_to_wait -= ttw * 1.1

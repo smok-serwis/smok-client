@@ -78,6 +78,8 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :param value: new value
         """
         self.device.pp_database.on_new_data(self.name, timestamp, value)
+        if self.device.getter is not None:
+            self.device.getter.data_to_update.notify()
         self.current_timestamp = timestamp
         self.current_value = value
 
