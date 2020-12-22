@@ -39,7 +39,7 @@ class DataSyncDict(DirtyDict, Monitor):
                     val = OperationFailedError(OperationFailedReason(value['error_code']))
                 else:
                     val = value['value']
-                self.append(pp_name, value['timestamp'] / 1000, val)
+                self.append(pp_name, value['timestamp'], val)
 
     @Monitor.synchronized
     def to_json(self):
@@ -48,10 +48,10 @@ class DataSyncDict(DirtyDict, Monitor):
             values = []
             for timestamp, value in pathpoint_values:
                 if isinstance(value, OperationFailedError):
-                    values.append({'timestamp': int(timestamp * 1000),
+                    values.append({'timestamp': int(timestamp),
                                    'error_code': value.reason.value})
                 else:
-                    values.append({'timestamp': int(timestamp * 1000),
+                    values.append({'timestamp': int(timestamp),
                                    'value': value})
             output.append({'path': pathpoint,
                            'values': values})

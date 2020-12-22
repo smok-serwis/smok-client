@@ -23,6 +23,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * when formatting the log record fails, it's message will be appended along with it's args
 * fixed a critical bug with storing pathpoint values
 * fixed a bug with executor not recognizing the default `execute_a_section`
+* fixed a bug wherein timestamps were written 1000 times larger than necessary
 
 ### v0.3
 
