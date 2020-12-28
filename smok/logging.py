@@ -36,6 +36,10 @@ class SMOKLogHandler(Handler, Monitor):
         except (TypeError, ValueError):
             msg = record.message + ' '+','.join(map(repr, record.args))
 
+        if len(msg) > 1000:
+            msg_content = base64.b64encode(gzip.compress(msg.encode('utf8'), compresslevel=8)).decode('utf8')
+            msg = {'encoding': 'base64-gzip', 'content': msg_content}
+
         dct = {
             'service': self.service_name,
             'when': ts,
