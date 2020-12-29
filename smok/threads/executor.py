@@ -99,7 +99,6 @@ class OrderExecutorThread(TerminableThread):
 
     @queue_get('queue', 5)
     def loop(self, section: Section):
-        print(section)
         if self.queue.qsize():
             next_section = self.queue.peek()  # type: Section
             if section.is_joinable() and next_section.is_joinable():
