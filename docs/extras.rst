@@ -8,7 +8,7 @@ Most options are, for this time, geared towards extended work in an Internet-les
 Sensor storage
 --------------
 
-If you wish to persist your sensor definition across restart, feel free to implement the following:
+If you wish to persist your sensor definition across restarts, feel free to implement the following:
 
 
 .. autoclass:: smok.extras.BaseSensorDatabase

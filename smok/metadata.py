@@ -27,7 +27,7 @@ class PlainDataUpdater:
         if not value:
             self.device.api.delete('/v1/device/metadata/plain/%s' % (urlencode(key), ))
         else:
-            self.device.api('/v1/device/metadata/plain/%s' % (quote_plus(key), ),
+            self.device.api.put('/v1/device/metadata/plain/%s' % (quote_plus(key), ),
                             json={'value': value, 'unless_timestamp_higher': timestamp})
 
 

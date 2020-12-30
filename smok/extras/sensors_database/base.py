@@ -10,7 +10,9 @@ class BaseSensorDatabase(metaclass=ABCMeta):
 
     def on_register(self, device: 'SMOKDevice') -> None:
         """
-        Called by SMOKDevice upon registering this database
+        Called by SMOKDevice upon registering this database.
+
+        Called by SMOKDevice's constructor.
         """
         self.device = device
 
@@ -19,6 +21,8 @@ class BaseSensorDatabase(metaclass=ABCMeta):
         """
         Return a sensor
 
+        Called by user threads and possibly predicates (so also CommunicatorThread)
+
         :param fqts: fqts for target sensor, always in canonical form
         :raises KeyError: sensor not defined
         """
@@ -26,11 +30,15 @@ class BaseSensorDatabase(metaclass=ABCMeta):
     @abstractmethod
     def on_sync(self, sensors: tp.List[Sensor]):
         """
-        Sensors have just been synchronized, this is the entire list
+        Sensors have just been synchronized, this is the entire list.
+
+        Called by communicator threads.
         """
 
     @abstractmethod
     def get_all_sensors(self) -> tp.Iterator[Sensor]:
         """
-        Return all sensors stored in the database
+        Return all sensors stored in the database.
+
+        Called by user threads and possibly predicates (so also CommunicatorThread).
         """

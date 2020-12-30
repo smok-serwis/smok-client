@@ -20,6 +20,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * superficial print() removed
 * added sensor database
 * increased the startup delay to begin communication by 5 seconds to 10 seconds
+* fixed a bug with updating metadata
 
 ### v0.4
 
