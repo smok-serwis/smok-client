@@ -59,6 +59,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
+    :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
+        start talking
+
+    About 10 seconds from creation if CommunicatorThread was created, sensors will be synced and
+    the device will start talking. To reduce this delay, set parameter startup_delay
 
     If both dont_do_macros and dont_do_archives are True, the archiving & macro thread
     won't be started.
@@ -128,7 +133,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  sensor_database: tp.Optional[BaseSensorDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
-                 dont_do_archives: bool = False):
+                 dont_do_archives: bool = False,
+                 startup_delay: float = 10):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         if isinstance(evt_database, str):
@@ -187,7 +193,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if not dont_obtain_orders:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
             self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
-                                             dont_obtain_orders).start()
+                                             dont_obtain_orders, startup_delay).start()
         else:
             self.executor = None
             self.getter = None
@@ -243,6 +249,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     def get_all_sensors(self) -> tp.Iterator[Sensor]:
         """
         Stream all sensors
+
+        .. note:: This will block until sensors are synced from the server
         """
         with self.ready_lock:
             yield from self.sensor_database.get_all_sensors()
@@ -250,6 +258,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     def get_sensor(self, tag_set: tp.Union[tp.Set[str], str]) -> Sensor:
         """
         Return a sensor
+
+        .. note:: This will block until sensors are synced from the server
 
         :param tag_set: either set of strs or these strs joined with a ' '
         :return: sensor

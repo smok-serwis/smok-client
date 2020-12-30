@@ -40,9 +40,11 @@ PREDICATE_SYNC_INTERVAL = 300
 
 class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
-                 data_to_sync: DataSyncDict, dont_obtain_orders: bool):
+                 data_to_sync: DataSyncDict, dont_obtain_orders: bool,
+                 startup_delay: float):
         super().__init__(name='order getter')
         self.device = device
+        self.startup_delay = startup_delay
         self.dont_obtain_orders = dont_obtain_orders
         self.queue = order_queue
         self.data_to_sync = data_to_sync
@@ -163,7 +165,7 @@ class CommunicatorThread(TerminableThread):
 
     def prepare(self):
         # Give the app a moment to prepare and define it's pathpoints
-        self.safe_sleep(10)
+        self.safe_sleep(self.startup_delay)
 
     def loop(self) -> None:
         with measure() as measurement:
