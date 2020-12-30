@@ -11,6 +11,8 @@ Sensors
 Since sensors are an server-side construct, but predicates make use of them, here's a section about
 sensors.
 
+Note that you can't define any sensors yourself and must rely on the server to do that.
+
 There's a way to access the value of a sensor. Where SMOK would represent the value of a
 sensor either by a JSONable value, or by a value and it's units (via pint_), `smok-client`
 does away with units, and returns sensor values only as JSONable values.

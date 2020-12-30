@@ -114,14 +114,7 @@ class CommunicatorThread(TerminableThread):
     def sync_sensors(self):
         resp = self.device.api.get('/v1/device/sensors')
 
-        sensors = []
-        for data in resp:
-            sensors.append(Sensor.from_json(self.device, data))
-
-        self.device.sensors = {}
-        for sensor in sensors:
-            self.device.sensors[sensor.fqts] = sensor
-
+        self.device.sensor_database.on_sync([Sensor.from_json(self.device, data) for data in resp])
         self.last_sensors_synced = time.time()
 
     @retry(3, ResponseError)
@@ -171,7 +164,7 @@ class CommunicatorThread(TerminableThread):
 
     def prepare(self):
         # Give the app a moment to prepare and define it's pathpoints
-        self.safe_sleep(5)
+        self.safe_sleep(10)
 
     def loop(self) -> None:
         with measure() as measurement:

@@ -3,6 +3,22 @@ Extras
 
 If you wish to extend the functionality of smok-client somehow, here's how you can do it.
 
+Most options are, for this time, geared towards extended work in an Internet-less environment.
+
+Sensor storage
+--------------
+
+If you wish to persist your sensor definition across restart, feel free to implement the following:
+
+
+.. autoclass:: smok.extras.BaseSensorDatabase
+    :members:
+
+If you need quickly a persisting pathpoint database, try
+
+.. autoclass:: smok.extras.PicklingSensorDatabase
+
+
 Pathpoint value storage
 -----------------------
 

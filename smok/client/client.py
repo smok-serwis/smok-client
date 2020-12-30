@@ -19,12 +19,13 @@ from .certificate import get_device_info
 from .slave import SlaveDevice
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..exceptions import ResponseError
-from ..extras.event_database import BaseEventDatabase, InMemoryEventDatabase
-from ..extras.macros_database import BaseMacroDatabase
+from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
+    BasePathpointDatabase, BaseMetadataDatabase
+from ..extras.event_database import InMemoryEventDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
-from ..extras.metadata_database import BaseMetadataDatabase, InMemoryMetadataDatabase
-from ..extras.pp_database.base import BasePathpointDatabase
+from ..extras.metadata_database import InMemoryMetadataDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
+from ..extras.sensors_database.in_memory import InMemorySensorDatabase
 from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint
 from ..pathpoint.orders import Section, MessageOrder
@@ -52,6 +53,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param macro_database: custom macro database. Default value of None will result in an
         in-memory implementation
     :param meta_database: custom meta database. Default value of None will result in an
+        in-memory implementation
+    :param sensor_database: custom sensor database. Default value of None wil result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
@@ -122,6 +125,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  pp_database: tp.Optional[BasePathpointDatabase] = None,
                  macro_database: tp.Optional[BaseMacroDatabase] = None,
                  meta_database: tp.Optional[BaseMetadataDatabase] = None,
+                 sensor_database: tp.Optional[BaseSensorDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_archives: bool = False):
@@ -133,6 +137,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.evt_database = evt_database
         self.macros_database = macro_database or InMemoryMacroDatabase()
         self.meta_database = meta_database or InMemoryMetadataDatabase()
+        self.sensor_database = sensor_database or InMemorySensorDatabase()
+        self.sensor_database.on_register(self)
         self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
@@ -186,7 +192,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.executor = None
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
-        self.sensors = {}  # type: tp.Dict[str, Sensor]
 
     def _execute_message_order(self, order: MessageOrder) -> None:
         """
@@ -234,6 +239,30 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             if event.uuid_matches(event_id):
                 return event
         raise KeyError()
+
+    def get_all_sensors(self) -> tp.Iterator[Sensor]:
+        """
+        Stream all sensors
+        """
+        with self.ready_lock:
+            yield from self.sensor_database.get_all_sensors()
+
+    def get_sensor(self, tag_set: tp.Union[tp.Set[str], str]) -> Sensor:
+        """
+        Return a sensor
+
+        :param tag_set: either set of strs or these strs joined with a ' '
+        :return: sensor
+        :raises KeyError: sensor does not exist
+        """
+        with self.ready_lock:
+            if isinstance(tag_set, set):
+                tag_set = list(tag_set)
+                tag_set.sort()
+                tag_set = ' '.join(tag_set)
+            else:
+                tag_set = fqtsify(tag_set)
+            return self.sensor_database.get_sensor(tag_set)
 
     def get_all_open_events(self) -> tp.Iterator[Event]:
         """
@@ -364,17 +393,3 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         local_time = utc_time.astimezone(tz)
 
         return local_time
-
-    @for_argument(None, fqtsify)
-    def get_sensor(self, tag_name: tp.Union[str, tp.Set[str]]) -> Sensor:
-        """
-        Return a target sensor.
-
-        .. note:: this may block until the Sensors are synced from target server.
-
-        :param tag_name: either words joined by a space of a set of these
-        :return: a target Sensor
-        :raises KeyError: no target sensor exists
-        """
-        with self.ready_lock:
-            return self.sensors[tag_name]  # raises KeyError

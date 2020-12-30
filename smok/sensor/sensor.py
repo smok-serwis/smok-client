@@ -31,9 +31,9 @@ class Sensor:
     """
     A class representing a smok-client sensor defined on given device.
 
-    :ivar fqts: a sorted string representing tags of this sensor joined by a space
-    :ivar path: composite pathpoint names, separated by a tilde (~)
-    :ivar type_name: name of the sensor type
+    :ivar fqts: a sorted string representing tags of this sensor joined by a space (str)
+    :ivar path: composite pathpoint names, separated by a tilde (~) (str)
+    :ivar type_name: name of the sensor type (str)
     :ivar type: object used for data conversion between pathpoints and sensor values
     """
     __slots__ = ('fqts', 'path', 'type_name', '_pathpoint_names', 'type', 'device')

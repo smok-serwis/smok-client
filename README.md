@@ -18,6 +18,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * added automatic log compression
 * superficial print() removed
+* added sensor database
+* increased the startup delay to begin communication by 5 seconds to 10 seconds
 
 ### v0.4
 
