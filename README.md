@@ -21,6 +21,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * added sensor database
 * increased the startup delay to begin communication by 5 seconds to 10 seconds
 * fixed a bug with updating metadata
+* removed a debug log upon syncing pathpoints
 
 ### v0.4
 

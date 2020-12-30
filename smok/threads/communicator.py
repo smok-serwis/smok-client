@@ -156,7 +156,6 @@ class CommunicatorThread(TerminableThread):
                     stor_level = StorageLevel(pp.get('storage_level', 1))
                     if stor_level != pathpoint.storage_level:
                         pathpoint.on_new_storage_level(stor_level)
-            logger.debug('Successfully synchronized pathpoints')
         except ResponseError:
             self.device.pathpoints.update(pps)
             self.device.pathpoints.dirty = True
