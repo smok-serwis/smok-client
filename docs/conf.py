@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'SMOK Client'
-copyright = '2020, Piotr Maślanka'
+copyright = '2010-2020, SMOK sp. z o. o.'
 author = 'Piotr Maślanka'
 
 # The full version, including alpha/beta/rc tags
