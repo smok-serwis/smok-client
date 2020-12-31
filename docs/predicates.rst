@@ -65,7 +65,8 @@ Let's see how a predicate is built:
 
 Example:
 
-::
+.. code-block:: python
+
     class MyStatistic(BaseStatistic):
         statistic_name = 'my'
 

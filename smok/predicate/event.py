@@ -1,14 +1,17 @@
-import enum
 import pickle
 import typing as tp
 import uuid
 
 from satella.coding import update_key_if_true
+from satella.coding.structures import HashableIntEnum
 from satella.json import JSONAble
 from satella.time import time_as_int
 
 
-class Color(enum.IntEnum):
+class Color(HashableIntEnum):
+    """
+    Event severity
+    """
     WHITE = 0  #: least severe event
     YELLOW = 1  #: event of medium severity
     RED = 2  #: most severe event
@@ -17,6 +20,17 @@ class Color(enum.IntEnum):
 class Event(JSONAble):
     """
     An object representing a single event in the SMOK system.
+
+    :ivar uuid: event UUID (str)
+    :ivar started_on: timestamp of event beginning, in seconds (int)
+    :ivar ended_on: timestamp of event ending in seconds, or None if not ended (tp.Optional[int])
+    :ivar color: event color (:class:`~smok.predicate.Color`)
+    :ivar is_point: is the event a point one? (bool)
+    :ivar token: token (str)
+    :ivar group: event group (str)
+    :ivar message: human-readable message (str)
+    :ivar handled_by: user that handles this event (tp.Optional[str])
+    :ivar metadata: event metadata (tp.Dict[str, str])
     """
     __slots__ = ('uuid', 'provisional_uuid', 'started_on', 'ended_on',
                  'color', 'is_point', 'token', 'group', 'message', 'handled_by',
@@ -75,6 +89,9 @@ class Event(JSONAble):
         self.metadata = metadata
 
     def to_json(self) -> dict:
+        """
+        Convert self to JSON representation
+        """
         dct = {
             'started_on': self.started_on,
             'color': self.color.value,
@@ -85,13 +102,13 @@ class Event(JSONAble):
             'metadata': self.metadata
         }
         update_key_if_true(dct, 'uuid', self.uuid)
-        update_key_if_handled_by(dct, 'handled_by', self.handled_by)
-        update_key_if_ended_on(dct, 'ended_on', self.uuid)
+        update_key_if_true(dct, 'handled_by', self.handled_by)
+        update_key_if_true(dct, 'ended_on', self.uuid)
         return dct
 
     def is_closed(self) -> bool:
         """
-        Is given event closed?
+        :return: is given event closed?
         """
         if self.is_point:
             return True
@@ -99,6 +116,9 @@ class Event(JSONAble):
 
     @classmethod
     def from_json(cls, dct: dict) -> 'Event':
+        """
+        Restore self from a JSON representation
+        """
         return Event(dct.get('uuid'), dct['started_on'], dct.get('ended_on'),
                      Color(dct['color']), dct['alarm_type'] == 1, dct['token'],
                      dct['group'], dct['message'], dct['metadata'])
