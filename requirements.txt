@@ -1,8 +1,8 @@
 satella>=2.14.12
-requests
-pyasn1
-cryptography
+requests==2.*
+pyasn1==0.4.*
+cryptography==2.*
 pyopenssl
 pytz
-ujson
+ujson==4.*
 
