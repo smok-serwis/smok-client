@@ -1,11 +1,10 @@
-import enum
 import typing as tp
 
-from satella.coding.structures import ReprableMixin
+from satella.coding.structures import ReprableMixin, HashableIntEnum
 from satella.json import JSONAble
 
 
-class Environment(enum.IntEnum):
+class Environment(HashableIntEnum):
     """
     An environment in which this device runs
     """
@@ -14,7 +13,7 @@ class Environment(enum.IntEnum):
     LOCAL_DEVELOPMENT = 2  #: CI or local development
 
 
-class StorageLevel(enum.IntEnum):
+class StorageLevel(HashableIntEnum):
     """
     A storage level defines how long is the pathpoint kept at SMOK server.
     """
@@ -26,10 +25,10 @@ class SlaveDeviceInfo(JSONAble, ReprableMixin):
     """
     Information about a slave device attached to primary device
 
-    :ivar device_id: slave device ID
-    :ivar master_controller: ID of master device
-    :ivar responsible_service: service responsible for this device, mostly "rapid"
-    :ivar configuration: a string containing configuration for this device
+    :ivar device_id: slave device ID (str)
+    :ivar master_controller: ID of master device (str)
+    :ivar responsible_service: service responsible for this device, mostly "rapid" (str)
+    :ivar configuration: a string containing configuration for this device (str)
     """
     _REPR_FIELDS = ('device_id', 'master_controller', 'responsible_service',
                     'configuration')
@@ -61,14 +60,15 @@ class DeviceInfo(ReprableMixin):
     """
     A class holding device information
 
-    :ivar device_id: device ID of the device
+    :ivar device_id: device ID of the device (str)
     :ivar slaves: list of :class:`smokclient.basics.SlaveDeviceInfo` containing info
-        about the slave devices
+        about the slave devices (tp.List[:class:`~smok.basics.SlaveDeviceInfo`])
     :ivar facets: a set of strings, contains interfaces that access to this device is allowed for
-    :ivar timezone: local timezone of this device, in accordance with tzdata
-    :ivar language: language of this device, according to ISO639-1
-    :ivar units: either `metric` or `imperial`, units used on this device
-    :ivar verbose_name: human-readable name of this device
+        (tp.Set[str])
+    :ivar timezone: local timezone of this device, in accordance with tzdata (str)
+    :ivar language: language of this device, according to ISO639-1 (str)
+    :ivar units: either `metric` or `imperial`, units used on this device (str)
+    :ivar verbose_name: human-readable name of this device (str)
     """
     _REPR_FIELDS = ('device_id', 'facets', 'language', 'timezone', 'units',
                     'slaves')
