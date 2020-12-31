@@ -9,7 +9,8 @@ Note that if documentation says that client threads can invoke these routines, y
 as threadsafe as feasible for you.
 
 BAOB storage
-:ref:`BAOB`s are essentially similar to metadata, except for being versioned monotonically
+------------
+BAOBs are essentially similar to metadata, except for being versioned monotonically
 and being composed of bytes instead of characters.
 
 If you want your BAOBs to persist restarts, feel free to implement following class:
@@ -19,6 +20,8 @@ If you want your BAOBs to persist restarts, feel free to implement following cla
 
 .. autoclass:: smok.extras.BAOBDigest
     :members:
+
+Sadly, since BAOB files can be downloaded each time the application starts, you're on your own.
 
 Sensor storage
 --------------
