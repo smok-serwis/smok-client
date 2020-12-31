@@ -103,7 +103,8 @@ via :meth:`~smok.predicate.BaseStatistic.open_event`.
 You open new events via :meth:`~smok.predicate.BaseStatistic.open_event`
 and close them with :meth:`~smok.predicate.BaseStatistic.close_event`. Example code could look like:
 
-::
+.. code-block:: python
+
     from satella.coding import silence_excs
     from smok.predicate import BaseStatistic, Color, Event
     from smok.exceptions import OperationFailedError
