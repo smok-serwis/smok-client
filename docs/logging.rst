@@ -10,14 +10,14 @@ and register this handler:
 
 Then you should add it to your list of handlers:
 
-::
+.. code-block:: python
 
     handler = SMOKLogHandler(sd, 'device')
     logger = logging.getLogger()
     logger.addHandler(handler)
 
 
-..note:: Service name is used to distinguish multiple processes running as the same device.
+.. note:: Service name is used to distinguish multiple processes running as the same device.
 
-..note:: Logging events are not stored for later submission. Either they are submitted at the moment,
+.. note:: Logging events are not stored for later submission. Either they are submitted at the moment,
     or they are lost forever.
