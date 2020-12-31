@@ -17,10 +17,12 @@ from satella.coding.structures import DirtyDict
 from .api import RequestsAPI
 from .certificate import get_device_info
 from .slave import SlaveDevice
+from ..baob import BAOB
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..exceptions import ResponseError
 from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
-    BasePathpointDatabase, BaseMetadataDatabase
+    BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase
+from ..extras.baob_database.memory import InMemoryBAOBDatabase
 from ..extras.event_database import InMemoryEventDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
 from ..extras.metadata_database import InMemoryMetadataDatabase
@@ -54,7 +56,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         in-memory implementation
     :param meta_database: custom meta database. Default value of None will result in an
         in-memory implementation
-    :param sensor_database: custom sensor database. Default value of None wil result in an
+    :param sensor_database: custom sensor database. Default value of None will result in an
+        in-memory implementation
+    :param baob_database: custom BAOB database. Default value of None will result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
@@ -106,11 +110,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Override this method. Default does nothing.
         """
 
-    def wait_until_synced(self) -> None:
-        """Block until everything's synchronized with the server"""
-        self.ready_lock.acquire()
-        self.ready_lock.release()
-
     def execute_section(self, section: Section) -> None:
         """
         Overload to implement custom section execution.
@@ -131,6 +130,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  macro_database: tp.Optional[BaseMacroDatabase] = None,
                  meta_database: tp.Optional[BaseMetadataDatabase] = None,
                  sensor_database: tp.Optional[BaseSensorDatabase] = None,
+                 baob_database: tp.Optional[BaseBAOBDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_archives: bool = False,
@@ -145,6 +145,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.meta_database = meta_database or InMemoryMetadataDatabase()
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)
+        self.baob_database = baob_database or InMemoryBAOBDatabase()
         self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
@@ -198,6 +199,24 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.executor = None
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
+
+    def get_baob(self, key: str) -> BAOB:
+        """
+        Retrieve given BAOB
+        """
+        return BAOB(self, key)
+
+    def get_all_baobs(self) -> tp.Iterator[BAOB]:
+        """
+        Stream all BAOBs
+        """
+        for key in self.baob_database.get_all_keys():
+            yield BAOB(self, key)
+
+    def wait_until_synced(self) -> None:
+        """Block until everything's synchronized with the server"""
+        self.ready_lock.acquire()
+        self.ready_lock.release()
 
     def _execute_message_order(self, order: MessageOrder) -> None:
         """

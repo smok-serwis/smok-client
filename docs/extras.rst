@@ -5,6 +5,21 @@ If you wish to extend the functionality of smok-client somehow, here's how you c
 
 Most options are, for this time, geared towards extended work in an Internet-less environment.
 
+Note that if documentation says that client threads can invoke these routines, you should make them
+as threadsafe as feasible for you.
+
+BAOB storage
+:ref:`BAOB`s are essentially similar to metadata, except for being versioned monotonically
+and being composed of bytes instead of characters.
+
+If you want your BAOBs to persist restarts, feel free to implement following class:
+
+.. autoclass:: smok.extras.BaseBAOBDatabase
+    :members:
+
+.. autoclass:: smok.extras.BAOBDigest
+    :members:
+
 Sensor storage
 --------------
 

@@ -18,8 +18,11 @@ class RequestsAPI:
         else:
             self.cert = device.cert
 
-    def request(self, request_type, url, **kwargs):
+    def request(self, request_type, url, direct_response: bool = False, **kwargs):
         """
+        :param direct_response: if True then return a tuple of (
+            response as is, headers), else it's JSON
+
         :raises ResponseError: something went wrong
         """
         op = getattr(requests, request_type)
@@ -33,6 +36,8 @@ class RequestsAPI:
             except requests.RequestException as e:
                 raise ResponseError(None, 'Requests error: %s' % (str(e), ))
         if resp.status_code not in (200, 201):
+            if direct_response:
+                return resp.content, resp.headers
             try:
                 error_json = resp.json()['status']
             except (json.decoder.JSONDecodeError, ValueError):
