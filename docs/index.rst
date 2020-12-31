@@ -12,6 +12,7 @@ Welcome to SMOK Client's documentation!
    extras
    logging
    exceptions
+   baob
    glossary
 
 SMOK devices are devices that consist of a bunch of pathpoints (eg. a single MODBUS register)

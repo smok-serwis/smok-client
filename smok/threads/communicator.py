@@ -3,6 +3,7 @@ import queue
 import time
 import typing as tp
 
+import ujson
 from satella.coding import silence_excs, for_argument, log_exceptions
 from satella.coding.concurrent import TerminableThread, Condition
 from satella.coding.decorators import retry
@@ -36,6 +37,7 @@ def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
 
 COMMUNICATOR_INTERVAL = 20
 PREDICATE_SYNC_INTERVAL = 300
+BAOB_SYNC_INTERVAL = 60*60  # an hour
 
 
 class CommunicatorThread(TerminableThread):
@@ -51,6 +53,7 @@ class CommunicatorThread(TerminableThread):
         self.last_sensors_synced = 0
         self.last_predicates_synced = 0
         self.data_to_update = Condition()
+        self.last_baob_synced = 0
 
     def tick_predicates(self):
         for predicate in self.device.predicates.values():
@@ -141,6 +144,27 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
+    def sync_baob(self):
+        keys = self.device.baob_database.get_all_keys()
+        data = []
+        for key in keys:
+            data.append({'key': key,
+                         'version': self.device.baob_database.get_baob_version(key)})
+        data = self.device.api.post('/v1/device/baobs', json=data)
+        for key_to_download in data['should_download']:
+            resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
+                                                direct_response=True)
+            self.device.baob_database.set_baob_value(key_to_download, resp, int(headers['X-SMOK-BAOB-Version']))
+            logger.debug('Downloaded BAOB %s', key_to_download)
+        for key_to_upload in data['should_upload']:
+            self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
+                'file': self.device.baob_database.get_baob_value(key_to_upload),
+                'data': ujson.dumps({'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode('utf8')
+            })
+            logger.debug('Uploaded BAOB %s', key_to_upload)
+        self.last_baob_synced = time.time()
+
+    @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
@@ -183,6 +207,10 @@ class CommunicatorThread(TerminableThread):
             # Synchronize predicates
             if time.time() - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
                 self.sync_predicates()
+
+            # Fetch the BAOBs
+            if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
+                self.sync_baob()
 
             # Fetch the orders
             if not self.dont_obtain_orders:
