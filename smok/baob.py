@@ -22,6 +22,8 @@ class BAOB:
     @property
     def value(self) -> bytes:
         """
+        This property is both gettable and settable.
+
         :return: value of this BAOB
         """
         return self.device.baob_database.get_baob_value(self.key)

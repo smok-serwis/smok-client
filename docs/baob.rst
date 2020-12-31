@@ -1,6 +1,8 @@
 BAOB
 ====
 
+.. _BAOB:
+
 BAOBs, or Binary All-sized OBjects, are the preferred way of sharing files between
 SMOK server and SMOK devices. They are monotonically versioned, with each update to the file
 adding a 1 to version.
