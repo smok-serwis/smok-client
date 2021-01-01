@@ -35,7 +35,10 @@ If you want your BAOBs to persist restarts, feel free to implement following cla
 .. autoclass:: smok.extras.BAOBDigest
     :members:
 
-Sadly, since BAOB files can be downloaded each time the application starts, you're on your own.
+If you want a quick database that persists restarts, take a look at:
+
+.. autoclass:: smok.extras.PicklingBAOBDatabase
+    :members:
 
 Sensor storage
 --------------

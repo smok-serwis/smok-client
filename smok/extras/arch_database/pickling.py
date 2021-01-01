@@ -22,6 +22,6 @@ class PicklingArchivesDatabase(BaseArchivesDatabase):
         try:
             with open(self.path, 'rb') as f_in:
                 self.data = pickle.load(f_in)
-        except (FileNotFoundError, pickle.PicklingError):
+        except (FileNotFoundError, pickle.UnpicklingError):
             self.data = {}
 

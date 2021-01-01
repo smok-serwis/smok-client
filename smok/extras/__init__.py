@@ -3,12 +3,12 @@ from .pp_database import BasePathpointDatabase, BaseDataToSynchronize, PicklingP
 from .macros_database import BaseMacroDatabase, PicklingMacroDatabase
 from .metadata_database import BaseMetadataDatabase, PicklingMetadataDatabase
 from .sensors_database import BaseSensorDatabase, PicklingSensorDatabase
-from .baob_database import BAOBDigest, BaseBAOBDatabase
+from .baob_database import BAOBDigest, BaseBAOBDatabase, PicklingBAOBDatabase
 from .arch_database import BaseArchivesDatabase, PicklingArchivesDatabase
 
 __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointDatabase',
            'BaseEventDatabase', 'BaseEventSynchronization', 'PicklingEventDatabase',
-           'BaseMacroDatabase', 'PicklingMacroDatabase',
+           'BaseMacroDatabase', 'PicklingMacroDatabase', 'PicklingBAOBDatabase',
            'BaseMetadataDatabase', 'PicklingMetadataDatabase',
            'BaseSensorDatabase', 'PicklingSensorDatabase',
            'BAOBDigest', 'BaseBAOBDatabase',
