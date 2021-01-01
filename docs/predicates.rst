@@ -17,7 +17,8 @@ Note that you can't define any sensors yourself and must rely on the server to d
 
 There's a way to access the value of a sensor. Where SMOK would represent the value of a
 sensor either by a JSONable value, or by a value and it's units (via pint_), `smok-client`
-does away with units, and returns sensor values only as JSONable values.
+does away with units, and returns sensor values only as JSONable values. The unit part is simply
+stripped from the value.
 
 .. _pint: https://pint.readthedocs.io/
 
