@@ -4,7 +4,7 @@ import pickle
 from satella.coding import silence_excs
 from satella.files import read_in_file, write_to_file
 
-from smok.extras import BaseBAOBDatabase
+from .base import BaseBAOBDatabase
 
 
 class PicklingBAOBDatabase(BaseBAOBDatabase):

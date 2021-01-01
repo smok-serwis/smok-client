@@ -2,7 +2,7 @@ import typing as tp
 
 from satella.coding import Monitor
 
-from smok.extras import BaseBAOBDatabase
+from .base import BaseBAOBDatabase
 
 
 class InMemoryBAOBDatabase(BaseBAOBDatabase, Monitor):
