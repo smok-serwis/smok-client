@@ -43,10 +43,12 @@ BAOB_SYNC_INTERVAL = 60*60  # an hour
 class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
                  data_to_sync: DataSyncDict, dont_obtain_orders: bool,
+                 dont_do_baobs: bool,
                  startup_delay: float):
         super().__init__(name='order getter')
         self.device = device
         self.startup_delay = startup_delay
+        self.dont_do_baobs = dont_do_baobs
         self.dont_obtain_orders = dont_obtain_orders
         self.queue = order_queue
         self.data_to_sync = data_to_sync
@@ -209,7 +211,7 @@ class CommunicatorThread(TerminableThread):
                 self.sync_predicates()
 
             # Fetch the BAOBs
-            if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
+            if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL and not self.dont_do_baobs:
                 self.sync_baob()
 
             # Fetch the orders

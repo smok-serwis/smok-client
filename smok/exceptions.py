@@ -25,6 +25,12 @@ class InstanceNotReady(SMOKClientError):
     """
 
 
+class UnavailableError(SMOKClientError):
+    """
+    The client was started in a mode that does not support your request, ie. requesting
+    a BAOB while starting client with
+    """
+
 class ResponseError(SMOKClientError):
     """
     Server replied with a wrong code or didn't reply at all.

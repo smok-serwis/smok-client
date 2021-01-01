@@ -19,7 +19,7 @@ from .certificate import get_device_info
 from .slave import SlaveDevice
 from ..baob import BAOB
 from ..basics import DeviceInfo, Environment, StorageLevel
-from ..exceptions import ResponseError
+from ..exceptions import ResponseError, UnavailableError
 from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
     BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase
 from ..extras.baob_database.memory import InMemoryBAOBDatabase
@@ -60,7 +60,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         in-memory implementation
     :param baob_database: custom BAOB database. Default value of None will result in an
         in-memory implementation
-    :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders
+    :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders.
+    :param dont_do_baobs: if set to True, this SMOKDevice won't care about BAOBs.
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
     :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
@@ -133,6 +134,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
+                 dont_do_baobs: bool = False,
                  dont_do_archives: bool = False,
                  startup_delay: float = 10):
         super().__init__()
@@ -184,17 +186,17 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.api = RequestsAPI(self)
 
         self._order_queue = PeekableQueue()
-
         if not (dont_do_archives and dont_do_macros):
             self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue,
                                                            dont_do_macros, dont_do_archives).start()
         else:
             self.arch_and_macros = None
-
+        self.dont_do_baobs = dont_do_baobs
         if not dont_obtain_orders:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
             self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
-                                             dont_obtain_orders, startup_delay).start()
+                                             dont_obtain_orders,
+                                             dont_do_baobs, startup_delay).start()
         else:
             self.executor = None
             self.getter = None
@@ -203,13 +205,22 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     def get_baob(self, key: str) -> BAOB:
         """
         Retrieve given BAOB
+
+        :raises UnavailableError: client was launched in a mode with BAOBs disabled
         """
+        if self.dont_do_baobs:
+            raise UnavailableError('Support for BAOBs was disabled')
         return BAOB(self, key)
 
     def get_all_baobs(self) -> tp.Iterator[BAOB]:
         """
         Stream all BAOBs
+
+        :raises UnavailableError: client was launched in a mode with BAOBs disabled
         """
+        if self.dont_do_baobs:
+            raise UnavailableError('Support for BAOBs was disabled')
+
         for key in self.baob_database.get_all_keys():
             yield BAOB(self, key)
 

@@ -1,3 +1,6 @@
+from smok.exceptions import UnavailableError
+
+
 class BAOB:
     """
     A Binary All-sized OBject.
@@ -30,6 +33,11 @@ class BAOB:
 
     @value.setter
     def value(self, new_data: bytes) -> None:
+        """
+        :raises UnavailableError: client was launched in a mode with BAOBs disabled
+        """
+        if self.device.dont_do_baobs:
+            raise UnavailableError('Client was launched as not supporting BAOBs!')
         self.device.baob_database.set_baob_value(self.key, new_data, self.version+1)
         self.device.getter.last_baob_synced = 0
         self.device.getter.data_to_update.notify()
