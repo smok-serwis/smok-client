@@ -55,7 +55,7 @@ class OperationFailedError(SMOKClientError):
     Raised by the pathpoint's on_read and on_write futures when the operation fails
 
     :ivar reason: reason of failure
-    :ivar timestamp: timestamp of failure
+    :ivar timestamp: timestamp of failure in milliseconds
     """
 
     def __init__(self, reason: OperationFailedReason, timestamp: tp.Optional[Number] = None):
@@ -69,7 +69,7 @@ class NotReadedError(OperationFailedError):
 
     Note that this is invalid to return in read handling futures!
 
-    :ivar timestamp: timestamp of failure
+    :ivar timestamp: timestamp of failure in milliseconds
     """
 
     def __init__(self, timestamp: tp.Optional[float] = None):
