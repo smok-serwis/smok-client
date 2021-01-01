@@ -1,8 +1,7 @@
-satella==2.*
-requests==2.*
-pyasn1==0.4.*
-cryptography==2.*
+satella
+requests
+pyasn1
+cryptography
 pyopenssl
 pytz
-ujson==4.*
-
+ujson
