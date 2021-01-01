@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import ListDeleter, silence_excs
+from satella.coding import silence_excs
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -9,7 +9,7 @@ from satella.time import time_as_int
 from smok.exceptions import ResponseError
 from smok.pathpoint.orders import Section
 from smok.threads.archives_and_macros.archive import archiving_entries_from_json, \
-    ArchivingEntry
+    ArchivingEntry, archiving_dict_from_json
 from smok.macro import Macro
 
 ARCHIVE_UPDATING_INTERVAL = 600
@@ -29,6 +29,11 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         self.macros_updated_on = 0  # type: int
         self.macros_to_execute = []  # type: tp.List[Macro]
         self.archiving_entries = set()  # type: tp.Set[ArchivingEntry]
+
+        # Load the archiving data
+        for interval, pathpoints in self.device.arch_database.get_archiving_instructions().items():
+            for pp in pathpoints:
+                self.archiving_entries.add(ArchivingEntry(pp, interval))
 
     def should_update_archives(self) -> bool:
         return time.time() - self.archives_updated_on > ARCHIVE_UPDATING_INTERVAL
@@ -54,6 +59,8 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     def update_archives(self):
         data = self.device.api.get('/v1/device/pathpoints/archived')
         entries_now = archiving_entries_from_json(data)
+        dct = archiving_dict_from_json(data)
+        self.device.arch_database.on_archiving_data_sync(dct)
         entries_to_evict = self.archiving_entries - entries_now
         entries_to_add = entries_now - self.archiving_entries
         for entry in entries_to_evict:

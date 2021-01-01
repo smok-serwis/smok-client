@@ -19,6 +19,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * add BAOBs
 * Sensor class is now eq-able and hashable
 * added option to disable pathpoints and predicates 
+* added archiving data extra DB
 
 ### v0.5
 

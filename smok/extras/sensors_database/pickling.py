@@ -36,7 +36,7 @@ class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
         return self.sensor_cache[fqts]
 
     @Monitor.synchronized
-    def on_sync(self, sensors: tp.List[Sensor]):
+    def on_sensors_sync(self, sensors: tp.List[Sensor]):
         self.data = {}
         for sensor in sensors:
             self.data[sensor.fqts] = to_dict(sensor)

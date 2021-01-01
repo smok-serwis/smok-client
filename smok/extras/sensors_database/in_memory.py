@@ -12,7 +12,7 @@ class InMemorySensorDatabase(BaseSensorDatabase, Monitor):
         return list(self.sensors.values())
 
     @Monitor.synchronized
-    def on_sync(self, sensors: tp.List[Sensor]):
+    def on_sensors_sync(self, sensors: tp.List[Sensor]):
         self.sensors = {sensor.fqts: sensor for sensor in sensors}
 
     @Monitor.synchronized

@@ -9,6 +9,7 @@ from satella.coding.concurrent import call_in_separate_thread
 from smok.basics import Environment, StorageLevel
 from smok.client import SMOKDevice
 from smok.exceptions import NotReadedError, OperationFailedError
+from smok.extras import PicklingArchivesDatabase
 from smok.logging import SMOKLogHandler
 from smok.pathpoint.orders import AdviseLevel
 from smok.pathpoint.pathpoint import Pathpoint
@@ -56,7 +57,8 @@ class CustomPredicate(BaseStatistic):
 
 class MyDevice(SMOKDevice):
     def __init__(self):
-        super().__init__('dev.crt', 'key.crt', 'predicate_db.pickle')
+        super().__init__('dev.crt', 'key.crt', 'predicate_db.pickle',
+                         arch_database=PicklingArchivesDatabase('arch_pickle.db'))
 
     def provide_unknown_pathpoint(self, name: str,
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:

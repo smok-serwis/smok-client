@@ -28,7 +28,7 @@ class BaseSensorDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def on_sync(self, sensors: tp.List[Sensor]):
+    def on_sensors_sync(self, sensors: tp.List[Sensor]):
         """
         Sensors have just been synchronized, this is the entire list.
 

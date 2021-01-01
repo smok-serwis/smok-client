@@ -32,3 +32,11 @@ def archiving_entries_from_json(y: tp.List[dict]) -> tp.Set[ArchivingEntry]:
         interval = entry['interval']
         for pp in entry['pathpoints']:
             yield ArchivingEntry(pp, interval)
+
+
+def archiving_dict_from_json(y: tp.List[dict]) -> tp.Dict[int, tp.List[str]]:
+    result = {}
+    for entry in y:
+        interval = entry['interval']
+        result[entry['interval']] = entry['pathpoints']
+    return result

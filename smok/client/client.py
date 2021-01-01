@@ -21,7 +21,8 @@ from ..baob import BAOB
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..exceptions import ResponseError, UnavailableError
 from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
-    BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase
+    BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase, BaseArchivesDatabase
+from ..extras.arch_database.in_memory import InMemoryArchivesDatabase
 from ..extras.baob_database.memory import InMemoryBAOBDatabase
 from ..extras.event_database import InMemoryEventDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
@@ -59,6 +60,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param sensor_database: custom sensor database. Default value of None will result in an
         in-memory implementation
     :param baob_database: custom BAOB database. Default value of None will result in an
+        in-memory implementation
+    :param arch_database: custom archives database. Default value of None will result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders.
         This also implies dont_do_baobs. It is a ValueError to set this while setting
@@ -140,6 +143,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  meta_database: tp.Optional[BaseMetadataDatabase] = None,
                  sensor_database: tp.Optional[BaseSensorDatabase] = None,
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
+                 arch_database: tp.Optional[BaseArchivesDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_predicates: bool = False,
@@ -160,6 +164,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.meta_database = meta_database or InMemoryMetadataDatabase()
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)
+        self.arch_database = arch_database or InMemoryArchivesDatabase()
         self.baob_database = baob_database or InMemoryBAOBDatabase()
         self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()

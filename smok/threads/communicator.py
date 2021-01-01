@@ -124,7 +124,7 @@ class CommunicatorThread(TerminableThread):
     def sync_sensors(self):
         resp = self.device.api.get('/v1/device/sensors')
 
-        self.device.sensor_database.on_sync([Sensor.from_json(self.device, data) for data in resp])
+        self.device.sensor_database.on_sensors_sync([Sensor.from_json(self.device, data) for data in resp])
         self.last_sensors_synced = time.time()
 
     @retry(3, ResponseError)

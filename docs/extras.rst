@@ -8,6 +8,20 @@ Most options are, for this time, geared towards extended work in an Internet-les
 Note that if documentation says that client threads can invoke these routines, you should make them
 as threadsafe as feasible for you.
 
+Archive database
+----------------
+
+Lists of pathpoints to be archived also need to persist in case of restart. You need to
+implement the following:
+
+.. autoclass:: smok.extras.BaseArchivesDatabase
+    :members:
+
+In case you want a fast solution, there's also
+
+.. autoclass:: smok.extras.PicklingArchivesDatabase
+    :members:
+
 BAOB storage
 ------------
 BAOBs are essentially similar to metadata, except for being versioned monotonically
