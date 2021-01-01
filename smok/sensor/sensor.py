@@ -81,7 +81,7 @@ class Sensor:
         Return the value of this sensor
 
         :raises NotYetReaded: required pathpoints are not available
-        :return: a tuple of (timestamp, sensor value)
+        :return: a tuple of (timestamp in milliseconds, sensor value)
         :raises OperationFailedError: one of pathpoint failed to provide a value
         """
         vals = [self._calculate_pathpoint(pp) for pp in self._pathpoint_names]
