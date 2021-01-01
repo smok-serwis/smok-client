@@ -80,6 +80,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar url: base URL for the API calls, without the trailing slash
     :ivar metadata: plain metadata for this device
         (class :class:`smokclient.metadata.PlainMetadata`)
+    :ivar baobs_loaded: whether all BAOBS have been synchronized (bool)
     """
 
     def provide_unknown_pathpoint(self, name: str,
@@ -139,6 +140,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  startup_delay: float = 10):
         super().__init__()
         self.pp_database = pp_database or InMemoryPathpointDatabase()
+        self.baobs_loaded = False
         if isinstance(evt_database, str):
             self.evt_database = InMemoryEventDatabase(evt_database)
         else:

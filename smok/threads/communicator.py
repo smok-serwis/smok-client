@@ -165,6 +165,7 @@ class CommunicatorThread(TerminableThread):
             })
             logger.debug('Uploaded BAOB %s', key_to_upload)
         self.last_baob_synced = time.time()
+        self.device.baobs_loaded = True
 
     @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
