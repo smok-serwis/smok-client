@@ -43,14 +43,17 @@ BAOB_SYNC_INTERVAL = 60*60  # an hour
 class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
                  data_to_sync: DataSyncDict, dont_obtain_orders: bool,
-                 dont_do_baobs: bool,
+                 dont_do_baobs: bool, dont_do_pathpoints: bool,
+                 dont_do_predicates: bool,
                  startup_delay: float):
         super().__init__(name='order getter')
         self.device = device
         self.startup_delay = startup_delay
+        self.dont_do_pathpoints = dont_do_pathpoints
         self.dont_do_baobs = dont_do_baobs
         self.dont_obtain_orders = dont_obtain_orders
         self.queue = order_queue
+        self.dont_do_predicates = dont_do_predicates
         self.data_to_sync = data_to_sync
         self.last_sensors_synced = 0
         self.last_predicates_synced = 0
@@ -197,37 +200,43 @@ class CommunicatorThread(TerminableThread):
     def loop(self) -> None:
         with measure() as measurement:
             # Synchronize the data
-            self.sync_data()
+            if not self.dont_do_pathpoints:
+                self.sync_data()
 
-            # Synchronize the pathpoints
-            if self.device.pathpoints.dirty:
-                self.sync_pathpoints()
+                # Synchronize the pathpoints
+                if self.device.pathpoints.dirty:
+                    self.sync_pathpoints()
 
-            # Synchronize sensors
-            if time.time() - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
-                self.sync_sensors()
+                # Synchronize sensors
+                if time.time() - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
+                    self.sync_sensors()
 
             # Synchronize predicates
-            if time.time() - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
-                self.sync_predicates()
+            if not self.dont_do_predicates:
+                if time.time() - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
+                    self.sync_predicates()
 
             # Fetch the BAOBs
-            if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL and not self.dont_do_baobs:
-                self.sync_baob()
+            if not self.dont_do_baobs:
+                if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
+                    self.sync_baob()
 
             # Fetch the orders
             if not self.dont_obtain_orders:
                 self.fetch_orders()
 
-            # Tick the predicates
-            self.tick_predicates()
+            if not self.dont_do_predicates:
+                # Tick the predicates
+                self.tick_predicates()
 
-            # Sync the events
-            self.sync_events()
+                # Sync the events
+                self.sync_events()
 
             # Checkpoint the DB
-            self.device.pp_database.checkpoint()
-            self.device.evt_database.checkpoint()
+            if not self.dont_do_pathpoints:
+                self.device.pp_database.checkpoint()
+            if not self.dont_do_predicates:
+                self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
             time_to_wait = COMMUNICATOR_INTERVAL - measurement()

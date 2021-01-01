@@ -61,8 +61,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param baob_database: custom BAOB database. Default value of None will result in an
         in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders.
+        This also implies dont_do_baobs. It is a ValueError to set this while setting
+        dont_bo_baobs to False.
+    :param dont_do_pathpoints: if set to True, this SMOKDevice won't support pathpoints
+        or sensors.
     :param dont_do_baobs: if set to True, this SMOKDevice won't care about BAOBs.
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
+    :param dont_do_predicates: if set to True, this SMOKDevice won't do predicates
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
     :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
         start talking
@@ -81,6 +86,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar metadata: plain metadata for this device
         (class :class:`smokclient.metadata.PlainMetadata`)
     :ivar baobs_loaded: whether all BAOBS have been synchronized (bool)
+
+    :raise ValueError: invalid combination of arguments was given
     """
 
     def provide_unknown_pathpoint(self, name: str,
@@ -135,10 +142,14 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
+                 dont_do_predicates: bool = False,
+                 dont_do_pathpoints: bool = False,
                  dont_do_baobs: bool = False,
                  dont_do_archives: bool = False,
                  startup_delay: float = 10):
         super().__init__()
+        self.dont_do_predicates = dont_do_predicates
+        self.dont_do_pathpoints = dont_do_pathpoints
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         self.baobs_loaded = False
         if isinstance(evt_database, str):
@@ -194,11 +205,14 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             self.arch_and_macros = None
         self.dont_do_baobs = dont_do_baobs
-        if not dont_obtain_orders:
+        if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
+                not dont_do_baobs:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
             self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
                                              dont_obtain_orders,
-                                             dont_do_baobs, startup_delay).start()
+                                             dont_do_baobs,
+                                             dont_do_pathpoints,
+                                             dont_do_predicates, startup_delay).start()
         else:
             self.executor = None
             self.getter = None
@@ -272,7 +286,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: a particular event
         :raises KeyError: event not found, or already closed
         :rtype: Event
+        :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
         for event in self.evt_database.get_open_events():
             if event.uuid_matches(event_id):
                 return event
@@ -283,7 +300,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Stream all sensors
 
         .. note:: This will block until sensors are synced from the server
+
+        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         """
+        if self.dont_do_pathpoints:
+            raise UnavailableError('SMOKDevice was launched without pathpoints')
         with self.ready_lock:
             yield from self.sensor_database.get_all_sensors()
 
@@ -296,7 +317,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param tag_set: either set of strs or these strs joined with a ' '
         :return: sensor
         :raises KeyError: sensor does not exist
+        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         """
+        if self.dont_do_pathpoints:
+            raise UnavailableError('SMOKDevice was launched without pathpoints')
         with self.ready_lock:
             if isinstance(tag_set, set):
                 tag_set = list(tag_set)
@@ -309,7 +333,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     def get_all_open_events(self) -> tp.Iterator[Event]:
         """
         Get all open events
+
+        :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
         return self.evt_database.get_open_events()
 
     def open_event(self, started_on: int, ended_on: tp.Optional[int],
@@ -317,7 +345,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                    metadata: tp.Dict[str, str]) -> Event:
         """
         Create a new event
+
+        :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
         evt_uuid = uuid.uuid4().hex
         event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)
@@ -342,7 +374,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param storage_level: target storage level
         :return: a pathpoint having provided name
         :raises KeyError: pathpoint not available
+        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         """
+        if self.dont_do_pathpoints:
+            raise UnavailableError('SMOKDevice was launched without pathpoints')
         if path in self.pathpoints:
             return self.pathpoints[path]
         pp = self.provide_unknown_pathpoint(path, storage_level)  # raises KeyError
@@ -357,7 +392,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         instances will be created for them shortly by the communicator thread.
 
         :param stat: a class (not an instance) to register
+
+        :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
         assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
         self.predicate_classes[stat.statistic_name] = stat
 
@@ -370,7 +409,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         this call is still required
 
         :param pp: pathpoint to register
+        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         """
+        if self.dont_do_pathpoints:
+            raise UnavailableError('SMOKDevice was launched without pathpoints')
         if pp.name not in self.pathpoints:
             pp.device = weakref.proxy(self)
             self.pathpoints[pp.name] = pp
