@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.7
+
+* _TBA_
+
 ### v0.6
 
 * add BAOBs
