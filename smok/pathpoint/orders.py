@@ -31,6 +31,10 @@ class Order:
 
 
 class MessageOrder(Order, ReprableMixin):
+    """
+    A message order. Best executed with
+    :meth:`smok.client.SMOKDevice._execute_message_order`
+    """
     _REPR_FIELDS = ('uuid',)
     __slots__ = ('uuid',)
 
@@ -129,8 +133,11 @@ def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
 
 
 class Disposition(enum.IntEnum):
-    JOINABLE = 0
-    CANNOT_JOIN = 1
+    """
+    A joinable quality of the section
+    """
+    JOINABLE = 0        #: this section can be joined to neighbouring JOINABLE sections
+    CANNOT_JOIN = 1     #: this section cannot be joined to any sections
 
 
 class Section(ReprableMixin):

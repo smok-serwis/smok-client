@@ -117,9 +117,14 @@ Threads
 
 `SMOKDevice` spawns 3 threads to help it out with it's chores. They are as follows:
 
-* `CommunicatorThread` handles communication with the SMOK server
-* `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived and
-  about executing macros
+* `CommunicatorThread` handles communication with the SMOK server, and following things:
+    * reading macros (tasks to be executed in the future)
+    * synchronizes :ref:`BAOBs`
+    * fetches orders to execute on `OrderExecutorThread`
+    * synchronizes pathpoints and sensors
+    * synchronizes and executes :ref:`predicates`
+* `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived,
+  about executing macros, and synchronizes the metadata in the background.
 * `OrderExecutorThread` handles the loop executing orders.
 * `LogPublisherThread` handles publishing your logs to the SMOK server
 
@@ -192,3 +197,16 @@ no relevance **how** they completed. You may even cancel it:
 
     if read_order.cancel():
         print('Successfully cancelled')
+
+Custom order-execution loop
+---------------------------
+
+If you want to write a custom order-execution loop, just override
+:meth:`smok.client.SMOKDevice.execute_section. It will accept a single argument of
+:class:`~smok.pathpoint.orders.Section`, about which you can read up in :ref:`orders`.
+
+You will also need to provide a method
+:meth:`smok.client.SMOKDevice.sync_sections` to block until all orders from previous section
+have been completed.
+
+Both of these methods will be called by the `OrderExecutorThread`.

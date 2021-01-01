@@ -31,12 +31,24 @@ class Sensor:
     """
     A class representing a smok-client sensor defined on given device.
 
+    Class is eq-able and hashable by fqts.
+
+    .. warning:: Do not compare sensors across different devices!
+
     :ivar fqts: a sorted string representing tags of this sensor joined by a space (str)
     :ivar path: composite pathpoint names, separated by a tilde (~) (str)
     :ivar type_name: name of the sensor type (str)
     :ivar type: object used for data conversion between pathpoints and sensor values
     """
     __slots__ = ('fqts', 'path', 'type_name', '_pathpoint_names', 'type', 'device')
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Sensor):
+            return False
+        return self.fqts == other.fqts
+
+    def __hash__(self) -> int:
+        return hash(self.fqts)
 
     def __init__(self, device: 'SMOKDevice', fqts: str, path: str, type_name: str):
         self.device = weakref.proxy(device)

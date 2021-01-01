@@ -1,6 +1,8 @@
 Predicates
 ==========
 
+.. _predicates:
+
 Predicate are a way for the device to report any anomalies on it. It works by means of the
 userland querying `smok-client` about value of given sensors, and responding properly, by
 opening an event (alarm condition) or closing it.
