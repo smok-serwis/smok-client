@@ -31,6 +31,7 @@ class UnavailableError(SMOKClientError):
     a BAOB while starting client with
     """
 
+
 class ResponseError(SMOKClientError):
     """
     Server replied with a wrong code or didn't reply at all.

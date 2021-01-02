@@ -10,17 +10,33 @@ SVTOrExcept = tp.Union[SensorValueType, OperationFailedError]
 
 
 class BasicType(metaclass=ABCMeta):
+    """
+    A base class for all SMOK sensor types
+    """
+    __slots__ = ()
+
     @abstractmethod
     def pathpoint_to_sensor(self, *values: PathpointValueType) -> SensorValueType:
-        ...
+        """
+        Convert a value from pathpoint values to a sensor value
+        """
 
     @abstractmethod
     def sensor_to_pathpoint(self, value: SensorValueType,
                             *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
-        ...
+        """
+        Convert a value from sensor values to pathpoint values, each value in tuple
+        for a separate pathpoint. If your sensor consists of a single pathpoint, then
+        you should return a 1-element tuple.
+        """
 
 
 class NumericType(BasicType):
+    """
+    A type for values of numeric type
+
+    :ivar precision: number of places after the comma that should be diplayed (int)
+    """
     __slots__ = ('precision', 'multiplier', 'offset')
 
     def __init__(self, precision=2, multiplier=1, offset=0, **kwargs):
@@ -40,6 +56,9 @@ class NumericType(BasicType):
 
 
 class UnicodeType(BasicType):
+    """
+    A basic type for Unicode-containing sensors
+    """
     def sensor_to_pathpoint(self, value: SensorValueType,
                             *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
         return str(value),

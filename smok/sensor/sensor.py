@@ -41,6 +41,7 @@ class Sensor:
     :ivar path: composite pathpoint names, separated by a tilde (~) (str)
     :ivar type_name: name of the sensor type (str)
     :ivar type: object used for data conversion between pathpoints and sensor values
+        (:class:`smok.sensor.types.BasicType`)
     """
     __slots__ = ('fqts', 'path', 'type_name', '_pathpoint_names', 'type', 'device',
                  'slave_pathpoints')

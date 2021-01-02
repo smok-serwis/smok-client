@@ -22,6 +22,8 @@ class ReparsePathpoint(Pathpoint):
 
     Writing a reparse pathpoint always results in a zero operation, while reading
     it reads all constituent pathpoints.
+
+    Good news is that you don't need to override it, nor provide your own implementations.
     """
     __slots__ = ('expr', 'slave_pathpoints')
 
@@ -57,7 +59,7 @@ class ReparsePathpoint(Pathpoint):
         :param starting_at: timestamp of start, in milliseconds
         :param stopping_at: timestamp of end, in milliseconds, or None for the end of the park
         :return: an iterator of tuple (timestamp in milliseconds,
-                                       pathpoint value or exception instance)
+                                       sensor value or exception instance)
         """
         slave_archives = []
         for slave in self.slave_pathpoints:

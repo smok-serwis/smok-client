@@ -8,6 +8,7 @@ Welcome to SMOK Client's documentation!
    how-to-start
    slave_devices
    orders
+   sensors
    predicates
    extras
    logging

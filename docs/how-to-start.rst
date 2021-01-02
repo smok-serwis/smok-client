@@ -147,8 +147,6 @@ Pathpoint
 .. autoclass:: smok.pathpoint.ReparsePathpoint
     :members:
 
-Good news is that you don't need to override :class:`smok.pathpoint.ReparsePathpoint`s.
-
 Enums
 -----
 .. autoclass:: smok.pathpoint.AdviseLevel
@@ -161,22 +159,6 @@ Enums
 
 .. autoclass:: smok.basics.Environment
     :members:
-
-Other values and exceptions
----------------------------
-
-.. autoclass:: smok.exceptions.smokError
-
-.. autoclass:: smok.exceptions.InvalidCredentials
-
-.. autoclass:: smok.exception.ResponseFailedError
-
-.. autoclass:: smok.exception.InstanceNotReady
-
-.. autodata:: smok.pathpoint.PathpointValueType
-
-
-.. autodata:: smok.pathpoint.ValueOrExcept
 
 Executing orders
 ----------------
