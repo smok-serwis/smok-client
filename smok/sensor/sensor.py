@@ -16,8 +16,9 @@ def fqtsify(tag_name: tp.Union[str, tp.Set[str]]) -> str:
     """
     Standarize the name, for use in dictionaries and other places that access sensors by name
 
-    :param tag_name: either a space-separated set of names or a set of names proper
-    :return: FQTS-ified name
+    :param tag_name: :term:`Tag name`, either a space-separated set of names or a set of names
+        proper
+    :return: :term:`FQTS`-ified name
     """
     if isinstance(tag_name, set):
         tag_name = list(tag_name)
@@ -35,7 +36,7 @@ class Sensor:
 
     .. warning:: Do not compare sensors across different devices!
 
-    :ivar fqts: a sorted string representing tags of this sensor joined by a space (str)
+    :ivar fqts: this sensor's :term:`FQTS` (str)
     :ivar path: composite pathpoint names, separated by a tilde (~) (str)
     :ivar type_name: name of the sensor type (str)
     :ivar type: object used for data conversion between pathpoints and sensor values

@@ -30,3 +30,26 @@ Glossary
     Master controller
       A single device, that is seen by the user as whole.
       Composed at least of a single :term:`slave`
+
+    Point event
+      A event that occurs at a point in time. It does not span a period, and it's created
+      in state closed.
+
+    Color
+      A severity of an event. Red is highest, yellow is medium and white is the least severe.
+
+    Pathpoint
+      Essentially a named, typed variable. It's first letter of the name (path) identifies it's
+      type. This should correspond 1:1 to measure points, eg. temperature sensors and so on.
+
+    Sensor
+      Information processed from pathpoints to be displayed to the user. Server manages these. It
+      consists of one (or more) pathpoints, has a type and a tag name.
+
+    Tag name
+      Set of words separated by space identifying given sensor. Note that a set has no meaning of
+      order, so "ud test" is the same as "test ud"
+
+    FQTS
+      Fully-Qualified Tag System, or a canonical representation of a tag name, is the tag name
+      split by space, entries sorted and joined with a " ".

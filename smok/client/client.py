@@ -347,14 +347,25 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def open_event(self, started_on: int, ended_on: tp.Optional[int],
                    color: Color, is_point: bool, token: str, group: str, message: str,
-                   metadata: tp.Dict[str, str]) -> Event:
+                   metadata: tp.Optional[tp.Dict[str, str]] = None) -> Event:
         """
         Create a new event
 
+        :param started_on: timestamp in seconds, when was the event started?
+        :param ended_on: timestamp in seconds when has the event ended, None in case of
+            open events.
+        :param color: :term:`Color` of an event
+        :param is_point: whether this is a :term:`point event`
+        :param token: a string
+        :param group: notification group
+        :param message: human-readable message
+        :param metadata: extra metadata
+        :return: the Event object
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
+        metadata = metadata or {}
         evt_uuid = uuid.uuid4().hex
         event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)

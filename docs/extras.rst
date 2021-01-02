@@ -1,6 +1,8 @@
 Extras
 ======
 
+.. _extras:
+
 If you wish to extend the functionality of smok-client somehow, here's how you can do it.
 
 Most options are, for this time, geared towards extended work in an Internet-less environment.

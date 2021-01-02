@@ -130,3 +130,5 @@ and close them with :meth:`~smok.predicate.BaseStatistic.close_event`. Example c
                 self.state = None
 
     sd.register_statistic(CustomPredicate)
+
+Beware, :term:`point event`s cannot be closed as they do not span a period and are created closed.
