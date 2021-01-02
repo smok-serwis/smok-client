@@ -1,10 +1,12 @@
 import typing as tp
 from abc import ABCMeta, abstractmethod
 
+from smok.exceptions import OperationFailedError
 from smok.pathpoint import PathpointValueType, PathpointType
 from smok.pathpoint.typing import to_type
 
 SensorValueType = tp.Union[str, int, float, list, dict]
+SVTOrExcept = tp.Union[SensorValueType, OperationFailedError]
 
 
 class BasicType(metaclass=ABCMeta):

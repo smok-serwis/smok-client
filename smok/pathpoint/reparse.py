@@ -68,7 +68,8 @@ class ReparsePathpoint(Pathpoint):
                 if isinstance(v, OperationFailedError):
                     yield ts, v
                     break
-            yield ts, ecre_eval(self.expr, args=values)
+            else:
+                yield ts, ecre_eval(self.expr, args=values)
 
     def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
         """
