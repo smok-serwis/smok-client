@@ -40,26 +40,18 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     """
     _HASH_FIELDS_TO_USE = ('name',)
     _REPR_FIELDS = ('name', 'storage_level')
-    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device',
-                 'is_reparse', 'slave_pathpoints', 'reparse_expr')
+    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device')
 
     def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND):
         self.device = weakref.proxy(device)
         self.name = name
-        self.is_reparse = name[0] == 'r'
         self.storage_level = storage_level
         self.current_value = None  # type: ValueOrExcept
         self.current_timestamp = None  # type: Number
         # noinspection PyProtectedMember
         if device is not None:
             device.register_pathpoint(self)
-        if self.is_reparse:
-            from ..sensor.reparse import parse
-            self.reparse_expr, pathpoints = parse(self.name)
-            self.slave_pathpoints = []
-            for pp in pathpoints:
-                self.slave_pathpoints.append(self.device.get_pathpoint(pp, storage_level))
 
     def get_archive(self,
                     starting_at: int,

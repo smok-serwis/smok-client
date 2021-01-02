@@ -8,7 +8,7 @@ on behalf of their master controller, however, they are their own entities.
 For example, the **RAPID** platform uses slave devices as means to configure network.
 Consider such a device
 
-::
+.. code-block:: yaml
 
     device_id: rapid
         slave1: rapideth0

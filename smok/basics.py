@@ -20,6 +20,12 @@ class StorageLevel(HashableIntEnum):
     PERMANENT = 0  #: hold all values indefinitely
     TREND = 1  #: values at most 2 weeks old will be kept
 
+    def __or__(self, other: 'StorageLevel') -> 'StorageLevel':
+        """
+        Get the more permissive
+        """
+        return StorageLevel(self.value | other.value)
+
 
 class SlaveDeviceInfo(JSONAble, ReprableMixin):
     """

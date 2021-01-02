@@ -30,7 +30,7 @@ from ..extras.metadata_database import InMemoryMetadataDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
 from ..extras.sensors_database.in_memory import InMemorySensorDatabase
 from ..metadata import PlainMetadata
-from ..pathpoint import Pathpoint
+from ..pathpoint import Pathpoint, ReparsePathpoint
 from ..pathpoint.orders import Section, MessageOrder
 from ..predicate import BaseStatistic, Event, Color
 from ..sensor import Sensor, fqtsify
@@ -394,6 +394,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
+        if path[0] == 'r':
+            return ReparsePathpoint(self, path, storage_level)
         if path in self.pathpoints:
             return self.pathpoints[path]
         pp = self.provide_unknown_pathpoint(path, storage_level)  # raises KeyError
@@ -429,6 +431,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
+        if pp.name[0] == 'r':
+            return
         if pp.name not in self.pathpoints:
             pp.device = weakref.proxy(self)
             self.pathpoints[pp.name] = pp

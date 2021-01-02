@@ -37,7 +37,7 @@ Starting with some code
 First of all, you need to subclass SMOKDevice and define the method
 :meth:`~smok.client.SMOKDevice.provide_unknown_pathpoint`.
 
-::
+.. code-block:: python
 
     from smok.client import SMOKDevice
     from smok.basics import StorageLevel
@@ -108,7 +108,7 @@ but also a new one:
 .. autoclass:: smok.exceptions.NotReadedError
     :members:
 
-::
+.. code-block:: python
 
     sd.close()      # this may block for like 10 seconds
 
@@ -144,6 +144,11 @@ Pathpoint
 .. autoclass:: smok.pathpoint.Pathpoint
     :members:
 
+.. autoclass:: smok.pathpoint.ReparsePathpoint
+    :members:
+
+Good news is that you don't need to override :class:`smok.pathpoint.ReparsePathpoint`s.
+
 Enums
 -----
 .. autoclass:: smok.pathpoint.AdviseLevel
@@ -178,7 +183,7 @@ Executing orders
 
 If you want to read given pathpoint, just do the following:
 
-::
+.. code-block:: python
 
     read_order = pathpoint.read()
     sd.execute(read_order)
@@ -186,14 +191,14 @@ If you want to read given pathpoint, just do the following:
 Note that any :class:`smok.pathpoint.orders.Section` is also a perfectly valid `Future`, so
 you may cancel it and wait for it's result:
 
-::
+.. code-block:: python
 
     read_order.result()
 
 Sadly, the completion of a Section just means that all orders have been executed, it bears
 no relevance **how** they completed. You may even cancel it:
 
-::
+.. code-block:: python
 
     if read_order.cancel():
         print('Successfully cancelled')
@@ -202,7 +207,7 @@ Custom order-execution loop
 ---------------------------
 
 If you want to write a custom order-execution loop, just override
-:meth:`smok.client.SMOKDevice.execute_section. It will accept a single argument of
+:meth:`smok.client.SMOKDevice.execute_section`. It will accept a single argument of
 :class:`~smok.pathpoint.orders.Section`, about which you can read up in :ref:`orders`.
 
 You will also need to provide a method
