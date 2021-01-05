@@ -51,8 +51,8 @@ class RequestsAPI:
         except json.decoder.JSONDecodeError:
             raise ResponseError(resp.status_code, resp.content)
 
-    def get(self, url):
-        return self.request('get', url)
+    def get(self, url, **kwargs):
+        return self.request('get', url, **kwargs)
 
     def post(self, url, **kwargs):
         return self.request('post', url, **kwargs)
