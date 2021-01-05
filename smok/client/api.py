@@ -46,10 +46,13 @@ class RequestsAPI:
                 except AttributeError:
                     error_json = repr(resp.content)
             raise ResponseError(resp.status_code, error_json)
-        try:
-            return resp.json()
-        except json.decoder.JSONDecodeError:
-            raise ResponseError(resp.status_code, resp.content)
+        if direct_response:
+            return resp.content, resp.headers
+        else:
+            try:
+                return resp.json()
+            except json.decoder.JSONDecodeError:
+                raise ResponseError(resp.status_code, resp.content)
 
     def get(self, url, **kwargs):
         return self.request('get', url, **kwargs)
