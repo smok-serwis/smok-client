@@ -1,3 +1,4 @@
+import typing as tp
 import json
 
 import requests
@@ -18,8 +19,11 @@ class RequestsAPI:
         else:
             self.cert = device.cert
 
-    def request(self, request_type, url, direct_response: bool = False, **kwargs):
+    def request(self, request_type: str, url: str,
+                direct_response: bool = False, **kwargs) -> tp.Union[dict, tp.Tuple[bytes, dict]]:
         """
+        :param request_type: type of request, in lowercase
+        :param url: URL to contact
         :param direct_response: if True then return a tuple of (
             response as is, headers), else it's JSON
 
@@ -54,17 +58,17 @@ class RequestsAPI:
             except json.decoder.JSONDecodeError:
                 raise ResponseError(resp.status_code, resp.content)
 
-    def get(self, url, **kwargs):
+    def get(self, url: str, **kwargs):
         return self.request('get', url, **kwargs)
 
-    def post(self, url, **kwargs):
+    def post(self, url: str, **kwargs):
         return self.request('post', url, **kwargs)
 
-    def put(self, url, **kwargs):
+    def put(self, url: str, **kwargs):
         return self.request('put', url, **kwargs)
 
-    def patch(self, url, **kwargs):
+    def patch(self, url: str, **kwargs):
         return self.request('patch', url, **kwargs)
 
-    def delete(self, url, **kwargs):
+    def delete(self, url: str, **kwargs):
         return self.request('delete', url, **kwargs)
