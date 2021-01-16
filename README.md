@@ -19,6 +19,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * add support for reparse pathpoints
 * add support for getting archive data from sensors
 * fixed a bug with downloading BAOBS
+* fixed a bug with reading sensors via on_read
+* fixed a bug with reporting exceptions
 
 ### v0.6
 
