@@ -60,7 +60,8 @@ class OperationFailedError(SMOKClientError):
     :ivar timestamp: timestamp of failure in milliseconds
     """
 
-    def __init__(self, reason: OperationFailedReason, timestamp: tp.Optional[Number] = None):
+    def __init__(self, reason: OperationFailedReason = OperationFailedReason.TIMEOUT,
+                 timestamp: tp.Optional[Number] = None):
         self.reason = reason
         self.timestamp = timestamp or time_ms()
 
