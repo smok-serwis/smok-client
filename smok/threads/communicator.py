@@ -141,7 +141,9 @@ class CommunicatorThread(TerminableThread):
         if sync is None:
             return
         try:
-            self.device.api.post('/v1/device/pathpoints', json=sync.to_json())
+            data = sync.to_json()
+            logger.info(f'{data}')
+            self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
         except ResponseError as e:
             logger.debug(f'Failed to sync data', exc_info=e)
