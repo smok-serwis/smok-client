@@ -7,6 +7,7 @@ __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
            'NotReadedError', 'InstanceNotReady']
 
 from satella.coding.typing import Number
+from satella.time import time_ms
 
 
 class SMOKClientError(Exception):
@@ -61,7 +62,7 @@ class OperationFailedError(SMOKClientError):
 
     def __init__(self, reason: OperationFailedReason, timestamp: tp.Optional[Number] = None):
         self.reason = reason
-        self.timestamp = timestamp or time.time()
+        self.timestamp = timestamp or time_ms()
 
 
 class NotReadedError(OperationFailedError):
