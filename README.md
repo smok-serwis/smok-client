@@ -21,6 +21,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * fixed a bug with downloading BAOBS
 * fixed a bug with reading sensors via on_read
 * fixed a bug with reporting exceptions
+* BAOBs will be marked as downloaded after 3 attempts were made
+
 
 ### v0.6
 

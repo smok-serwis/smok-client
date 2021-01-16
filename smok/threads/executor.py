@@ -104,5 +104,5 @@ class OrderExecutorThread(TerminableThread):
             next_section = self.queue.peek()  # type: Section
             if section.is_joinable() and next_section.is_joinable():
                 section += self.queue.get()
-
+        logger.warning(f'Executing {section}')
         self.execute_a_section(section)

@@ -150,8 +150,12 @@ class CommunicatorThread(TerminableThread):
             sync.negative_acknowledge()
             raise
 
-    @retry(3, ResponseError)
     def sync_baob(self):
+        self._sync_baob()
+        self.device.baobs_loaded = True
+
+    @retry(3, ResponseError)
+    def _sync_baob(self):
         keys = self.device.baob_database.get_all_keys()
         data = []
         for key in keys:
@@ -170,7 +174,6 @@ class CommunicatorThread(TerminableThread):
             })
             logger.debug('Uploaded BAOB %s', key_to_upload)
         self.last_baob_synced = time.time()
-        self.device.baobs_loaded = True
 
     @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
