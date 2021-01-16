@@ -7,6 +7,7 @@ from concurrent.futures import wait, Future
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
 from satella.coding.decorators import retry
+from satella.time import time_ms
 
 from smok.exceptions import ResponseError, NotReadedError
 from smok.extras.pp_database.base import BasePathpointDatabase
@@ -19,13 +20,13 @@ logger = logging.getLogger(__name__)
 def on_read_completed_factory(oet: 'OrderExecutorThread',
                               pp: Pathpoint) -> tp.Callable[[Future], None]:
     def on_read_completed(fut: Future):
-        ts = time.time()
+        ts = time_ms()
         if fut.exception() is None:
             res = fut.result()
             if res is None:
                 return
             oet.data_to_sync.on_new_data(pp.name, ts, res)
-            pp.current_timestamp = time.time()
+            pp.current_timestamp = ts
             pp.current_value = res
         else:
             exc = fut.exception()
