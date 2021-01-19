@@ -22,7 +22,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * fixed a bug with reading sensors via on_read
 * fixed a bug with reporting exceptions
 * BAOBs will be marked as downloaded after 3 attempts were made
-
+* fixed different exception that OperationFailedError raised during a read to be logged
 
 ### v0.6
 

@@ -7,9 +7,10 @@ from concurrent.futures import wait, Future
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread, call_in_separate_thread
 from satella.coding.decorators import retry
+from satella.instrumentation import Traceback
 from satella.time import time_ms
 
-from smok.exceptions import ResponseError, NotReadedError
+from smok.exceptions import ResponseError, NotReadedError, OperationFailedError
 from smok.extras.pp_database.base import BasePathpointDatabase
 from smok.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder, Disposition
 from smok.pathpoint.pathpoint import Pathpoint
@@ -30,8 +31,16 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
             pp.current_value = res
         else:
             exc = fut.exception()
+            if not isinstance(exc, OperationFailedError):
+                try:
+                    raise exc
+                except Exception as e:
+                    f = Traceback().pretty_format()
+                    logger.error('got %s while processing a read, stack trace is %s', e, f)
+                    return
             if isinstance(exc, NotReadedError):
-                logger.error('A read future for %s returned NotReadedError, this is invalid', pp.name)
+                logger.error('A read future for %s returned NotReadedError, this is invalid',
+                             pp.name)
                 return
             exc.timestamp = ts
             oet.data_to_sync.on_new_data(pp.name, ts, exc)
@@ -106,3 +115,5 @@ class OrderExecutorThread(TerminableThread):
                 section += self.queue.get()
         logger.warning(f'Executing {section}')
         self.execute_a_section(section)
+        logger.warning(f'Finished executing {section}')
+
