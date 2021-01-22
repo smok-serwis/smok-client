@@ -31,15 +31,16 @@ class RequestsAPI:
         :raises ResponseError: something went wrong
         """
         op = getattr(requests, request_type)
-        if self.environment == Environment.STAGING:
-            resp = op(self.base_url + url, headers={
-                'X-SSL-Client-Certificate': self.cert
-            }, **kwargs)
-        else:
-            try:
+        try:
+            if self.environment == Environment.STAGING:
+                    resp = op(self.base_url + url, headers={
+                        'X-SSL-Client-Certificate': self.cert
+                    }, **kwargs)
+            else:
                 resp = op(self.base_url + url, cert=self.cert, **kwargs)
-            except (requests.RequestException, socket.timeout) as e:
-                raise ResponseError(None, 'Requests error: %s' % (str(e), ))
+        except requests.RequestException as e:
+            raise ResponseError(None, 'Requests error: %s' % (str(e), ))
+
         if resp.status_code not in (200, 201):
             if direct_response:
                 return resp.content, resp.headers
