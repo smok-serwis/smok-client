@@ -1,3 +1,4 @@
+import socket
 import typing as tp
 import json
 
@@ -37,7 +38,7 @@ class RequestsAPI:
         else:
             try:
                 resp = op(self.base_url + url, cert=self.cert, **kwargs)
-            except requests.RequestException as e:
+            except (requests.RequestException, socket.timeout) as e:
                 raise ResponseError(None, 'Requests error: %s' % (str(e), ))
         if resp.status_code not in (200, 201):
             if direct_response:

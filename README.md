@@ -16,7 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.8
 
-* _TBA_
+* added `socket.timeout` to list of exceptions caught by API
 
 ### v0.7
 
