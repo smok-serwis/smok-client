@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.8
+
+* _TBA_
+
 ### v0.7
 
 * add support for reparse pathpoints
@@ -23,7 +27,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * fixed a bug with reporting exceptions
 * BAOBs will be marked as downloaded after 3 attempts were made
 * fixed different exception that OperationFailedError raised during a read to be logged
-v
+
 ### v0.6
 
 * add BAOBs
