@@ -23,7 +23,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * fixed a bug with reporting exceptions
 * BAOBs will be marked as downloaded after 3 attempts were made
 * fixed different exception that OperationFailedError raised during a read to be logged
-
+v
 ### v0.6
 
 * add BAOBs
