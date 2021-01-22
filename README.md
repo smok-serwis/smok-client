@@ -16,7 +16,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ### v0.8
 
-* added `socket.timeout` to list of exceptions caught by API
+* patched raising exceptions from the API on staging environment 
 
 ### v0.7
 
