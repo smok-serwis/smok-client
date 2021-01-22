@@ -17,6 +17,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 ### v0.8
 
 * patched raising exceptions from the API on staging environment 
+* certs will be used in conjunction with HTTPS only in production
 
 ### v0.7
 

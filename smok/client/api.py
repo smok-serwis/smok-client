@@ -1,4 +1,3 @@
-import socket
 import typing as tp
 import json
 
@@ -32,12 +31,12 @@ class RequestsAPI:
         """
         op = getattr(requests, request_type)
         try:
-            if self.environment == Environment.STAGING:
-                    resp = op(self.base_url + url, headers={
-                        'X-SSL-Client-Certificate': self.cert
-                    }, **kwargs)
-            else:
+            if self.environment == Environment.PRODUCTION:
                 resp = op(self.base_url + url, cert=self.cert, **kwargs)
+            else:
+                resp = op(self.base_url + url, headers={
+                    'X-SSL-Client-Certificate': self.cert
+                }, **kwargs)
         except requests.RequestException as e:
             raise ResponseError(None, 'Requests error: %s' % (str(e), ))
 
