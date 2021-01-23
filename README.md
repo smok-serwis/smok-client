@@ -18,6 +18,8 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 * patched raising exceptions from the API on staging environment 
 * certs will be used in conjunction with HTTPS only in production
+* removed debug logging before data sync
+* no API call will be dispatched if there's no data to sync
 
 ### v0.7
 

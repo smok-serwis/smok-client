@@ -142,7 +142,9 @@ class CommunicatorThread(TerminableThread):
             return
         try:
             data = sync.to_json()
-            logger.info(f'{data}')
+            if not data:
+                sync.acknowledge()
+                return
             self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
         except ResponseError as e:
