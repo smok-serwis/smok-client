@@ -128,6 +128,9 @@ Threads
 * `OrderExecutorThread` handles the loop executing orders.
 * `LogPublisherThread` handles publishing your logs to the SMOK server
 
+.. warning:: This will fetch macros every 30 minutes, so don't schedule events to happen sooner
+             than 30 minutes from now on, they are likely to be missed (but still will be executed).
+
 Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
 threads. It will be documented which thread calls your callback.
 

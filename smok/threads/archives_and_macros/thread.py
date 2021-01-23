@@ -13,7 +13,7 @@ from smok.threads.archives_and_macros.archive import archiving_entries_from_json
 from smok.macro import Macro
 
 ARCHIVE_UPDATING_INTERVAL = 600
-MACROS_UPDATING_INTERVAL = 600
+MACROS_UPDATING_INTERVAL = 30 * 60
 logger = logging.getLogger(__name__)
 
 
