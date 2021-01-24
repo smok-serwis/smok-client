@@ -39,7 +39,8 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
                     logger.error('got %s while processing a read, stack trace is %s', e, f)
                     return
             if isinstance(exc, NotReadedError):
-                logger.error('A read future for %s returned NotReadedError, this is invalid',
+                logger.error('A read future for %s returned NotReadedError, this is invalid, '
+                             'ignoring',
                              pp.name)
                 return
             exc.timestamp = ts
@@ -113,7 +114,5 @@ class OrderExecutorThread(TerminableThread):
             next_section = self.queue.peek()  # type: Section
             if section.is_joinable() and next_section.is_joinable():
                 section += self.queue.get()
-        logger.warning(f'Executing {section}')
         self.execute_a_section(section)
-        logger.warning(f'Finished executing {section}')
 

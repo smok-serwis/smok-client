@@ -21,6 +21,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 * removed debug logging before data sync
 * no API call will be dispatched if there's no data to sync
 * adjusted macro update interval
+* removed extra logging from `smok.threads.executor`
 
 ### v0.7
 
