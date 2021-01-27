@@ -90,11 +90,27 @@ class Sensor:
             else:
                 yield ts, self.type.pathpoint_to_sensor(*values)
 
+    def write(self, value, advise: AdviseLevel = AdviseLevel.ADVISE) -> Section:
+        """
+        Write a particular value to the sensor.
+
+        Take care for the value to match the type of the sensor
+
+        :param value: value to write
+        :param advise: advise level to use
+        :raises TypeError: invalid type
+        """
+        values = self.type.sensor_to_pathpoint(value)
+        section = Section()
+        for value, pp in zip(values, self.slave_pathpoints):
+            section += pp.write(value, advise)
+        return section
+
     def get(self) -> tp.Tuple[Number, SensorValueType]:
         """
         Return the value of this sensor
 
-        :raises NotYetReaded: required pathpoints are not available
+        :raises NotReadedError: required pathpoints are not available
         :return: a tuple of (timestamp in milliseconds, sensor value)
         :raises OperationFailedError: one of pathpoint failed to provide a value
         """

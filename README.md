@@ -14,6 +14,10 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 
 ## Change log
 
+### v0.9
+
+* added `Sensor.write`
+
 ### v0.8
 
 * patched raising exceptions from the API on staging environment 
