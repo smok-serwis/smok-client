@@ -36,6 +36,10 @@ from ..predicate import BaseStatistic, Event, Color
 from ..sensor import Sensor, fqtsify
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):

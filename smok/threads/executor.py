@@ -51,6 +51,24 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
     return on_read_completed
 
 
+def verify_write_factory(oet: 'OrderExecutorThread',
+                              pp: Pathpoint) -> tp.Callable[[Future], None]:
+    def on_write_completed(fut: Future):
+        ts = time_ms()
+        if fut.exception() is not None:
+            exc = fut.exception()
+            if not isinstance(exc, OperationFailedError):
+                try:
+                    raise exc
+                except Exception as e:
+                    f = Traceback().pretty_format()
+                    logger.error('got %s while processing a write, stack trace is %s', e, f)
+                    return
+
+    return on_write_completed
+
+
+
 class OrderExecutorThread(TerminableThread):
     def __init__(self, device, order_queue: queue.Queue, data_to_sync: BasePathpointDatabase):
         super().__init__(name='order executor')
@@ -79,9 +97,11 @@ class OrderExecutorThread(TerminableThread):
                         continue
 
                     if isinstance(order, WriteOrder):
+                        logger.warning(f'Executing %s to %s', order.pathpoint, order.value)
                         if not order.is_valid():
                             continue
                         fut = pathpoint.on_write(order.value, order.advise)
+                        fut.add_done_callback(verify_write_factory(self, pathpoint))
                     elif isinstance(order, ReadOrder):
                         fut = pathpoint.on_read(order.advise)  # type: Future
                         fut.add_done_callback(on_read_completed_factory(self, pathpoint))
@@ -106,6 +126,7 @@ class OrderExecutorThread(TerminableThread):
                 self.futures_to_complete = list(wait(self.futures_to_complete, 5)[1])
             section.future.set_result(None)
         else:
+            logger.warning(f'Utilizing custom executor')
             self.device.execute_section(section)
 
     @queue_get('queue', 5)

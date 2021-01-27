@@ -17,6 +17,7 @@ It is principally a consumer of [the SMOK API](https://api.smok.co/).
 ### v0.9
 
 * added `Sensor.write`
+* failing writes will be treated the same way as failing read
 
 ### v0.8
 
