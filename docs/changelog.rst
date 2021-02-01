@@ -7,6 +7,7 @@ v0.9
 * added `Sensor.write`
 * failing writes will be treated the same way as failing reads - they will be logged
 * added automatic order retry
+* smarter waiting (time spent executing read/write/message orders counts into that too)
 
 v0.8
 ~~~~
