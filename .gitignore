@@ -7,3 +7,4 @@ examples/skylab/key.crt
 examples/skylab/predicate_db.pickle
 .eggs/
 .coverage
+coverage.xml

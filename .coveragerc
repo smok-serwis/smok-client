@@ -1,15 +1,15 @@
 [run]
 branch=1
 source=
-  smokclient
+  smok
 concurrency=thread
 omit=
   tests/*
   .eggs/*
   setup.py
-  smokclient/__init__.py
+  smok/__init__.py
 
 [report]
 include=
-    smokclient/*
+    smok/*
 

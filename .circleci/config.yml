@@ -21,7 +21,7 @@ jobs:
       - run:
           command: |
             ./cc-test-reporter before-build
-            pytest --cov=smokclient
+            pytest --cov=smok
             coverage xml
             ./cc-test-reporter after-build -t coverage.py
           name: Test
