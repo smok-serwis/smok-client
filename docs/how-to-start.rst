@@ -134,6 +134,9 @@ Threads
 Nearly all of the callbacks that you provide will be called in the context of one of aforementioned
 threads. It will be documented which thread calls your callback.
 
+All metadata calls are blocking so far. Metadata is best utilized when there's an Internet uplink.
+It is not advised, due to performance reasons, to use it locally.
+
 List of basic classes
 =====================
 
