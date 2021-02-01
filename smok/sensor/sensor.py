@@ -1,3 +1,4 @@
+import logging
 import typing as tp
 import weakref
 
@@ -11,6 +12,9 @@ from smok.pathpoint.orders import Section, ReadOrder
 from smok.sensor import reparse_funs
 from smok.sensor.reparse import parse
 from smok.sensor.types import SensorValueType, get_type, SVTOrExcept
+
+
+logger = logging.getLogger(__name__)
 
 
 def fqtsify(tag_name: tp.Union[str, tp.Set[str]]) -> str:
@@ -60,7 +64,9 @@ class Sensor:
         self.path = path
         self.type_name = type_name
         self.slave_pathpoints = []
+        self._pathpoint_names = []
         for pn in path.split('~'):
+            self._pathpoint_names.append(pn)
             self.slave_pathpoints.append(self.device.get_pathpoint(pn))
         self.type = get_type(type_name)
 
@@ -114,6 +120,7 @@ class Sensor:
         :return: a tuple of (timestamp in milliseconds, sensor value)
         :raises OperationFailedError: one of pathpoint failed to provide a value
         """
+        logger.warning(str(self.slave_pathpoints))
         vals = [pp.get() for pp in self.slave_pathpoints]
         cur_ts = max(ts[0] for ts in vals)
         return cur_ts, self.type.pathpoint_to_sensor(*(val[1] for val in vals))

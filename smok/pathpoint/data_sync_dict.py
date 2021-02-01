@@ -14,10 +14,13 @@ class DataSyncDict(DirtyDict, Monitor):
         super().__init__()
         Monitor.__init__(self)
         self.updated_condition = Condition()
+        self.last_timestamp = 0
 
     def on_readed_successfully(self, pathpoint: str, value: PathpointValueType,
                                timestamp: tp.Optional[float] = None):
-        self.append(pathpoint, timestamp or time.time(), value)
+        if timestamp > self.last_timestamp:
+            self.append(pathpoint, timestamp or time.time(), value)
+            self.last_timestamp = timestamp
 
     @Monitor.synchronized
     def append(self, pathpoint, timestamp, value):
@@ -61,4 +64,7 @@ class DataSyncDict(DirtyDict, Monitor):
 
     def on_read_failed(self, pathpoint: str, error: OperationFailedError,
                        timestamp: tp.Optional[float] = None):
-        self.append(pathpoint, timestamp or time.time(), error)
+        if timestamp > self.last_timestamp:
+            self.append(pathpoint, timestamp or time.time(), error)
+            self.last_timestamp = timestamp
+

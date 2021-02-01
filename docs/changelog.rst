@@ -8,6 +8,8 @@ v0.9
 * failing writes will be treated the same way as failing reads - they will be logged
 * added automatic order retry
 * smarter waiting (time spent executing read/write/message orders counts into that too)
+* added a proofing against appending a pathpoint value with lower timestamp than current
+* syncing invalid data (HTTP 4xx instead of 5xx) will mark it as synchronized correctly
 
 v0.8
 ~~~~
