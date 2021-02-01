@@ -1,8 +1,8 @@
 import logging
+import time
 import typing as tp
 import warnings
 import weakref
-from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 
 from satella.coding import wraps
@@ -28,7 +28,7 @@ def must_have_device(fun):
     return inner
 
 
-class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
+class Pathpoint(ReprableMixin, OmniHashableMixin):
     """
     Base class for an user-defined pathpoint.
 
@@ -40,6 +40,8 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     :param callable_on_change: a callable to be called each time this pathpoint changes value,
         with this pathpoint as it's sole argument. Should this callable return an exception, it will
         be logged as an ERROR along with it's traceback.
+    :param read_no_often_than: this pathpoint should be readed at fastest each this seconds.
+        Leave it at None (default) to disable this mechanism.
 
     :ivar name: pathpoint name
     :ivar storage_level: pathpoint's storage level
@@ -50,13 +52,16 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
     _HASH_FIELDS_TO_USE = ('name',)
     _REPR_FIELDS = ('name', 'storage_level')
     __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device',
-                 'callable_on_change')
+                 'callable_on_change', 'read_no_often_than', 'last_read')
 
     def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND,
-                 callable_on_change: tp.Optional[tp.Callable[['Pathpoint'], None]] = None):
+                 callable_on_change: tp.Optional[tp.Callable[['Pathpoint'], None]] = None,
+                 read_no_often_than: tp.Optional[float] = None):
         self.device = weakref.proxy(device)
         self.name = name
+        self.read_no_often_than = read_no_often_than
+        self.last_read = 0
         self.callable_on_change = callable_on_change
         self.storage_level = storage_level
         self.current_value = None  # type: ValueOrExcept
@@ -64,6 +69,17 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         # noinspection PyProtectedMember
         if device is not None:
             device.register_pathpoint(self)
+
+    def can_read(self) -> bool:
+        """
+        Called by the executor before a ReadOrder is processed to determine whether this
+        pathpoint can be read.
+
+        :return: Can this pathpoint be read?
+        """
+        if self.read_no_often_than is not None:
+            return time.monotonic() - self.last_read > self.read_no_often_than
+        return True
 
     def get_archive(self,
                     starting_at: int,
@@ -92,7 +108,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
         :param value: new value
         """
         if self.current_timestamp is not None:
-            if self.current_timestamp < timestamp:
+            if self.current_timestamp > timestamp:
                 warnings.warn('Given lower timestamp (%s) than current one (%s), ignoring' % (
                     timestamp, self.current_timestamp), UserWarning)
                 return
@@ -107,13 +123,16 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
             except Exception as e:
                 logger.error('Callback on change for %s failed with %s, ignoring', self.name,
                              Traceback().pretty_format(), exc_info=e)
+        self.last_read = time.monotonic()
 
-    @abstractmethod
-    def on_read(self, advise: AdviseLevel) -> Future:
+    def on_read(self, advise: AdviseLevel) -> tp.Optional[Future]:
         """
         Called when there's a request to read this pathpoint.
 
         This is called from a separate thread spawned by SMOKDevice.
+
+        Note that :meth:`~smok.pathpoint.Pathpoint.can_read` will be checked for before this is
+        called.
 
         The future should raise OperationFailedError when the read fails.
 
@@ -126,14 +145,14 @@ class Pathpoint(ReprableMixin, OmniHashableMixin, metaclass=ABCMeta):
             :meth:`~smokclient.pathpoint.Pathpoint.set_new_value`
         """
 
-    @abstractmethod
-    def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
+    def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> tp.Optional[Future]:
         """
         Called when there's a request to write this pathpoint with a particular value
 
         This is called from a separate thread spawned by SMOKDevice
 
         The future should raise OperationFailedError when the write fails.
+        This can return None if the write won't be executed and should be treated as successful.
 
         :param value: value to be written
         :param advise: advise level of this read operation

@@ -26,41 +26,37 @@ def on_read_completed_factory(pp: Pathpoint) -> tp.Callable[[Future], None]:
             res = fut.result()
             if res is None:
                 return
-            pp.set_new_value(ts, res)
         else:
-            exc = fut.exception()
-            if not isinstance(exc, OperationFailedError):
+            res = fut.exception()
+            if not isinstance(res, OperationFailedError):
                 try:
-                    raise exc
+                    raise res
                 except Exception as e:
                     f = Traceback().pretty_format()
                     logger.error('got %s while processing a read, stack trace is %s', e, f)
                     return
-            if isinstance(exc, NotReadedError):
+            if isinstance(res, NotReadedError):
                 logger.error('A read future for %s returned NotReadedError, this is invalid, '
                              'ignoring',
                              pp.name)
                 return
-            exc.timestamp = ts
-            pp.set_new_value(ts, exc)
+            res.timestamp = ts
+        pp.set_new_value(ts, res)
 
     return on_read_completed
 
 
-def verify_write_factory(pp: Pathpoint) -> tp.Callable[[Future], None]:
-    def on_write_completed(fut: Future):
-        if fut.exception() is not None:
-            exc = fut.exception()
-            if not isinstance(exc, OperationFailedError):
-                try:
-                    raise exc
-                except Exception as e:
-                    f = Traceback().pretty_format()
-                    logger.error('got %s while processing a write, stack trace is %s, '
-                                 'assuming the write got through', e, f)
-                    return
-
-    return on_write_completed
+def on_write_completed(fut: Future):
+    if fut.exception() is not None:
+        exc = fut.exception()
+        if not isinstance(exc, OperationFailedError):
+            try:
+                raise exc
+            except Exception as e:
+                f = Traceback().pretty_format()
+                logger.error('got %s while processing a write, stack trace is %s, '
+                             'assuming the write got through', e, f)
+                return
 
 
 class OrderExecutorThread(TerminableThread):
@@ -85,11 +81,17 @@ class OrderExecutorThread(TerminableThread):
                     if not order.is_valid():
                         continue
                     fut = pathpoint.on_write(order.value, order.advise)
-                    fut.add_done_callback(verify_write_factory(pathpoint))
+                    if fut is None:
+                        continue
+                    fut.add_done_callback(on_write_completed)
                 elif isinstance(order, ReadOrder):
-                    fut = pathpoint.on_read(order.advise)  # type: Future
-                    fut.add_done_callback(on_read_completed_factory(pathpoint))
-
+                    if pathpoint.can_read():
+                        fut = pathpoint.on_read(order.advise)  # type: Future
+                        if fut is None:
+                            continue
+                        fut.add_done_callback(on_read_completed_factory(pathpoint))
+                    else:
+                        continue
             elif isinstance(order, MessageOrder):
 
                 @call_in_separate_thread()
@@ -150,7 +152,6 @@ class OrderExecutorThread(TerminableThread):
             next_section = self.queue.peek()  # type: Section
             if section.is_joinable() and next_section.is_joinable():
                 section += self.queue.get()
-
 
         self.execute_a_section(section)
 

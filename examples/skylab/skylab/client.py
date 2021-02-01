@@ -24,7 +24,7 @@ class PP(Pathpoint):
     """
 
     def __init__(self, device, name, storage_level=StorageLevel.TREND):
-        super().__init__(device, name, storage_level)
+        super().__init__(device, name, storage_level, read_no_often_than=5)
         self.value = 5
 
     @call_in_separate_thread()
@@ -32,8 +32,7 @@ class PP(Pathpoint):
         print(f'Readed {self.name}')
         return self.value
 
-    @call_in_separate_thread()
-    def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> Future:
+    def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> None:
         print(f'Written {self.name} with {value}')
         self.value = value
 

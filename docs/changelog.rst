@@ -13,6 +13,7 @@ v0.9
 * made `Pathpoint.set_new_value`'s usage more ubiquitous
     * since Executor will now use it to write new Pathpoint's values
 * added an option to register a callable to be fired each time Pathpoint value changes
+* added an option to limit the frequency of Pathpoint's reads
 
 v0.8
 ~~~~
