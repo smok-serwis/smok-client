@@ -74,19 +74,29 @@ class WriteOrder(Order, ReprableMixin):
         will be discarded
     """
     _REPR_FIELDS = ('pathpoint', 'value', 'advise', 'stale_after')
-    __slots__ = ('pathpoint', 'value', 'advise', 'stale_after')
+    __slots__ = ('pathpoint', 'value', 'advise', 'stale_after', 'repeat_count')
 
     def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel,
                  stale_after: tp.Optional[float] = None):
         self.pathpoint = pathpoint
         self.value = value
         self.advise = advise
+        self.repeat_count = 10 if advise == AdviseLevel.FORCE else 1
         self.stale_after = stale_after
 
     def is_valid(self) -> bool:
         if self.stale_after is None:
             return True
         return self.stale_after > time.time()
+
+    def fail(self) -> bool:
+        """
+        Fail this order.
+
+        Return whether to requeue it
+        """
+        self.repeat_count -= 1
+        return bool(self.repeat_count)
 
     @classmethod
     def from_json(cls, dct: dict) -> 'WriteOrder':
@@ -106,10 +116,20 @@ class ReadOrder(Order, ReprableMixin):
     def __init__(self, pathpoint: str, advise: AdviseLevel):
         self.pathpoint = pathpoint
         self.advise = advise
+        self.repeat_count = 3 if AdviseLevel.ADVISE else 20
 
     @classmethod
     def from_json(cls, dct: dict) -> 'ReadOrder':
         return ReadOrder(dct['path'], AdviseLevel(dct.get('advise', 0)))
+
+    def fail(self) -> bool:
+        """
+        Fail this order.
+
+        Return whether to requeue it
+        """
+        self.repeat_count -= 1
+        return bool(self.repeat_count)
 
 
 def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:

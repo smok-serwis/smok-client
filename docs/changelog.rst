@@ -5,7 +5,8 @@ v0.9
 ~~~~
 * added caching for plain metadata
 * added `Sensor.write`
-* failing writes will be treated the same way as failing read
+* failing writes will be treated the same way as failing reads - they will be logged
+* added automatic order retry
 
 v0.8
 ~~~~
