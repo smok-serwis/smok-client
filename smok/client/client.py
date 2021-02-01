@@ -78,6 +78,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
     :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
         start talking
+    :param cache_metadata_for: amount of seconds to cache downloaded metadata entry.
+        Ie no attempt to download them from the server again will be made in that many
+        seconds since the download.
 
     About 10 seconds from creation if CommunicatorThread was created, sensors will be synced and
     the device will start talking. To reduce this delay, set parameter startup_delay
@@ -154,8 +157,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  dont_do_pathpoints: bool = False,
                  dont_do_baobs: bool = False,
                  dont_do_archives: bool = False,
+                 cache_metadata_for: float = 60,
                  startup_delay: float = 10):
         super().__init__()
+        self.cache_metadata_for = cache_metadata_for
         self.dont_do_predicates = dont_do_predicates
         self.dont_do_pathpoints = dont_do_pathpoints
         self.pp_database = pp_database or InMemoryPathpointDatabase()

@@ -5,6 +5,7 @@ from urllib.parse import urlencode, quote_plus
 
 from satella.coding import for_argument, queue_get
 from satella.coding.decorators import retry
+from satella.coding.structures import CacheDict
 
 from smok.exceptions import ResponseError
 from smok.extras import BaseMetadataDatabase
@@ -28,7 +29,7 @@ class PlainDataUpdater:
             self.device.api.delete('/v1/device/metadata/plain/%s' % (urlencode(key), ))
         else:
             self.device.api.put('/v1/device/metadata/plain/%s' % (quote_plus(key), ),
-                            json={'value': value, 'unless_timestamp_higher': timestamp})
+                                json={'value': value, 'unless_timestamp_higher': timestamp})
 
 
 class StorageDict:
@@ -46,14 +47,19 @@ class StorageDict:
         self.db.delete_plain(key)
 
 
-class PlainMetadata:
+CACHE_MAX_FOR = 60
+
+
+class PlainMetadata(CacheDict):
     """
     An object representing device's plain metadata.
+
+    Entries will be cached for 60 seconds after downloading them from the server.
 
     Note that this does not support iteration or getting length, but supports
     __setitem__, __delitem__ and __getitem__.
     """
-    __slots__ = ('device', 'updater', 'db')
+    __slots__ = ('device', 'updater', 'db', 'cached_for')
 
     def try_update(self):
         self.updater.try_update()
@@ -62,9 +68,13 @@ class PlainMetadata:
         self.updater = PlainDataUpdater(device)
         self.db = device.meta_database
         self.device = device
+        self.cached_for = {}
 
     def __getitem__(self, item):
         try:
+            cached_for = self.cached_for[item]
+            if time.monotonic() - cached_for > self.device.cache_metadata_for:
+                raise KeyError()
             return self.db.get_plain(item)
         except KeyError:
             try:
@@ -73,12 +83,12 @@ class PlainMetadata:
                 ))
                 value = resp['value']
                 self.db.update_plain(item, value, resp['timestamp'])
+                self.cached_for[item] = time.monotonic()
                 return value
             except ResponseError as e:
                 if e.status_code == 404:
                     raise KeyError('key not found')
-                else:
-                    raise
+                return self.db.get_plain(item)
 
     def get(self, key: str, default=None):
         """
@@ -93,8 +103,13 @@ class PlainMetadata:
     def __setitem__(self, key, value):
         self.db.put_plain(key, value)
         self.updater.add_update(key, value, time.time())
+        self.cached_for[key] = time.monotonic()
 
     def __delitem__(self, key):
         self.db.delete_plain(key)
         self.updater.add_update(key, None, time.time())
+        try:
+            del self.cached_for[key]
+        except KeyError:
+            pass
 
