@@ -5,6 +5,7 @@ Welcome to SMOK Client's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   changelog
    how-to-start
    slave_devices
    orders
