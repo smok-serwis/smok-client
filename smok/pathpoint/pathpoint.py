@@ -125,7 +125,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
                              Traceback().pretty_format(), exc_info=e)
         self.last_read = time.monotonic()
 
-    def on_read(self, advise: AdviseLevel) -> tp.Optional[Future]:
+    def on_read(self, advise: AdviseLevel) -> tp.Optional[tp.Union[PathpointValueType, Future]]:
         """
         Called when there's a request to read this pathpoint.
 
@@ -134,7 +134,9 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
         Note that :meth:`~smok.pathpoint.Pathpoint.can_read` will be checked for before this is
         called.
 
-        The future should raise OperationFailedError when the read fails.
+        This may return a Future, that results in the value readed, or should raise
+        OperationFailedError when the read fails, or should directly return the value,
+        or should directly raise the exception.
 
         .. note:: :attr:`current_timestamp` and :attr:`current_value` will be automatically
                   updated, so there's no need for the future to do that.
@@ -143,6 +145,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
         :returns: a Future that returns the value of this pathpoint or raises OperationFailedError.
             This Future can also return None, if the value will be set later via
             :meth:`~smokclient.pathpoint.Pathpoint.set_new_value`
+        :raises OperationFailedError: operation failed
         """
 
     def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> tp.Optional[Future]:

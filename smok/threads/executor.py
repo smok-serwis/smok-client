@@ -86,12 +86,19 @@ class OrderExecutorThread(TerminableThread):
                     fut.add_done_callback(on_write_completed)
                 elif isinstance(order, ReadOrder):
                     if pathpoint.can_read():
-                        fut = pathpoint.on_read(order.advise)  # type: Future
-                        if fut is None:
-                            continue
-                        fut.add_done_callback(on_read_completed_factory(pathpoint))
-                    else:
-                        continue
+                        try:
+                            fut = pathpoint.on_read(order.advise)  # type: Future
+                            if not isinstance(fut, Future):
+                                if fut is not None:
+                                    pathpoint.set_new_value(time_ms(), fut)
+                            else:
+                                fut.add_done_callback(on_read_completed_factory(pathpoint))
+                        except OperationFailedError as e:
+                            pathpoint.set_new_value(time_ms(), e)
+                        except Exception as e:
+                            logger.error('Read operation for %s raised %s, ignoring',
+                                         pathpoint.name, e, exc_info=e)
+                    continue
             elif isinstance(order, MessageOrder):
 
                 @call_in_separate_thread()

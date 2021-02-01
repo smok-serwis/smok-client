@@ -85,10 +85,22 @@ The rest represents an expression, where other pathpoint are taken in brackets a
 expression is evaluated. This is called a reparse pathpoint, and you don't need to deal directly
 with them. You just need to provide the non-reparse, ie. :term:`native` pathpoints.
 
+You should override two calls, ie. :meth:`~smok.pathpoint.Pathpoint.on_read` and
+:meth:`~smok.pathpoint.Pathpoint.on_write`. By default they do nothing, not even read their
+pathpoints.
+:meth:`~smok.pathpoint.Pathpoint.on_read` may return:
+* a value - in that case it will be the pathpoint's value
+* raise an `OperationFailedError` - in that case it will be the pathpoint's value
+* return a `Future`, that results in:
+    * a value - in that case it will be the pathpoint's value
+    * raises an `OperationFailedError` - in that case it will be the pathpoint's value
 
-Both of these calls (ie. `on_read` and `on_write`) must return a Future that will complete
-(or fail) when a call is finished. If you failed an operation, you should raise the following inside
-your future:
+:meth:`~smok.pathpoint.Pathpoint.on_write` may return a `Future`, or it may just return a None
+to signal that write has been successfully completed. The future must complete when the write
+finishes, and it may either return a None to signal that the write went OK, or it may
+raise an `OperationFailedError` to signal that it went wrong.
+
+Operations will be retried according to their :term:`advise level` policy.
 
 .. autoclass:: smok.exceptions.OperationFailedError
     :members:

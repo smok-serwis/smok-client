@@ -27,9 +27,7 @@ class PP(Pathpoint):
         super().__init__(device, name, storage_level, read_no_often_than=5)
         self.value = 5
 
-    @call_in_separate_thread()
-    def on_read(self, advise: AdviseLevel) -> Future:
-        print(f'Readed {self.name}')
+    def on_read(self, advise: AdviseLevel) -> int:
         return self.value
 
     def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> None:

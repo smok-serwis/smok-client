@@ -14,6 +14,7 @@ v0.9
     * since Executor will now use it to write new Pathpoint's values
 * added an option to register a callable to be fired each time Pathpoint value changes
 * added an option to limit the frequency of Pathpoint's reads
+* added an option to read without spawning a Thread and a Future
 
 v0.8
 ~~~~
