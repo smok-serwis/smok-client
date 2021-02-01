@@ -5,6 +5,7 @@ from concurrent.futures import Future
 
 from satella.coding import silence_excs
 from satella.coding.concurrent import call_in_separate_thread
+from satella.time import time_ms
 
 from smok.basics import Environment, StorageLevel
 from smok.client import SMOKDevice

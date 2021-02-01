@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import silence_excs
+from satella.coding import silence_excs, log_exceptions
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -42,6 +42,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         return time.time() - self.macros_updated_on > MACROS_UPDATING_INTERVAL
 
     @retry(3, exc_classes=ResponseError)
+    @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
     def update_macros(self) -> None:
         start = self.macros_updated_on
         if start == 0:

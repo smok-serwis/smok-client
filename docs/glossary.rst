@@ -53,3 +53,13 @@ Glossary
     FQTS
       Fully-Qualified Tag System, or a canonical representation of a tag name, is the tag name
       split by space, entries sorted and joined with a " ".
+
+    Advise level
+      A QoS of a read/write order as presented to the system. Advise means best-effort, while force
+      will pack much more, and it is allowed to non-executable-right-now writes to block the order
+      queue. There are two advise levels:
+
+        * `AdviseLevel.ADVISE` - best effort
+        * `AdviseLevel.FORCE` - carry out this order for sure
+
+      For example, calendar-issued writes have the `FORCE` advise level.

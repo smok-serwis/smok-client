@@ -5,12 +5,9 @@ import time
 import typing as tp
 import weakref
 
-from satella.coding import silence_excs, DictDeleter
-from satella.coding.concurrent import PeekableQueue
-from satella.coding.decorators import retry
+from satella.coding import silence_excs
 from satella.coding.structures import OmniHashableMixin, ReprableMixin
 
-from smok.exceptions import ResponseError
 from smok.pathpoint.orders import Section, WriteOrder, AdviseLevel
 from smok.pathpoint.typing import PathpointValueType
 

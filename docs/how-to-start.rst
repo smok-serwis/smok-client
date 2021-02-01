@@ -98,6 +98,8 @@ A reason has to be given, it is an enum
 .. autoclass:: smok.exceptions.OperationFailedReason
     :members:
 
+The operation will be automatically retried, depending of the :term:`advise level` of the command.
+
 When you're done, don't forget to close the `SMOKDevice`, since it spawns 3 threads and makes
 temporary files with the certificate content, if you provide them not by files, but by file-like
 objects.

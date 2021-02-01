@@ -82,7 +82,6 @@ class OrderExecutorThread(TerminableThread):
                     continue
 
                 if isinstance(order, WriteOrder):
-                    logger.warning(f'Executing %s to %s', order.pathpoint, order.value)
                     if not order.is_valid():
                         continue
                     fut = pathpoint.on_write(order.value, order.advise)
@@ -106,7 +105,10 @@ class OrderExecutorThread(TerminableThread):
 
         new_futures_to_complete = copy.copy(futures_to_complete)
         while new_futures_to_complete and not self.terminating:
-            new_futures_to_complete = list(wait(new_futures_to_complete, 5)[1])
+            new_futures_to_complete = wait(new_futures_to_complete, 5)[1]
+
+        if self.terminating:
+            return []
 
         orders_to_retry = []
         for future, order in zip(futures_to_complete, orders_to_complete):

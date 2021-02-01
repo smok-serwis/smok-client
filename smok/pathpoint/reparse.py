@@ -94,7 +94,6 @@ class ReparsePathpoint(Pathpoint):
             ts, v = slave.get()
             timestamps.append(ts)
             values.append(v)
-        logger.warning(self.expr)
         return max(timestamps), ecre_eval(self.expr, args=values)
 
     def write(self, value, advise_level=AdviseLevel.ADVISE,
