@@ -120,7 +120,6 @@ class Sensor:
         :return: a tuple of (timestamp in milliseconds, sensor value)
         :raises OperationFailedError: one of pathpoint failed to provide a value
         """
-        logger.warning(str(self.slave_pathpoints))
         vals = [pp.get() for pp in self.slave_pathpoints]
         cur_ts = max(ts[0] for ts in vals)
         return cur_ts, self.type.pathpoint_to_sensor(*(val[1] for val in vals))

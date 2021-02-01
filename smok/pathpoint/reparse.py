@@ -1,3 +1,4 @@
+import logging
 import typing as tp
 
 from satella.coding.transforms import merge_series
@@ -10,6 +11,9 @@ from ..basics import StorageLevel
 from ..exceptions import OperationFailedError
 from ..sensor.reparse import parse
 from ..sensor.reparse_funs import ecre_eval
+
+
+logger = logging.getLogger(__name__)
 
 
 class ReparsePathpoint(Pathpoint):
@@ -30,7 +34,7 @@ class ReparsePathpoint(Pathpoint):
     def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND):
         super().__init__(device, name, storage_level)
-        self.expr, pps = parse(name)
+        self.expr, pps = parse(name[2:])
         self.slave_pathpoints = []
         for pp in pps:
             self.slave_pathpoints.append(device.get_pathpoint(pp, storage_level))
@@ -90,7 +94,7 @@ class ReparsePathpoint(Pathpoint):
             ts, v = slave.get()
             timestamps.append(ts)
             values.append(v)
-
+        logger.warning(self.expr)
         return max(timestamps), ecre_eval(self.expr, args=values)
 
     def write(self, value, advise_level=AdviseLevel.ADVISE,

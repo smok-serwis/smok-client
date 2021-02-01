@@ -10,6 +10,9 @@ v0.9
 * smarter waiting (time spent executing read/write/message orders counts into that too)
 * added a proofing against appending a pathpoint value with lower timestamp than current
 * syncing invalid data (HTTP 4xx instead of 5xx) will mark it as synchronized correctly
+* made `Pathpoint.set_new_value`'s usage more ubiquitous
+    * since Executor will now use it to write new Pathpoint's values
+* added an option to register a callable to be fired each time Pathpoint value changes
 
 v0.8
 ~~~~

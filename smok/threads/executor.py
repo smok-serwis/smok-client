@@ -19,17 +19,14 @@ from smok.pathpoint.pathpoint import Pathpoint
 logger = logging.getLogger(__name__)
 
 
-def on_read_completed_factory(oet: 'OrderExecutorThread',
-                              pp: Pathpoint) -> tp.Callable[[Future], None]:
+def on_read_completed_factory(pp: Pathpoint) -> tp.Callable[[Future], None]:
     def on_read_completed(fut: Future):
         ts = time_ms()
         if fut.exception() is None:
             res = fut.result()
             if res is None:
                 return
-            oet.data_to_sync.on_new_data(pp.name, ts, res)
-            pp.current_timestamp = ts
-            pp.current_value = res
+            pp.set_new_value(ts, res)
         else:
             exc = fut.exception()
             if not isinstance(exc, OperationFailedError):
@@ -45,15 +42,12 @@ def on_read_completed_factory(oet: 'OrderExecutorThread',
                              pp.name)
                 return
             exc.timestamp = ts
-            oet.data_to_sync.on_new_data(pp.name, ts, exc)
-            pp.current_timestamp = ts
-            pp.current_value = fut.exception()
+            pp.set_new_value(ts, exc)
 
     return on_read_completed
 
 
-def verify_write_factory(oet: 'OrderExecutorThread',
-                              pp: Pathpoint) -> tp.Callable[[Future], None]:
+def verify_write_factory(pp: Pathpoint) -> tp.Callable[[Future], None]:
     def on_write_completed(fut: Future):
         if fut.exception() is not None:
             exc = fut.exception()
@@ -92,10 +86,10 @@ class OrderExecutorThread(TerminableThread):
                     if not order.is_valid():
                         continue
                     fut = pathpoint.on_write(order.value, order.advise)
-                    fut.add_done_callback(verify_write_factory(self, pathpoint))
+                    fut.add_done_callback(verify_write_factory(pathpoint))
                 elif isinstance(order, ReadOrder):
                     fut = pathpoint.on_read(order.advise)  # type: Future
-                    fut.add_done_callback(on_read_completed_factory(self, pathpoint))
+                    fut.add_done_callback(on_read_completed_factory(pathpoint))
 
             elif isinstance(order, MessageOrder):
 

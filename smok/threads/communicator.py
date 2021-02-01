@@ -149,11 +149,11 @@ class CommunicatorThread(TerminableThread):
             sync.acknowledge()
         except ResponseError as e:
             if e.status_code % 100 == 5:
-                logger.warning(str(data))
                 logger.debug(f'Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
                 raise
             else:
+                logger.warning(str(data))
                 logger.warning(f'Got HTTP {e.status_code} while syncing pathpoint data. '
                                f'Assuming is it damaged and marking as synced')
                 sync.acknowledge()
