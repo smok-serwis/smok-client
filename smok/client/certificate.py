@@ -23,6 +23,24 @@ x509.oid._OID_NAMES[DEVICE_ID] = 'DeviceID'
 x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 
 
+def get_root_cert() -> bytes:
+    """
+    Return the bytes sequence for SMOK's master CA certificate
+    """
+    ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt',)
+    with open(ca_file, 'rb') as f_in:
+        return f_in.read()
+
+
+def get_dev_ca_cert() -> bytes:
+    """
+    Return the bytes sequence for SMOK's device signing CA
+    """
+    ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt',)
+    with open(ca_file, 'rb') as f_in:
+        return f_in.read()
+
+
 @Singleton
 class DevRootCertificateStore:
     __slots__ = ('store',)

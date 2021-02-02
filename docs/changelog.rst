@@ -15,6 +15,7 @@ v0.9
 * added an option to register a callable to be fired each time Pathpoint value changes
 * added an option to limit the frequency of Pathpoint's reads
 * added an option to read without spawning a Thread and a Future
+* added an option to retrieve SMOK's master certificate
 
 v0.8
 ~~~~

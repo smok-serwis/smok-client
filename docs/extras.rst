@@ -113,3 +113,10 @@ If you need quickly a pickling database, try
 
 .. autoclass:: smok.extras.PicklingMetadataDatabase
     :members:
+
+Retrieving SMOK certificates
+----------------------------
+
+.. autofunction:: smok.client.get_root_cert
+
+.. autofunction:: smok.client.get_dev_ca_cert
