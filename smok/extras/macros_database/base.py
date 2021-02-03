@@ -1,11 +1,18 @@
 import typing as tp
+import weakref
 from abc import ABCMeta, abstractmethod
 
 from smok.macro import Macro
 
 
 class BaseMacroDatabase(metaclass=ABCMeta):
-    __slots__ = ()
+    __slots__ = ('device', )
+
+    def __init__(self):
+        self.device = None
+
+    def register_client(self, device):
+        self.device = weakref.proxy(device)
 
     @abstractmethod
     def get_done_macros(self) -> tp.Iterator[tp.Tuple[str, int]]:

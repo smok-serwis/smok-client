@@ -32,6 +32,11 @@ class PicklingMacroDatabase(InMemoryMacroDatabase):
             with open(self.path, 'rb') as f_in, silence_excs(pickle.PickleError):
                 self.macros_to_execute, self.executions_to_sync = pickle.load(f_in)
 
+    def register_client(self, device):
+        super().register_client(device)
+        for macro in self.macros_to_execute:
+            macro.device = self.device
+
     def sync(self):
         with open(self.path, 'wb') as f_out:
             pickle.dump((self.macros_to_execute, self.executions_to_sync), f_out,

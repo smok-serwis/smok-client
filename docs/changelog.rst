@@ -9,6 +9,7 @@ v0.10
 * added support for BAOB updates via sysctls
 * failure to send a Message will be retried up to 3 times
 * fixed a bug with querying for macros using a float
+* fixed pickling macros
 
 v0.9
 ~~~~

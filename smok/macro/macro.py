@@ -32,6 +32,16 @@ class Macro(OmniHashableMixin, ReprableMixin):
 
         return Macro(device, macro_id, commands, occurrences)
 
+    def __getstate__(self):
+        return {'macro_id': self.macro_id,
+                'commands': self.commands,
+                'occurrences_not_done': self.occurrences_not_done}
+
+    def __setstate__(self, state):
+        self.macro_id = state['macro_id']
+        self.commands = state['commands']
+        self.occurrences_not_done = state['occurrences_not_done']
+
     def __init__(self, device: 'SMOKDevice', macro_id: str,
                  commands: tp.Dict[str, PathpointValueType],
                  occurrences_not_done: tp.List[float]):
@@ -47,8 +57,10 @@ class Macro(OmniHashableMixin, ReprableMixin):
         return pickle.dumps(self, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def from_pickle(cls, y: bytes) -> 'Macro':
-        return pickle.loads(y)
+    def from_pickle(cls, y: bytes, device: 'SMOKDevice') -> 'Macro':
+        macro = pickle.loads(y)
+        macro.device = weakref.proxy(device)
+        return macro
 
     def __bool__(self) -> bool:
         return bool(self.occurrences_not_done)
