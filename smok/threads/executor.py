@@ -131,7 +131,10 @@ class OrderExecutorThread(TerminableThread):
 
         # Do we need to sync all sections?
         if section.disposition == Disposition.CANNOT_JOIN:
-            self.device.sync_sections()
+            self.device.sync_sections(lambda: self.terminating)
+
+        if self.terminating:
+            return
 
         orders = section.orders
 
@@ -140,7 +143,7 @@ class OrderExecutorThread(TerminableThread):
                 return  # Section cancelled
 
             with measure() as measurement:
-                while orders:
+                while orders and not self.terminating:
                     orders = self.process_orders(orders)
 
             time_to_wait = section.max_wait()

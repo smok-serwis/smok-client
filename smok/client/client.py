@@ -116,7 +116,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         raise KeyError()
 
-    def sync_sections(self):
+    def sync_sections(self, termination_checker: tp.Callable[[], bool]):
         """
         A CANNOT_JOIN section is about to be executed.
 
@@ -127,6 +127,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Sections should be synchronized in bounded time.
 
         Override this method. Default does nothing.
+
+        :param termination_checker: a callable that can be called to determine whether given
+            SMOKDevice is undergoing a shutdown. If this callable starts to return True,
+            the function should return.
         """
 
     def execute_section(self, section: Section) -> None:

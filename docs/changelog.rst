@@ -16,6 +16,7 @@ v0.9
 * added an option to limit the frequency of Pathpoint's reads
 * added an option to read without spawning a Thread and a Future
 * added an option to retrieve SMOK's master certificate
+* added a termination detector to `sync_sections`
 
 v0.8
 ~~~~
