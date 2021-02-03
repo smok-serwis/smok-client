@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.10
+~~~~~
+
+* *TBA*
+
 v0.9
 ~~~~
 * added caching for plain metadata
