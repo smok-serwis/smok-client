@@ -92,6 +92,11 @@ If you need quickly a pickling database, try
 .. autoclass:: smok.extras.PicklingEventDatabase
     :members:
 
+If you don't care about events, you can also use
+
+.. autoclass:: smok.extras.NullEventDatabase
+    :members:
+
 Macro storage
 -------------
 

@@ -1,4 +1,5 @@
-from .event_database import BaseEventDatabase, BaseEventSynchronization, PicklingEventDatabase
+from .event_database import BaseEventDatabase, BaseEventSynchronization, PicklingEventDatabase, \
+    NullEventDatabase
 from .pp_database import BasePathpointDatabase, BaseDataToSynchronize, PicklingPathpointDatabase
 from .macros_database import BaseMacroDatabase, PicklingMacroDatabase
 from .metadata_database import BaseMetadataDatabase, PicklingMetadataDatabase
@@ -11,5 +12,5 @@ __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointD
            'BaseMacroDatabase', 'PicklingMacroDatabase', 'PicklingBAOBDatabase',
            'BaseMetadataDatabase', 'PicklingMetadataDatabase',
            'BaseSensorDatabase', 'PicklingSensorDatabase',
-           'BAOBDigest', 'BaseBAOBDatabase',
+           'BAOBDigest', 'BaseBAOBDatabase', 'NullEventDatabase',
            'BaseArchivesDatabase', 'PicklingArchivesDatabase']
