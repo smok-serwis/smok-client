@@ -1,6 +1,6 @@
 import typing as tp
 
-from satella.coding import Monitor
+from satella.coding import Monitor, silence_excs
 
 from .base import BaseBAOBDatabase
 
@@ -18,6 +18,12 @@ class InMemoryBAOBDatabase(BaseBAOBDatabase, Monitor):
     @Monitor.synchronized
     def get_baob_version(self, key: str) -> int:
         return self.baobs_versions[key]
+
+    @Monitor.synchronized
+    @silence_excs(KeyError)
+    def delete_baob(self, key: str) -> None:
+        del self.baobs_values[key]
+        del self.baobs_versions[key]
 
     @Monitor.synchronized
     def get_baob_value(self, key: str) -> bytes:

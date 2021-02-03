@@ -27,6 +27,14 @@ class BaseBAOBDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def delete_baob(self, key: str) -> None:
+        """
+        Delete particular BAOB
+
+        :raises KeyError: BAOB does not exist
+        """
+
+    @abstractmethod
     def get_baob_version(self, key: str) -> int:
         """
         Return a version of particular BAOB

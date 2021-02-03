@@ -19,8 +19,17 @@ class PicklingBAOBDatabase(BaseBAOBDatabase):
     def set_baob_value(self, key: str, data: bytes, version: int):
         write_to_file(os.path.join(self.path, key), data)
         self.versions[key] = version
+        self.sync()
+
+    def sync(self):
         with open(os.path.join(self.path, 'metadata.pkl'), 'wb') as f_out:
             pickle.dump(self.versions, f_out)
+
+    @silence_excs(KeyError)
+    def delete_baob(self, key: str) -> None:
+        del self.versions[key]
+        os.unlink(os.path.join(self.path, key))
+        self.sync()
 
     def get_baob_version(self, key: str) -> int:
         return self.versions[key]

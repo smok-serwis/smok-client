@@ -454,12 +454,18 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Called by executor thread upon receiving a request to execute a particular SysctlOrder
 
-        Does nothing by default. Override to receive some sort of functionality.
+        Handles commonly defined BAOBs. Extend to implement custom sysctls.
         Sysctl orders are user-defined.
 
         :param op_name: name of operation to execute
         :param op_args: argument of the operation to execute.
         """
+        if op_name in ('baob-updated', 'baob-created'):
+            if self.getter is not None:
+                self.getter.last_baob_synced = 0
+                self.getter.data_to_update.notify()
+        elif op_name == 'baob-deleted':
+            self.baob_database.delete_baob(op_args)
 
     def close(self) -> None:
         """
