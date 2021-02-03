@@ -4,7 +4,6 @@ import time
 from satella.coding import silence_excs, log_exceptions
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
-from satella.instrumentation import Traceback
 from satella.time import time_as_int
 
 from smok.exceptions import ResponseError
