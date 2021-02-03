@@ -45,16 +45,13 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     @retry(3, exc_classes=ResponseError)
     @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
     def update_macros(self) -> None:
-        start = self.macros_updated_on
+        start = int(self.macros_updated_on)
         if start == 0:
             start = time_as_int() - 2 * MACROS_UPDATING_INTERVAL
         stop = start + 5 * MACROS_UPDATING_INTERVAL
-        try:
-            resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
-                start, stop
-            ))
-        except ResponseError:
-            logger.warning('Error %s', Traceback().pretty_format())
+        resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
+            start, stop
+        ))
         macros = [Macro.from_json(self.device, macro) for macro in resp]
         macros_to_execute = [macro for macro in macros if macro]
         self.device.macros_database.set_macros(macros_to_execute)
