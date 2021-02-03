@@ -18,6 +18,9 @@ can be thought to execute in parallel.
 .. autoclass:: smok.pathpoint.WaitOrder
     :members:
 
+.. autoclass:: smok.pathpoint.SysctlOrder
+    :members:
+
 .. autoclass:: smok.pathpoint.MessageOrder
     :members:
 

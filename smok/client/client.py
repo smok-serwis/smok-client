@@ -450,6 +450,17 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             pp.device = weakref.proxy(self)
             self.pathpoints[pp.name] = pp
 
+    def execute_sysctl(self, op_name: str, op_args: str):
+        """
+        Called by executor thread upon receiving a request to execute a particular SysctlOrder
+
+        Does nothing by default. Override to receive some sort of functionality.
+        Sysctl orders are user-defined.
+
+        :param op_name: name of operation to execute
+        :param op_args: argument of the operation to execute.
+        """
+
     def close(self) -> None:
         """
         Close the connection, clean up the resources.

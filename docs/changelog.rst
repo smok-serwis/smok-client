@@ -5,6 +5,7 @@ v0.10
 ~~~~~
 
 * better exception messages for invalid certs
+* added support for SysctlOrders
 
 v0.9
 ~~~~

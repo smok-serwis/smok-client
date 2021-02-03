@@ -13,7 +13,8 @@ from satella.time import time_ms, measure
 
 from smok.exceptions import ResponseError, NotReadedError, OperationFailedError
 from smok.extras.pp_database.base import BasePathpointDatabase
-from smok.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder, Disposition
+from smok.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder, Disposition, \
+    SysctlOrder
 from smok.pathpoint.pathpoint import Pathpoint
 
 logger = logging.getLogger(__name__)
@@ -107,6 +108,8 @@ class OrderExecutorThread(TerminableThread):
                     self.device.api.post('/v1/device/orders/message/' + uuid)
 
                 fut = execute_a_message(order.uuid)
+            elif isinstance(order, SysctlOrder):
+                self.device.execute_sysctl(order.op_type, order.op_args)
             else:
                 continue
             orders_to_complete.append(order)

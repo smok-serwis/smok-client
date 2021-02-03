@@ -1,3 +1,4 @@
+import logging
 import enum
 import time
 import typing as tp
@@ -9,6 +10,8 @@ from smok.pathpoint.typing import PathpointValueType
 
 __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
            'WaitOrder', 'MessageOrder', 'Section', 'sections_from_list']
+
+logger = logging.getLogger(__name__)
 
 
 class AdviseLevel(enum.IntEnum):
@@ -28,6 +31,22 @@ class Order:
 
     def __str__(self) -> str:
         return str(type(self))
+
+
+class SysctlOrder(Order, ReprableMixin):
+    """
+    A sysctl order. These are completely user-defined.
+    """
+    _REPR_FIELDS = ('op_type', 'op_args')
+    __slots__ = ('op_type', 'op_args')
+
+    def __init__(self, op_type: str, op_args: str):
+        self.op_type = op_type
+        self.op_args = op_args
+
+    @classmethod
+    def from_json(cls, dct: dict) -> 'SysctlOrder':
+        return SysctlOrder(dct['op_type'], dct['op_args'])
 
 
 class MessageOrder(Order, ReprableMixin):
@@ -140,12 +159,15 @@ def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
             o = MessageOrder.from_json(order)
         elif order_type == 'read':
             o = ReadOrder.from_json(order)
+        elif order_type == 'sysctl':
+            o = SysctlOrder.from_json(order)
         elif order_type == 'wait':
             o = WaitOrder.from_json(order)
         elif order_type == 'write':
             o = WriteOrder.from_json(order)
         else:
-            o = None
+            logger.info('Received unknown order type of %s, ignoring', order_type)
+            continue
 
         if o:
             orders.append(o)
