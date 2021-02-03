@@ -60,13 +60,13 @@ class CommunicatorThread(TerminableThread):
         self.data_to_update = Condition()
         self.last_baob_synced = 0
 
-    def tick_predicates(self):
+    def tick_predicates(self) -> None:
         for predicate in self.device.predicates.values():
             # noinspection PyProtectedMember
             predicate._call_method('on_tick')
 
     @retry(3, ResponseError)
-    def sync_events(self):
+    def sync_events(self) -> None:
         evt_to_sync = self.device.evt_database.get_events_to_sync()  # type: BaseEventSynchronization
         if evt_to_sync is None:
             return
@@ -80,7 +80,7 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
-    def sync_predicates(self):
+    def sync_predicates(self) -> None:
         resp = self.device.api.get('/v1/device/predicates')
 
         predicates_found = set()
@@ -121,7 +121,7 @@ class CommunicatorThread(TerminableThread):
         self.last_predicates_synced = time.time()
 
     @retry(3, ResponseError)
-    def sync_sensors(self):
+    def sync_sensors(self) -> None:
         resp = self.device.api.get('/v1/device/sensors')
 
         self.device.sensor_database.on_sensors_sync([Sensor.from_json(self.device, data) for data in resp])
@@ -163,7 +163,7 @@ class CommunicatorThread(TerminableThread):
         self.device.baobs_loaded = True
 
     @retry(3, ResponseError)
-    def _sync_baob(self):
+    def _sync_baob(self) -> None:
         keys = self.device.baob_database.get_all_keys()
         data = []
         for key in keys:
@@ -206,7 +206,7 @@ class CommunicatorThread(TerminableThread):
             self.device.pathpoints.dirty = True
             raise
 
-    def prepare(self):
+    def prepare(self) -> None:
         # Give the app a moment to prepare and define it's pathpoints
         self.safe_sleep(self.startup_delay)
 

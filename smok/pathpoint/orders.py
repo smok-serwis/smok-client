@@ -54,11 +54,16 @@ class MessageOrder(Order, ReprableMixin):
     A message order. Best executed with
     :meth:`smok.client.SMOKDevice._execute_message_order`
     """
-    _REPR_FIELDS = ('uuid',)
-    __slots__ = ('uuid',)
+    _REPR_FIELDS = ('uuid', 'times_retry')
+    __slots__ = ('uuid', 'times_retry')
 
     def __init__(self, uuid: str):
         self.uuid = uuid
+        self.times_retry = 3
+
+    def fail(self) -> bool:
+        self.times_retry -= 1
+        return bool(self.times_retry)
 
     @classmethod
     def from_json(cls, dct: dict) -> 'MessageOrder':

@@ -7,6 +7,7 @@ v0.10
 * better exception messages for invalid certs
 * added support for SysctlOrders
 * added support for BAOB updates via sysctls
+* failure to send a Message will be retried up to 3 times
 
 v0.9
 ~~~~

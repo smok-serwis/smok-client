@@ -4,6 +4,7 @@ import time
 from satella.coding import silence_excs, log_exceptions
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
+from satella.instrumentation import Traceback
 from satella.time import time_as_int
 
 from smok.exceptions import ResponseError
@@ -48,9 +49,12 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         if start == 0:
             start = time_as_int() - 2 * MACROS_UPDATING_INTERVAL
         stop = start + 5 * MACROS_UPDATING_INTERVAL
-        resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
-            start, stop
-        ))
+        try:
+            resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
+                start, stop
+            ))
+        except ResponseError:
+            logger.warning('Error %s', Traceback().pretty_format())
         macros = [Macro.from_json(self.device, macro) for macro in resp]
         macros_to_execute = [macro for macro in macros if macro]
         self.device.macros_database.set_macros(macros_to_execute)

@@ -14,7 +14,7 @@ from satella.time import time_ms, measure
 from smok.exceptions import ResponseError, NotReadedError, OperationFailedError
 from smok.extras.pp_database.base import BasePathpointDatabase
 from smok.pathpoint.orders import Section, WriteOrder, ReadOrder, MessageOrder, Disposition, \
-    SysctlOrder
+    SysctlOrder, Order
 from smok.pathpoint.pathpoint import Pathpoint
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,10 @@ class OrderExecutorThread(TerminableThread):
         self.device = device
         self.data_to_sync = data_to_sync
 
-    def process_orders(self, orders):
+    def process_orders(self, orders) -> tp.List[Order]:
+        """
+        Do some orders and return those that need to be retried
+        """
         futures_to_complete = []
         orders_to_complete = []
         for order in orders:
@@ -124,7 +127,7 @@ class OrderExecutorThread(TerminableThread):
 
         orders_to_retry = []
         for future, order in zip(futures_to_complete, orders_to_complete):
-            if isinstance(future.exception(), OperationFailedError):
+            if isinstance(future.exception(), (ResponseError, OperationFailedError)):
                 if order.fail():
                     orders_to_retry.append(order)
         return orders_to_retry
