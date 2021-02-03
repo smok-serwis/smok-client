@@ -8,6 +8,13 @@ v0.10
 
 v0.9
 ~~~~
+
+Following **API breaking changes** were introduced:
+
+* added a termination detector to `sync_sections`
+
+Following non-breaking changes were introduced:
+
 * added caching for plain metadata
 * added `Sensor.write`
 * failing writes will be treated the same way as failing reads - they will be logged
@@ -21,7 +28,6 @@ v0.9
 * added an option to limit the frequency of Pathpoint's reads
 * added an option to read without spawning a Thread and a Future
 * added an option to retrieve SMOK's master certificate
-* added a termination detector to `sync_sections`
 * added `NullEventDatabase`
 
 v0.8
