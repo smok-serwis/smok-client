@@ -4,7 +4,7 @@ Changelog
 v0.10
 ~~~~~
 
-* *TBA*
+* better exception messages for invalid certs
 
 v0.9
 ~~~~
