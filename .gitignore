@@ -5,6 +5,7 @@ docs/_build
 *.pyc
 examples/skylab/key.crt
 examples/skylab/predicate_db.pickle
+examples/skylab/arch_pickle.db
 .eggs/
 .coverage
 coverage.xml
