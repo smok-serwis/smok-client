@@ -40,6 +40,16 @@ class Macro(OmniHashableMixin, ReprableMixin):
         self.commands = commands
         self.occurrences_not_done = collections.deque(sorted(occurrences_not_done))
 
+    def __getstate__(self):
+        return {'macro_id': self.macro_id,
+                'commands': self.commands,
+                'occurrences_not_done': list(self.occurrences_not_done)}
+
+    def __setstate__(self, state):
+        self.macro_id = state['macro_id']
+        self.commands = state['commands']
+        self.occurrences_not_done = collections.deque(state['occurrences_not_done'])
+
     def to_pickle(self) -> bytes:
         """
         :return: self, pickled
