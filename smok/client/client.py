@@ -174,7 +174,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             self.evt_database = evt_database
         self.macros_database = macro_database or InMemoryMacroDatabase()
-        self.macros_database.register_client(self)
         self.meta_database = meta_database or InMemoryMetadataDatabase()
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)

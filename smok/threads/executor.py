@@ -159,7 +159,6 @@ class OrderExecutorThread(TerminableThread):
 
             section.future.set_result(None)
         else:
-            logger.warning(f'Utilizing custom executor')
             self.device.execute_section(section)
 
     @queue_get('queue', 5)

@@ -1,4 +1,5 @@
 import collections
+import copy
 import logging
 import pickle
 import time
@@ -17,10 +18,10 @@ logger = logging.getLogger(__name__)
 class Macro(OmniHashableMixin, ReprableMixin):
     _HASH_FIELDS_TO_USE = ('macro_id',)
     _REPR_FIELDS = ('macro_id', 'commands', 'occurrences_not_done')
-    __slots__ = ('macro_id', 'commands', 'occurrences_not_done', 'device')
+    __slots__ = ('macro_id', 'commands', 'occurrences_not_done')
 
     @classmethod
-    def from_json(cls, device: 'SMOKDevice', dct: dict) -> 'Macro':
+    def from_json(cls, dct: dict) -> 'Macro':
         macro_id = dct['macro_id']
         commands = {}
         for command in dct['commands']:
@@ -30,22 +31,11 @@ class Macro(OmniHashableMixin, ReprableMixin):
             if not occ['completed']:
                 occurrences.append(occ['timestamp'])
 
-        return Macro(device, macro_id, commands, occurrences)
+        return Macro(macro_id, commands, occurrences)
 
-    def __getstate__(self):
-        return {'macro_id': self.macro_id,
-                'commands': self.commands,
-                'occurrences_not_done': self.occurrences_not_done}
-
-    def __setstate__(self, state):
-        self.macro_id = state['macro_id']
-        self.commands = state['commands']
-        self.occurrences_not_done = state['occurrences_not_done']
-
-    def __init__(self, device: 'SMOKDevice', macro_id: str,
+    def __init__(self, macro_id: str,
                  commands: tp.Dict[str, PathpointValueType],
                  occurrences_not_done: tp.List[float]):
-        self.device = weakref.proxy(device)
         self.macro_id = macro_id
         self.commands = commands
         self.occurrences_not_done = collections.deque(sorted(occurrences_not_done))
@@ -57,10 +47,8 @@ class Macro(OmniHashableMixin, ReprableMixin):
         return pickle.dumps(self, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
-    def from_pickle(cls, y: bytes, device: 'SMOKDevice') -> 'Macro':
-        macro = pickle.loads(y)
-        macro.device = weakref.proxy(device)
-        return macro
+    def from_pickle(cls, y: bytes) -> 'Macro':
+        return pickle.loads(y)
 
     def __bool__(self) -> bool:
         return bool(self.occurrences_not_done)
@@ -69,12 +57,11 @@ class Macro(OmniHashableMixin, ReprableMixin):
     def should_execute(self) -> bool:
         return time.time() > self.occurrences_not_done[0]
 
-    def execute(self) -> None:
-        logger.debug(f'Executing macro %s with commands %s', self.macro_id, self.commands)
+    def execute(self, device: 'SMOKDevice') -> None:
         while self.should_execute():
             ts = self.occurrences_not_done.popleft()
             sec = Section([WriteOrder(pathpoint_name, pathpoint_value, AdviseLevel.FORCE)
                            for pathpoint_name, pathpoint_value in self.commands.items()])
-            self.device.execute(sec)
-            self.device.macros_database.notify_macro_executed(self.macro_id, ts)
+            device.execute(sec)
+            device.macros_database.notify_macro_executed(self.macro_id, ts)
 

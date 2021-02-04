@@ -51,7 +51,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
             start, stop
         ))
-        macros = [Macro.from_json(self.device, macro) for macro in resp]
+        macros = [Macro.from_json(macro) for macro in resp]
         macros_to_execute = [macro for macro in macros if macro]
         self.device.macros_database.set_macros(macros_to_execute)
         self.macros_updated_on = time.time()
@@ -79,7 +79,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
 
             for macro in mdb.get_macros():
                 if macro.should_execute():
-                    macro.execute()
+                    macro.execute(self.device)
 
             for macro_id, ts in mdb.get_done_macros():
                 logger.warning(f'Syncing {macro_id} {ts}')
