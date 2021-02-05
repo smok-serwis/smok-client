@@ -10,6 +10,7 @@ v0.10
 * failure to send a Message will be retried up to 3 times
 * fixed a bug with querying for macros using a float
 * fixed pickling macros
+* fixed a bug with syncing pathpoint data
 
 v0.9
 ~~~~

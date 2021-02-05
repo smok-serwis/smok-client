@@ -148,7 +148,7 @@ class CommunicatorThread(TerminableThread):
             self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
         except ResponseError as e:
-            if e.status_code % 100 == 5:
+            if e.status_code // 100 == 5:
                 logger.debug(f'Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
                 raise
