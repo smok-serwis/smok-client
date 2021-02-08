@@ -11,6 +11,7 @@ v0.10
 * fixed a bug with querying for macros using a float
 * fixed pickling macros
 * fixed a bug with syncing pathpoint data
+* fixed a bug with PicklingMacroDatabase
 
 v0.9
 ~~~~

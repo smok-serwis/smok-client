@@ -15,7 +15,7 @@ def always_sync(fun):
             return fun(self, *args, **kwargs)
         finally:
             self.sync()
-    return always_sync
+    return inner
 
 
 class PicklingMacroDatabase(InMemoryMacroDatabase):
