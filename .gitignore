@@ -6,6 +6,7 @@ docs/_build
 examples/skylab/key.crt
 examples/skylab/predicate_db.pickle
 examples/skylab/arch_pickle.db
+examples/skylab/macro_pickle.db
 .eggs/
 .coverage
 coverage.xml
