@@ -450,23 +450,23 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             pp.device = weakref.proxy(self)
             self.pathpoints[pp.name] = pp
 
-    def execute_sysctl(self, op_name: str, op_args: str) -> bool:
+    def execute_sysctl(self, op_type: str, op_args: str) -> bool:
         """
         Called by executor thread upon receiving a request to execute a particular SysctlOrder
 
         Handles commonly defined BAOBs. Extend to implement custom sysctls.
         Sysctl orders are user-defined.
 
-        :param op_name: name of operation to execute
+        :param op_type: type of operation to execute
         :param op_args: argument of the operation to execute.
         :return: whether this command was recognized and acted upon
         """
-        if op_name in ('baob-updated', 'baob-created'):
+        if op_type in ('baob-updated', 'baob-created'):
             if self.getter is not None:
                 self.getter.last_baob_synced = 0
                 self.getter.data_to_update.notify()
             return True
-        elif op_name == 'baob-deleted':
+        elif op_type == 'baob-deleted':
             self.baob_database.delete_baob(op_args)
             return True
         return False

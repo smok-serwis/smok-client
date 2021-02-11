@@ -4,7 +4,7 @@ Changelog
 v0.12
 ~~~~~
 
-* _TBA_
+* changed the parameter name in `SMOKClient.execute_sysctl` to match order fields
 
 v0.11
 ~~~~~
