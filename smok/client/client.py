@@ -15,7 +15,7 @@ from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
 
 from .api import RequestsAPI
-from .certificate import get_device_info
+from .certificate import get_device_info, get_root_cert, get_dev_ca_cert
 from .slave import SlaveDevice
 from ..baob import BAOB
 from ..basics import DeviceInfo, Environment, StorageLevel
@@ -204,6 +204,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         with open(cert, 'rb') as fin:
             cert_data = fin.read()
 
+        self.cert_data = cert_data
         dev_id, env = get_device_info(cert_data)
         self.device_id = dev_id  # type: str
         self.environment = env  # type: Environment
@@ -531,3 +532,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         local_time = utc_time.astimezone(tz)
 
         return local_time
+
+    @property
+    def cert_chain(self) -> bytes:
+        """
+        Return your own certificate chain, finishing at SMOK CA certificate
+
+        :return: certificate chain in PEM format
+        """
+        mydat = self.cert_data
+        devcadat = get_dev_ca_cert()
+        rootdat = get_root_cert()
+        return mydat+devcadat+rootdat
+
