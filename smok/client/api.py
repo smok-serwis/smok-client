@@ -38,7 +38,7 @@ class RequestsAPI:
                     'X-SSL-Client-Certificate': self.cert
                 }, **kwargs)
         except requests.RequestException as e:
-            raise ResponseError(None, 'Requests error: %s' % (str(e), ))
+            raise ResponseError(599, 'Requests error: %s' % (str(e), ))
 
         if resp is None and self.environment == Environment.LOCAL_DEVELOPMENT:
             # special case for CI

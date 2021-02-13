@@ -41,9 +41,13 @@ class ResponseError(SMOKClientError):
     def __str__(self) -> str:
         return 'ResponseError(%s, "%s")' % (self.status_code, self.status)
 
-    def __init__(self, status_code: tp.Optional[int], status: str):
+    def __init__(self, status_code: tp.Optional[int] = 599, status: str = ''):
         self.status_code = status_code
         self.status = status
+
+    def is_clients_fault(self) -> bool:
+        """Return whether this is our fault, or server's/connection's fault"""
+        return self.status_code // 100 == 4
 
 
 class OperationFailedReason(enum.Enum):

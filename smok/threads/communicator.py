@@ -136,6 +136,7 @@ class CommunicatorThread(TerminableThread):
             for section in sections_from_list(resp):
                 self.queue.put(section)
 
+    @retry(3, ResponseError)
     def sync_sensor_writes(self) -> None:
         sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
@@ -143,8 +144,14 @@ class CommunicatorThread(TerminableThread):
         try:
             self.device.api.put('/v1/device/sensor/write_log', json=sync.to_json())
             sync.ack()
-        except ResponseError:
-            sync.nack()
+        except ResponseError as e:
+            if not e.is_clients_fault():
+                logger.debug(f'Failed to sync sensor writes', exc_info=e)
+                sync.nack()
+                raise
+            else:
+                logger.warning('Got HTTP %s on sync sensor writes, acking', e.status_code)
+                sync.ack()
 
     @retry(3, ResponseError)
     @log_exceptions(logger, logging.WARNING, 'Failed to sync data: {e}')
@@ -160,12 +167,11 @@ class CommunicatorThread(TerminableThread):
             self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
         except ResponseError as e:
-            if e.status_code // 100 == 5:
+            if not e.is_clients_fault():
                 logger.debug(f'Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
                 raise
             else:
-                logger.warning(str(data))
                 logger.warning(f'Got HTTP {e.status_code} while syncing pathpoint data. '
                                f'Assuming is it damaged and marking as synced')
                 sync.acknowledge()
