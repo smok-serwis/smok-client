@@ -152,6 +152,16 @@ class BaseStatistic(metaclass=ABCMeta):
         self.device.evt_database.add_event(evt)
         return evt
 
+    def on_verbose_name_changed(self, new_verbose_name: str) -> None:
+        """
+        Called upon verbose name changing. This should assign the changed verbose name.
+
+        Called by communicator thread.
+
+        :param new_verbose_name: new verbose name
+        """
+        self.verbose_name = new_verbose_name
+
     def on_configuration_changed(self, new_config: dict) -> None:
         """
         Called upon configuration changing. This should assign the changed configuration.

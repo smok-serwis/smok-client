@@ -7,6 +7,7 @@ v0.12
 * changed the parameter name in `SMOKClient.execute_sysctl` to match order fields
 * added support for Sensor Writes
 * improved exception handling
+* added `on_verbose_name_changed` to Predicate
 
 v0.11
 ~~~~~

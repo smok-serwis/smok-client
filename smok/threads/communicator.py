@@ -108,10 +108,13 @@ class CommunicatorThread(TerminableThread):
                 else:
                     stat = self.device.predicates[predicate_id]
                     config = predicate_dict['configuration']
+                    verbose_name = predicate_dict['verbose_name']
                     if stat.configuration != config:
                         stat.on_configuration_changed(config)
                     if stat.silencing != silencing:
                         stat.on_silencing_changed(silencing)
+                    if stat.verbose_name != verbose_name:
+                        stat.on_verbose_name_changed(verbose_name)
 
             predicates_to_delete = set(self.device.predicates.keys()) - predicates_found
             for predicate_id in predicates_to_delete:
