@@ -484,6 +484,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param op_args: argument of the operation to execute.
         :return: whether this command was recognized and acted upon
         """
+        if self.dont_do_baobs:
+            return False
         if op_type in ('baob-updated', 'baob-created'):
             if self.getter is not None:
                 self.getter.last_baob_synced = 0
