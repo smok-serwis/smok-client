@@ -123,14 +123,14 @@ class CommunicatorThread(TerminableThread):
 
         if not self.last_predicates_synced:
             self.device.ready_lock.release()
-        self.last_predicates_synced = time.monotonic()()
+        self.last_predicates_synced = time.monotonic()
 
     @retry(3, ResponseError)
     def sync_sensors(self) -> None:
         resp = self.device.api.get('/v1/device/sensors')
 
         self.device.sensor_database.on_sensors_sync([Sensor.from_json(self.device, data) for data in resp])
-        self.last_sensors_synced = time.monotonic()()
+        self.last_sensors_synced = time.monotonic()
 
     @retry(3, ResponseError)
     def fetch_orders(self) -> None:
@@ -202,7 +202,7 @@ class CommunicatorThread(TerminableThread):
                 'data': ujson.dumps({'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode('utf8')
             })
             logger.debug('Uploaded BAOB %s', key_to_upload)
-        self.last_baob_synced = time.monotonic()()
+        self.last_baob_synced = time.monotonic()
 
     @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
