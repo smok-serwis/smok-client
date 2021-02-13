@@ -57,3 +57,12 @@ Other common types are:
 .. autoclass:: smok.sensor.types.UnicodeType
     :members:
 
+Logging writes
+--------------
+
+In order to log a write, you must construct an instance of following:
+
+.. autoclass:: smok.sensor.SensorWriteEvent
+    :members:
+
+And pass it as an argument to :meth:`~smok.client.SMOKDevice.log_sensor_write`.

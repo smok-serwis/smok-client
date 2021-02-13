@@ -10,6 +10,24 @@ Most options are, for this time, geared towards extended work in an Internet-les
 Note that if documentation says that client threads can invoke these routines, you should make them
 as threadsafe as feasible for you.
 
+Sensor writes database
+----------------------
+
+In a SCADA system it is very important to know who's been changing what. SMOK allows you to
+register sensor writes to send to the cloud. However, if you would like them to persist
+a reboot, override this:
+
+.. autoclass:: smok.extras.BaseSensorWriteSynchronization
+    :members:
+
+.. autoclass:: smok.extras.BaseSensorWriteDatabase
+    :members:
+
+If you need something which persists the data, but isn't too fast itself, try:
+
+.. autoclass:: smok.extras.PicklingSensorWriteDatabase
+    :members:
+
 Archive database
 ----------------
 

@@ -21,19 +21,21 @@ from ..baob import BAOB
 from ..basics import DeviceInfo, Environment, StorageLevel
 from ..exceptions import ResponseError, UnavailableError
 from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
-    BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase, BaseArchivesDatabase
+    BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase, BaseArchivesDatabase, \
+    BaseSensorWriteDatabase
 from ..extras.arch_database.in_memory import InMemoryArchivesDatabase
 from ..extras.baob_database.memory import InMemoryBAOBDatabase
 from ..extras.event_database import InMemoryEventDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
 from ..extras.metadata_database import InMemoryMetadataDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
+from ..extras.sensor_write_database.in_memory import InMemorySensorWriteDatabase
 from ..extras.sensors_database.in_memory import InMemorySensorDatabase
 from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint, ReparsePathpoint
 from ..pathpoint.orders import Section, MessageOrder
 from ..predicate import BaseStatistic, Event, Color
-from ..sensor import Sensor, fqtsify
+from ..sensor import Sensor, fqtsify, SensorWriteEvent
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
 import logging
@@ -67,6 +69,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         in-memory implementation
     :param arch_database: custom archives database. Default value of None will result in an
         in-memory implementation
+    :param sensor_write_database: custom sensor write database. Default value of None will result in
+        an in-memory implementation
     :param dont_obtain_orders: if set to True, this SMOKDevice won't poll for orders.
         This also implies dont_do_baobs. It is a ValueError to set this while setting
         dont_bo_baobs to False.
@@ -155,6 +159,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  sensor_database: tp.Optional[BaseSensorDatabase] = None,
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
                  arch_database: tp.Optional[BaseArchivesDatabase] = None,
+                 sensor_write_database: tp.Optional[BaseSensorWriteDatabase] = None,
                  dont_obtain_orders: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_predicates: bool = False,
@@ -179,6 +184,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.sensor_database.on_register(self)
         self.arch_database = arch_database or InMemoryArchivesDatabase()
         self.baob_database = baob_database or InMemoryBAOBDatabase()
+        self.sensor_write_database = sensor_write_database or InMemorySensorWriteDatabase()
         self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
@@ -236,6 +242,14 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.executor = None
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
+
+    def log_sensor_write(self, sw: SensorWriteEvent):
+        """
+        Log that a sensor has been written and enqueue it for cloud upload
+
+        :param sw: sensor write event to upload
+        """
+        self.sensor_write_database.add(sw)
 
     def get_baob(self, key: str) -> BAOB:
         """

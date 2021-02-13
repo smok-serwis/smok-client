@@ -135,6 +135,17 @@ class CommunicatorThread(TerminableThread):
                 self.queue.put(section)
 
     @retry(3, ResponseError)
+    def sync_sensor_writes(self) -> None:
+        sync = self.device.sensor_write_database.get_sync()
+        if not sync:
+            return
+        try:
+            self.device.api.put('/v1/device/sensor/write_log', json=sync.to_json())
+            sync.ack()
+        except ResponseError:
+            sync.nack()
+
+    @retry(3, ResponseError)
     @log_exceptions(logger, logging.WARNING, 'Failed to sync data: {e}')
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
@@ -233,6 +244,8 @@ class CommunicatorThread(TerminableThread):
             if not self.dont_do_baobs:
                 if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
                     self.sync_baob()
+
+            self.sync_sensor_writes()
 
             # Fetch the orders
             if not self.dont_obtain_orders:

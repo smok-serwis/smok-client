@@ -6,6 +6,8 @@ from .metadata_database import BaseMetadataDatabase, PicklingMetadataDatabase
 from .sensors_database import BaseSensorDatabase, PicklingSensorDatabase
 from .baob_database import BAOBDigest, BaseBAOBDatabase, PicklingBAOBDatabase
 from .arch_database import BaseArchivesDatabase, PicklingArchivesDatabase
+from .sensor_write_database import BaseSensorWriteDatabase, BaseSensorWriteSynchronization, \
+    PicklingSensorWriteDatabase
 
 __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointDatabase',
            'BaseEventDatabase', 'BaseEventSynchronization', 'PicklingEventDatabase',
@@ -13,4 +15,6 @@ __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointD
            'BaseMetadataDatabase', 'PicklingMetadataDatabase',
            'BaseSensorDatabase', 'PicklingSensorDatabase',
            'BAOBDigest', 'BaseBAOBDatabase', 'NullEventDatabase',
-           'BaseArchivesDatabase', 'PicklingArchivesDatabase']
+           'BaseArchivesDatabase', 'PicklingArchivesDatabase',
+           'BaseSensorWriteSynchronization', 'BaseSensorWriteDatabase',
+           'PicklingSensorWriteDatabase']
