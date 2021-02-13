@@ -5,11 +5,13 @@ import weakref
 from satella.coding import rethrow_as
 from satella.coding.transforms import merge_series
 from satella.coding.typing import Number
+from satella.time import time_ms
 
 from smok.exceptions import NotReadedError, OperationFailedError
 from smok.pathpoint import AdviseLevel, PathpointValueType
 from smok.pathpoint.orders import Section, ReadOrder
 from smok.sensor import reparse_funs
+from .write_logs import SensorWriteEvent
 from smok.sensor.reparse import parse
 from smok.sensor.types import SensorValueType, get_type, SVTOrExcept
 
@@ -95,6 +97,28 @@ class Sensor:
                     break
             else:
                 yield ts, self.type.pathpoint_to_sensor(*values)
+
+    def log_write(self, who: str, reason: str, value: str, hr_value: tp.Optional[str] = None,
+                  hr_sensor: tp.Optional[str] = None, timestamp: tp.Optional[int] = None) -> None:
+        """
+        Log that a write has taken place in this sensor
+
+        :param who: who has made this change
+        :param reason: reason for this write
+        :param value: a str-able form of value
+        :param hr_value: a human-readable value. Defaults to value
+        :param hr_sensor: a human-readable name for the sensor. Defaults to fqts
+        :param timestamp: in milliseconds! Leave at default for current timestamp
+        """
+        if hr_value is None:
+            hr_value = value
+        if hr_sensor is None:
+            hr_sensor = self.fqts
+        if timestamp is None:
+            timestamp = time_ms()
+        perm = SensorWriteEvent(fqts=self.fqts, hr_sensor=hr_sensor, hr_value=hr_value, value=value,
+                                reason=reason, who=who, timestamp=timestamp)
+        self.device.log_sensor_write(perm)
 
     def write(self, value, advise: AdviseLevel = AdviseLevel.ADVISE) -> Section:
         """
