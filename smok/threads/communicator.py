@@ -123,14 +123,14 @@ class CommunicatorThread(TerminableThread):
 
         if not self.last_predicates_synced:
             self.device.ready_lock.release()
-        self.last_predicates_synced = time.time()
+        self.last_predicates_synced = time.monotonic()()
 
     @retry(3, ResponseError)
     def sync_sensors(self) -> None:
         resp = self.device.api.get('/v1/device/sensors')
 
         self.device.sensor_database.on_sensors_sync([Sensor.from_json(self.device, data) for data in resp])
-        self.last_sensors_synced = time.time()
+        self.last_sensors_synced = time.monotonic()()
 
     @retry(3, ResponseError)
     def fetch_orders(self) -> None:
@@ -202,7 +202,7 @@ class CommunicatorThread(TerminableThread):
                 'data': ujson.dumps({'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode('utf8')
             })
             logger.debug('Uploaded BAOB %s', key_to_upload)
-        self.last_baob_synced = time.time()
+        self.last_baob_synced = time.monotonic()()
 
     @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
@@ -234,6 +234,8 @@ class CommunicatorThread(TerminableThread):
     def loop(self) -> None:
         with measure() as measurement:
             # Synchronize the data
+            monotime = time.monotonic()
+
             if not self.dont_do_pathpoints:
                 self.sync_data()
 
@@ -242,17 +244,17 @@ class CommunicatorThread(TerminableThread):
                     self.sync_pathpoints()
 
                 # Synchronize sensors
-                if time.time() - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
+                if monotime - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
                     self.sync_sensors()
 
             # Synchronize predicates
             if not self.dont_do_predicates:
-                if time.time() - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
+                if monotime - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
                     self.sync_predicates()
 
             # Fetch the BAOBs
             if not self.dont_do_baobs:
-                if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
+                if monotime - self.last_baob_synced > BAOB_SYNC_INTERVAL:
                     self.sync_baob()
             if not self.dont_sync_sensor_writes:
                 self.sync_sensor_writes()
