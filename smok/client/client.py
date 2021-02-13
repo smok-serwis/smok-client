@@ -434,7 +434,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.register_pathpoint(pp)
         return pp
 
-    def register_statistic(self, stat: tp.Type[BaseStatistic]) -> None:
+    def register_statistic(self, stat: tp.Type[BaseStatistic],
+                           statistic: tp.Optional[str] = None) -> None:
         """
         Register a new statistic.
 
@@ -442,13 +443,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         instances will be created for them shortly by the communicator thread.
 
         :param stat: a class (not an instance) to register
+        :param statistic: explicit statistic name to use, disregard the class-bound one if given
 
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
-        self.predicate_classes[stat.statistic_name] = stat
+        if statistic is None:
+            statistic = stat.statistic_name
+        self.predicate_classes[statistic] = stat
 
     def register_pathpoint(self, pp: Pathpoint) -> None:
         """

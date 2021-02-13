@@ -8,6 +8,7 @@ v0.12
 * added support for Sensor Writes
 * improved exception handling
 * added `on_verbose_name_changed` to Predicate
+* added an extra parameter to `register_statistic`
 
 v0.11
 ~~~~~
