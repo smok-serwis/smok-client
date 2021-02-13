@@ -171,12 +171,12 @@ class CommunicatorThread(TerminableThread):
             sync.acknowledge()
         except ResponseError as e:
             if not e.is_clients_fault():
-                logger.debug(f'Failed to sync data', exc_info=e)
+                logger.debug('Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
                 raise
             else:
-                logger.warning(f'Got HTTP {e.status_code} while syncing pathpoint data. '
-                               f'Assuming is it damaged and marking as synced')
+                logger.warning('Got HTTP %s while syncing pathpoint data. '
+                               'Assuming is it damaged and marking as synced', e.status_code)
                 sync.acknowledge()
 
     def sync_baob(self):
