@@ -24,34 +24,34 @@ class BaseSensorWriteSynchronization:
 
     def ack(self):
         for event in self.events:
-            self.swdb.on_synced(event)
+            self.swdb.on_synced_sw(event)
 
     def nack(self):
         for event in self.events:
-            self.swdb.on_sync_failed(event)
+            self.swdb.on_sync_sw_failed(event)
 
 
 class BaseSensorWriteDatabase(metaclass=ABCMeta):
     @abstractmethod
-    def on_sync_failed(self, event: SensorWriteEvent):
+    def on_sync_sw_failed(self, event: SensorWriteEvent):
         """
         Called when given event fails to sync
         """
 
     @abstractmethod
-    def on_synced(self, event: SensorWriteEvent):
+    def on_synced_sw(self, event: SensorWriteEvent):
         """
         Called when given event becomes synced
         """
 
     @abstractmethod
-    def add(self, event: SensorWriteEvent):
+    def add_sw(self, event: SensorWriteEvent):
         """
         Add a new event to synchronize
         """
 
     @abstractmethod
-    def get_sync(self) -> BaseSensorWriteSynchronization:
+    def get_sw_sync(self) -> BaseSensorWriteSynchronization:
         """
         Get a synchronization
         """

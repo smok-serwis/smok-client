@@ -5,6 +5,7 @@ v0.12
 ~~~~~
 
 * changed the parameter name in `SMOKClient.execute_sysctl` to match order fields
+* added support for Sensor Writes
 
 v0.11
 ~~~~~

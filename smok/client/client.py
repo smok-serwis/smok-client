@@ -76,6 +76,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         dont_bo_baobs to False.
     :param dont_do_pathpoints: if set to True, this SMOKDevice won't support pathpoints
         or sensors.
+    :param dont_sync_sensor_writes: if set to True, sensor writes won't be synced
     :param dont_do_baobs: if set to True, this SMOKDevice won't care about BAOBs.
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
     :param dont_do_predicates: if set to True, this SMOKDevice won't do predicates
@@ -161,6 +162,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  arch_database: tp.Optional[BaseArchivesDatabase] = None,
                  sensor_write_database: tp.Optional[BaseSensorWriteDatabase] = None,
                  dont_obtain_orders: bool = False,
+                 dont_sync_sensor_writes: bool = False,
                  dont_do_macros: bool = False,
                  dont_do_predicates: bool = False,
                  dont_do_pathpoints: bool = False,
@@ -172,6 +174,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.cache_metadata_for = cache_metadata_for
         self.dont_do_predicates = dont_do_predicates
         self.dont_do_pathpoints = dont_do_pathpoints
+        self.dont_sync_sensor_writes = dont_sync_sensor_writes
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         self.baobs_loaded = False
         if isinstance(evt_database, str):
@@ -237,7 +240,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                                              dont_obtain_orders,
                                              dont_do_baobs,
                                              dont_do_pathpoints,
-                                             dont_do_predicates, startup_delay).start()
+                                             dont_do_predicates,
+                                             dont_sync_sensor_writes, startup_delay).start()
         else:
             self.executor = None
             self.getter = None
@@ -249,7 +253,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :param sw: sensor write event to upload
         """
-        self.sensor_write_database.add(sw)
+        self.sensor_write_database.add_sw(sw)
 
     def get_baob(self, key: str) -> BAOB:
         """

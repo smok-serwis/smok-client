@@ -45,8 +45,10 @@ class CommunicatorThread(TerminableThread):
                  data_to_sync: DataSyncDict, dont_obtain_orders: bool,
                  dont_do_baobs: bool, dont_do_pathpoints: bool,
                  dont_do_predicates: bool,
+                 dont_sync_sensor_writes: bool,
                  startup_delay: float):
         super().__init__(name='order getter')
+        self.dont_sync_sensor_writes = dont_sync_sensor_writes
         self.device = device
         self.startup_delay = startup_delay
         self.dont_do_pathpoints = dont_do_pathpoints
@@ -134,9 +136,8 @@ class CommunicatorThread(TerminableThread):
             for section in sections_from_list(resp):
                 self.queue.put(section)
 
-    @retry(3, ResponseError)
     def sync_sensor_writes(self) -> None:
-        sync = self.device.sensor_write_database.get_sync()
+        sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
             return
         try:
@@ -244,8 +245,8 @@ class CommunicatorThread(TerminableThread):
             if not self.dont_do_baobs:
                 if time.time() - self.last_baob_synced > BAOB_SYNC_INTERVAL:
                     self.sync_baob()
-
-            self.sync_sensor_writes()
+            if not self.dont_sync_sensor_writes:
+                self.sync_sensor_writes()
 
             # Fetch the orders
             if not self.dont_obtain_orders:
