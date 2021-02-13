@@ -562,8 +562,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :return: certificate chain in PEM format
         """
-        mydat = self.cert_data
-        devcadat = get_dev_ca_cert()
-        rootdat = get_root_cert()
-        return mydat+devcadat+rootdat
+        my_dat = self.cert_data
+        dev_ca_dat = get_dev_ca_cert()
+        root_ca_dat = get_root_cert()
+        return b''.join((my_dat, dev_ca_dat, root_ca_dat))
 
