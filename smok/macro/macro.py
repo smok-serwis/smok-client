@@ -1,18 +1,13 @@
 import collections
-import copy
-import logging
 import pickle
 import time
 import typing as tp
-import weakref
 
 from satella.coding import silence_excs
 from satella.coding.structures import OmniHashableMixin, ReprableMixin
 
 from smok.pathpoint.orders import Section, WriteOrder, AdviseLevel
 from smok.pathpoint.typing import PathpointValueType
-
-logger = logging.getLogger(__name__)
 
 
 class Macro(OmniHashableMixin, ReprableMixin):
