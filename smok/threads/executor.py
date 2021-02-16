@@ -61,11 +61,17 @@ def on_write_completed(fut: Future):
 
 
 class OrderExecutorThread(TerminableThread):
-    def __init__(self, device, order_queue: queue.Queue, data_to_sync: BasePathpointDatabase):
+    def __init__(self, device, order_queue: queue.Queue, data_to_sync: BasePathpointDatabase,
+                 wait_before_startup: int = 0):
         super().__init__(name='order executor')
         self.queue = order_queue
         self.device = device
         self.data_to_sync = data_to_sync
+        self.wait_before_startup = wait_before_startup
+
+    def prepare(self) -> None:
+        if self.wait_before_startup:
+            self.safe_sleep(self.wait_before_startup)
 
     def process_orders(self, orders) -> tp.List[Order]:
         """

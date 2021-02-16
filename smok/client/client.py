@@ -82,7 +82,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param dont_do_predicates: if set to True, this SMOKDevice won't do predicates
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
     :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
-        start talking
+        start talking and OrderExecutorThread to start grabbing orders
     :param cache_metadata_for: amount of seconds to cache downloaded metadata entry.
         Ie no attempt to download them from the server again will be made in that many
         seconds since the download.
@@ -235,7 +235,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.dont_do_baobs = dont_do_baobs
         if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
                 not dont_do_baobs:
-            self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database).start()
+            self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database,
+                                                startup_delay).start()
             self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
                                              dont_obtain_orders,
                                              dont_do_baobs,

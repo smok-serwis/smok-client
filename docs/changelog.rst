@@ -4,7 +4,7 @@ Changelog
 v0.13
 ~~~~~
 
-
+* `OrderExecutorThread` will now wait `startup_delay` seconds as well
 
 v0.12
 ~~~~~
