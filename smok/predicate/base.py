@@ -152,6 +152,16 @@ class BaseStatistic(metaclass=ABCMeta):
         self.device.evt_database.add_event(evt)
         return evt
 
+    def on_group_changed(self, new_group: str) -> None:
+        """
+        Called upon group changing. This should assign the changed verbose name.
+
+        Called by communicator thread.
+
+        :param new_group: new verbose name
+        """
+        self.group = new_group
+
     def on_verbose_name_changed(self, new_verbose_name: str) -> None:
         """
         Called upon verbose name changing. This should assign the changed verbose name.

@@ -5,6 +5,7 @@ v0.13
 ~~~~~
 
 * `OrderExecutorThread` will now wait `startup_delay` seconds as well
+* added `Predicate.on_group_changed`
 
 v0.12
 ~~~~~
