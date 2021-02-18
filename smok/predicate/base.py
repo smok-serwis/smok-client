@@ -93,9 +93,8 @@ class BaseStatistic(metaclass=ABCMeta):
 
     @property
     @classmethod
-    @abstractmethod
     def statistic_name(cls) -> str:  #: obtain the :term:`statistic` name
-        ...
+        return None
 
     @abstractmethod
     def on_tick(self) -> None:

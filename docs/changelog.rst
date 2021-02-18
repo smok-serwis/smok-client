@@ -6,6 +6,7 @@ v0.13
 
 * `OrderExecutorThread` will now wait `startup_delay` seconds as well
 * added `Predicate.on_group_changed`
+* statistic name in `BaseStatistic` is no longer mandatory to override
 
 v0.12
 ~~~~~
