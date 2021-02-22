@@ -81,9 +81,14 @@ If you need to coerce a value to target pathpoint's type, use the following meth
 
 If the first letter is `r`, then the type of the pathpoint is declared by the second letter.
 This pathpoint will be called a :term:`reparse` pathpoint
-The rest represents an expression, where other pathpoint are taken in brackets and the resulting
+The rest represents an expression, where other pathpoint are taken in braces and the resulting
 expression is evaluated. This is called a reparse pathpoint, and you don't need to deal directly
 with them. You just need to provide the non-reparse, ie. :term:`native` pathpoints.
+Eg. a reparse pathpoint that would be a sum of two other pathpoints would be:
+
+```
+rW{W1r4002}+{W1r4002}
+```
 
 You should override two calls, ie. :meth:`~smok.pathpoint.Pathpoint.on_read` and
 :meth:`~smok.pathpoint.Pathpoint.on_write`. By default they do nothing, not even read their
