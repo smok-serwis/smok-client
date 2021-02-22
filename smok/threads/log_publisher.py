@@ -9,7 +9,7 @@ from ..exceptions import ResponseError
 
 
 MAX_SYNC_AT_ONCE = 50
-
+MAX_LOG_BUFFER_SIZE = 20000
 
 class LogPublisherThread(TerminableThread):
     def __init__(self, device: 'SMOKDevice'):
@@ -26,6 +26,8 @@ class LogPublisherThread(TerminableThread):
     @queue_get('queue', timeout=5)
     def loop(self, msg):
         while not self.device.allow_sync:
+            while self.queue.qsize() > MAX_LOG_BUFFER_SIZE:
+                self.queue.get()
             self.safe_sleep(10)
         if self._terminating:
             return

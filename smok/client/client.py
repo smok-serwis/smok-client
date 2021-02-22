@@ -98,8 +98,11 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     If dont_obtain_orders is True, then order executor and order getter threads won't be started.
 
     :ivar device_id: device ID of this device
-    :ivar allow_sync: whether to allow background synchronization (bool)
-    :ivar environment: environment of this device
+    :ivar allow_sync: whether to allow background synchronization (bool).
+        This can be changed by setting it directly to correct value. Setting this to False
+        will help you save some bandwidth. Note that log upload will be put on hold, until it
+        overflows the buffer. In that case, earlier submitted logs will be thrown on the floor
+        to make room for new entries.
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
     :ivar metadata: plain metadata for this device
@@ -356,7 +359,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Called by CommunicatorThread after given BAOB was updated.
 
+        After this is called, the new BAOB can be successfully loaded and it's new
+        contents will be retrieved.
+
         This is not invoked during the first synchronization.
+
+        :param baob_name: name of the BAOB that was just downloaded from the server
         """
 
     def get_sensor(self, tag_set: tp.Union[tp.Set[str], str]) -> Sensor:
