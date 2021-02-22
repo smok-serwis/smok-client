@@ -96,7 +96,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     won't be started.
     If dont_obtain_orders is True, then order executor and order getter threads won't be started.
 
-    :ivar device_id: device ID of this device
+    Every method is supposed to be called from user threads (SMOKDevice's service threads included),
+    unless noted otherwise.
+
+    :ivar device_id: device ID of this device (str)
     :ivar allow_sync: whether to allow background synchronization (bool).
         This can be changed by setting it directly to correct value. Setting this to False
         will help you save some bandwidth. Note that log upload will be put on hold, until it
