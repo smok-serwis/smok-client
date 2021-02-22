@@ -69,7 +69,7 @@ class CommunicatorThread(TerminableThread):
 
     @retry(3, ResponseError)
     def sync_events(self) -> None:
-        evt_to_sync = self.device.evt_database.get_events_to_sync()  # type: BaseEventSynchronization
+        evt_to_sync = self.device.evt_database.get_events_to_sync()
         if evt_to_sync is None:
             return
         try:
@@ -77,7 +77,7 @@ class CommunicatorThread(TerminableThread):
                                         json=[evt.to_json() for evt in evt_to_sync.get_events()])
             evt_to_sync.acknowledge(*(data['uuid'] for data in resp))
         except ResponseError as e:
-            logger.error('Failure syncing events', exc_info=e)
+            logger.error('Failure syncing events: %s', e, exc_info=e)
             evt_to_sync.negative_acknowledge()
             raise
 
@@ -153,7 +153,7 @@ class CommunicatorThread(TerminableThread):
             sync.ack()
         except ResponseError as e:
             if not e.is_clients_fault():
-                logger.debug(f'Failed to sync sensor writes', exc_info=e)
+                logger.debug(f'Failed to sync sensor writes: {e}', e, exc_info=e)
                 sync.nack()
                 raise
             else:
@@ -294,4 +294,4 @@ class CommunicatorThread(TerminableThread):
                     self.data_to_update.wait(timeout=ttw)
                     break
                 except WouldWaitMore:
-                    time_to_wait -= ttw * 1.1
+                    time_to_wait -= ttw

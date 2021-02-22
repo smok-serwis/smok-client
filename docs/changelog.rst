@@ -6,6 +6,7 @@ v0.14
 
 * added `SMOKDevice.on_baob_updated`
 * added `SMOKDevice.allow_sync`
+* remove an useless `* 1.1` in `CommunicatorThread`
 
 v0.13
 ~~~~~
