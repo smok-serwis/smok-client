@@ -346,6 +346,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         with self.ready_lock:
             yield from self.sensor_database.get_all_sensors()
 
+    def on_baob_updated(self, baob_name: str) -> None:
+        """
+        Called by CommunicatorThread after given BAOB was updated.
+
+        This is not invoked during the first synchronization.
+        """
+
     def get_sensor(self, tag_set: tp.Union[tp.Set[str], str]) -> Sensor:
         """
         Return a sensor

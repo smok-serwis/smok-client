@@ -4,6 +4,7 @@ Changelog
 v0.14
 ~~~~~
 
+* add `SMOKDevice.on_baob_updated`
 
 v0.13
 ~~~~~

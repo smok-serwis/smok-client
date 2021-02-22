@@ -199,6 +199,8 @@ class CommunicatorThread(TerminableThread):
                                                 direct_response=True)
             self.device.baob_database.set_baob_value(key_to_download, resp, int(headers['X-SMOK-BAOB-Version']))
             logger.debug('Downloaded BAOB %s', key_to_download)
+            if self.last_baob_synced:
+                self.device.on_baob_updated(key_to_download)
         for key_to_upload in data['should_upload']:
             self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
                 'file': self.device.baob_database.get_baob_value(key_to_upload),

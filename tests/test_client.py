@@ -34,6 +34,7 @@ class TestClient(unittest.TestCase):
                  }
             ]
         }}))
+
     def test_device_info(self):
         """Tests that basic constructor works"""
         client = SMOKDevice('tests/dev.testing.crt', 'tests/dev.testing.key',
