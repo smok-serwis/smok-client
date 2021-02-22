@@ -16,6 +16,7 @@ Welcome to SMOK Client's documentation!
    exceptions
    baob
    glossary
+   ngtt
 
 SMOK devices are devices that consist of a bunch of pathpoints (ie. named variables, eg. a
 single MODBUS register) that can be queried and written to by SMOK_.
