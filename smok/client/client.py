@@ -55,6 +55,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     :param cert: either a path to or a file-like object containing the device certificate
     :param priv_key: either a path to or a file-like object containing the device private key
+    :param allow_sync: whether to allow outbound TCP communication to automatically synchronize
+        background. Note that if you explicitly call a method that calls TCP this does not apply.
+        Can be lated changed.
     :param evt_database: custom event database. Providing a string defaults to path where predicate
         data will be persisted. Since events are persistent, a store needs to be given.
     :param pp_database: custom pathpoint value database. Default value of None defaults to an
@@ -95,6 +98,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     If dont_obtain_orders is True, then order executor and order getter threads won't be started.
 
     :ivar device_id: device ID of this device
+    :ivar allow_sync: whether to allow background synchronization (bool)
     :ivar environment: environment of this device
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
@@ -161,6 +165,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
                  arch_database: tp.Optional[BaseArchivesDatabase] = None,
                  sensor_write_database: tp.Optional[BaseSensorWriteDatabase] = None,
+                 allow_sync: bool = True,
                  dont_obtain_orders: bool = False,
                  dont_sync_sensor_writes: bool = False,
                  dont_do_macros: bool = False,
@@ -177,6 +182,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.dont_sync_sensor_writes = dont_sync_sensor_writes
         self.pp_database = pp_database or InMemoryPathpointDatabase()
         self.baobs_loaded = False
+        self.allow_sync = allow_sync
         if isinstance(evt_database, str):
             self.evt_database = InMemoryEventDatabase(evt_database)
         else:

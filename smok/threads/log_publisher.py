@@ -25,6 +25,10 @@ class LogPublisherThread(TerminableThread):
 
     @queue_get('queue', timeout=5)
     def loop(self, msg):
+        while not self.device.allow_sync:
+            self.safe_sleep(10)
+        if self._terminating:
+            return
         msgs = self.get_all_messages(msg)
         self.sync(msgs)
 
@@ -33,6 +37,7 @@ class LogPublisherThread(TerminableThread):
         self.device.api.put('/v1/device/device_logs', json=lst, timeout=20)
 
     def cleanup(self):
-        while self.queue.qsize() > 0:
-            msgs = self.get_all_messages(self.queue.get())
-            self.sync(msgs)
+        if self.device.allow_sync:
+            while self.queue.qsize() > 0:
+                msgs = self.get_all_messages(self.queue.get())
+                self.sync(msgs)

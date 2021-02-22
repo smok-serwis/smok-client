@@ -71,31 +71,34 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         self.archives_updated_on = time.time()
 
     def loop(self) -> None:
-        if not self.dont_do_macros:
-            if self.should_update_macros():
-                self.update_macros()
+        if self.device.allow_sync:
+            if not self.dont_do_macros:
+                if self.should_update_macros():
+                    self.update_macros()
 
-            mdb = self.device.macros_database
+                mdb = self.device.macros_database
 
-            for macro in mdb.get_macros():
-                if macro.should_execute():
-                    macro.execute(self.device)
+                for macro in mdb.get_macros():
+                    if macro.should_execute():
+                        macro.execute(self.device)
 
-            for macro_id, ts in mdb.get_done_macros():
-                logger.warning(f'Syncing {macro_id} {ts}')
-                with silence_excs(ResponseError):
-                    self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
-                    mdb.notify_macro_synced(macro_id, ts)
+                for macro_id, ts in mdb.get_done_macros():
+                    logger.warning(f'Syncing {macro_id} {ts}')
+                    with silence_excs(ResponseError):
+                        self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
+                        mdb.notify_macro_synced(macro_id, ts)
 
-        self.device.metadata.try_update()
+            self.device.metadata.try_update()
 
-        if not self.dont_do_archives:
-            if self.should_update_archives():
-                self.update_archives()
+            if not self.dont_do_archives:
+                if self.should_update_archives():
+                    self.update_archives()
 
-            sec = Section()
-            for a_entry in self.archiving_entries:
-                if a_entry.should_update():
-                    sec += a_entry.update()
-            if sec:
-                self.order_queue.put(sec)
+                sec = Section()
+                for a_entry in self.archiving_entries:
+                    if a_entry.should_update():
+                        sec += a_entry.update()
+                if sec:
+                    self.order_queue.put(sec)
+        else:
+            self.safe_sleep(10)

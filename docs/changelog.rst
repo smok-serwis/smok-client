@@ -4,7 +4,8 @@ Changelog
 v0.14
 ~~~~~
 
-* add `SMOKDevice.on_baob_updated`
+* added `SMOKDevice.on_baob_updated`
+* added `SMOKDevice.allow_sync`
 
 v0.13
 ~~~~~

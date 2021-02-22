@@ -241,45 +241,46 @@ class CommunicatorThread(TerminableThread):
             # Synchronize the data
             monotime = time.monotonic()
 
-            if not self.dont_do_pathpoints:
-                self.sync_data()
+            if self.device.allow_sync:
+                if not self.dont_do_pathpoints:
+                    self.sync_data()
 
-                # Synchronize the pathpoints
-                if self.device.pathpoints.dirty:
-                    self.sync_pathpoints()
+                    # Synchronize the pathpoints
+                    if self.device.pathpoints.dirty:
+                        self.sync_pathpoints()
 
-                # Synchronize sensors
-                if monotime - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
-                    self.sync_sensors()
+                    # Synchronize sensors
+                    if monotime - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
+                        self.sync_sensors()
 
-            # Synchronize predicates
-            if not self.dont_do_predicates:
-                if monotime - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
-                    self.sync_predicates()
+                # Synchronize predicates
+                if not self.dont_do_predicates:
+                    if monotime - self.last_predicates_synced > PREDICATE_SYNC_INTERVAL:
+                        self.sync_predicates()
 
-            # Fetch the BAOBs
-            if not self.dont_do_baobs:
-                if monotime - self.last_baob_synced > BAOB_SYNC_INTERVAL:
-                    self.sync_baob()
-            if not self.dont_sync_sensor_writes:
-                self.sync_sensor_writes()
+                # Fetch the BAOBs
+                if not self.dont_do_baobs:
+                    if monotime - self.last_baob_synced > BAOB_SYNC_INTERVAL:
+                        self.sync_baob()
+                if not self.dont_sync_sensor_writes:
+                    self.sync_sensor_writes()
 
-            # Fetch the orders
-            if not self.dont_obtain_orders:
-                self.fetch_orders()
+                # Fetch the orders
+                if not self.dont_obtain_orders:
+                    self.fetch_orders()
 
-            if not self.dont_do_predicates:
-                # Tick the predicates
-                self.tick_predicates()
+                if not self.dont_do_predicates:
+                    # Tick the predicates
+                    self.tick_predicates()
 
-                # Sync the events
-                self.sync_events()
+                    # Sync the events
+                    self.sync_events()
 
-            # Checkpoint the DB
-            if not self.dont_do_pathpoints:
-                self.device.pp_database.checkpoint()
-            if not self.dont_do_predicates:
-                self.device.evt_database.checkpoint()
+                # Checkpoint the DB
+                if not self.dont_do_pathpoints:
+                    self.device.pp_database.checkpoint()
+                if not self.dont_do_predicates:
+                    self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
             time_to_wait = COMMUNICATOR_INTERVAL - measurement()
