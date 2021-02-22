@@ -13,7 +13,6 @@ from satella.time import measure
 
 from smok.basics import StorageLevel
 from smok.exceptions import ResponseError
-from smok.extras.event_database import BaseEventSynchronization
 from smok.pathpoint.data_sync_dict import DataSyncDict
 from smok.pathpoint.orders import sections_from_list
 from smok.pathpoint.pathpoint import Pathpoint
