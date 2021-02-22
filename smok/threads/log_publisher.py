@@ -1,5 +1,5 @@
-import typing as tp
 import queue
+import typing as tp
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread
@@ -7,9 +7,9 @@ from satella.coding.decorators import retry
 
 from ..exceptions import ResponseError
 
-
 MAX_SYNC_AT_ONCE = 50
 MAX_LOG_BUFFER_SIZE = 20000
+
 
 class LogPublisherThread(TerminableThread):
     def __init__(self, device: 'SMOKDevice'):

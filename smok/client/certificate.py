@@ -27,7 +27,7 @@ def get_root_cert() -> bytes:
     """
     Return the bytes sequence for SMOK's master CA certificate
     """
-    ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt',)
+    ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt', )
     with open(ca_file, 'rb') as f_in:
         return f_in.read()
 
@@ -36,7 +36,7 @@ def get_dev_ca_cert() -> bytes:
     """
     Return the bytes sequence for SMOK's device signing CA
     """
-    ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt',)
+    ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt', )
     with open(ca_file, 'rb') as f_in:
         return f_in.read()
 
@@ -83,12 +83,12 @@ def get_device_info(cert_data: bytes) -> tp.Tuple[str, Environment]:
     try:
         device_asn1 = cert.extensions.get_extension_for_oid(DEVICE_ID).value.value
     except x509.extensions.ExtensionNotFound as e:
-        return InvalidCredentials('DEVICE_ID not found in cert: %s' % (e, ))
+        return InvalidCredentials('DEVICE_ID not found in cert: %s' % (e,))
 
     try:
         device_id = str(decode(device_asn1)[0])
     except (PyAsn1Error, IndexError) as e:
-        return InvalidCredentials('error during decoding DEVICE_ID: %s' % (e, ))
+        return InvalidCredentials('error during decoding DEVICE_ID: %s' % (e,))
 
     try:
         environment_asn1 = cert.extensions.get_extension_for_oid(ENVIRONMENT).value.value
@@ -98,9 +98,9 @@ def get_device_info(cert_data: bytes) -> tp.Tuple[str, Environment]:
     try:
         environment = int(decode(environment_asn1)[0])
     except (PyAsn1Error, IndexError, TypeError) as e:
-        raise InvalidCredentials('error during decoding environment: %s' % (e, ))
+        raise InvalidCredentials('error during decoding environment: %s' % (e,))
     except ValueError as e:
-        raise InvalidCredentials('unrecognized environment: %s' % (e, ))
+        raise InvalidCredentials('unrecognized environment: %s' % (e,))
 
     with rethrow_as(ValueError, InvalidCredentials):
         return device_id, Environment(environment)

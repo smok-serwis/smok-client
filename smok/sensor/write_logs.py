@@ -27,4 +27,3 @@ class SensorWriteEvent:
         return {'timestamp': self.timestamp,
                 'who': self.who, 'hr_sensor': self.hr_sensor, 'hr_value': self.hr_value,
                 'fqts': self.fqts, 'value': self.value, 'reason': self.reason}
-

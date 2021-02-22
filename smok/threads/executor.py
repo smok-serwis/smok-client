@@ -1,7 +1,6 @@
 import copy
 import logging
 import queue
-import time
 import typing as tp
 from concurrent.futures import wait, Future
 
@@ -161,7 +160,7 @@ class OrderExecutorThread(TerminableThread):
             time_to_wait = section.max_wait()
             if time_to_wait is not None:
                 if measurement() < time_to_wait:
-                    self.safe_sleep(time_to_wait-measurement())
+                    self.safe_sleep(time_to_wait - measurement())
 
             section.future.set_result(None)
         else:
@@ -175,4 +174,3 @@ class OrderExecutorThread(TerminableThread):
                 section += self.queue.get()
 
         self.execute_a_section(section)
-

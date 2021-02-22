@@ -1,5 +1,6 @@
 import datetime
 import io
+import logging
 import os
 import tempfile
 import threading
@@ -38,8 +39,6 @@ from ..predicate import BaseStatistic, Event, Color
 from ..sensor import Sensor, fqtsify, SensorWriteEvent
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
-import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -590,4 +589,3 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         dev_ca_dat = get_dev_ca_cert()
         root_ca_dat = get_root_cert()
         return b''.join((my_dat, dev_ca_dat, root_ca_dat))
-

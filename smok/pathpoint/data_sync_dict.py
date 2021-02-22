@@ -62,4 +62,3 @@ class DataSyncDict(DirtyDict, Monitor):
     def on_read_failed(self, pathpoint: str, error: OperationFailedError,
                        timestamp: tp.Optional[float] = None):
         self.append(pathpoint, timestamp or time.time(), error)
-

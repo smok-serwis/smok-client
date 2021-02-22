@@ -69,4 +69,3 @@ class Macro(OmniHashableMixin, ReprableMixin):
                            for pathpoint_name, pathpoint_value in self.commands.items()])
             device.execute(sec)
             device.macros_database.notify_macro_executed(self.macro_id, ts)
-

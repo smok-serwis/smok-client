@@ -59,6 +59,7 @@ class UnicodeType(BasicType):
     """
     A basic type for Unicode-containing sensors
     """
+
     def sensor_to_pathpoint(self, value: SensorValueType,
                             *pathpoint_names: str) -> tp.Tuple[PathpointValueType, ...]:
         return str(value),

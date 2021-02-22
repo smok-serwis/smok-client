@@ -12,7 +12,6 @@ from ..exceptions import OperationFailedError
 from ..sensor.reparse import parse
 from ..sensor.reparse_funs import ecre_eval
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -54,7 +53,7 @@ class ReparsePathpoint(Pathpoint):
     def get_archive(self,
                     starting_at: int,
                     stopping_at: tp.Optional[int] = None) -> tp.Iterator[
-            tp.Tuple[int, ValueOrExcept]]:
+        tp.Tuple[int, ValueOrExcept]]:
         """
         Get archive readings.
 

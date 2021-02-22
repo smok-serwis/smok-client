@@ -1,6 +1,7 @@
-import logging
 import copy
+import logging
 import typing as tp
+
 from satella.coding import silence_excs, for_argument
 from satella.coding.predicates import x
 from satella.coding.sequences import choose
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 class InMemoryMacroDatabase(BaseMacroDatabase):
     def __init__(self):
-        self.macros_to_execute = []     # type: tp.List[Macro]
-        self.executions_to_sync = []    # type: tp.List[tp.Tuple[str, int]]
+        self.macros_to_execute = []  # type: tp.List[Macro]
+        self.executions_to_sync = []  # type: tp.List[tp.Tuple[str, int]]
 
     def set_macros(self, macros: tp.List[Macro]) -> None:
         self.macros_to_execute = macros

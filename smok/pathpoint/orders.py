@@ -1,5 +1,5 @@
-import logging
 import enum
+import logging
 import time
 import typing as tp
 from concurrent.futures import Future
@@ -184,8 +184,8 @@ class Disposition(enum.IntEnum):
     """
     A joinable quality of the section
     """
-    JOINABLE = 0        #: this section can be joined to neighbouring JOINABLE sections
-    CANNOT_JOIN = 1     #: this section cannot be joined to any sections
+    JOINABLE = 0  #: this section can be joined to neighbouring JOINABLE sections
+    CANNOT_JOIN = 1  #: this section cannot be joined to any sections
 
 
 class Section(ReprableMixin):

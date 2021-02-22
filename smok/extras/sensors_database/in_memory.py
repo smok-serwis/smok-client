@@ -22,4 +22,4 @@ class InMemorySensorDatabase(BaseSensorDatabase, Monitor):
     def __init__(self):
         super().__init__()
         Monitor.__init__(self)
-        self.sensors = {}       # type: tp.Dict[str, Sensor]
+        self.sensors = {}  # type: tp.Dict[str, Sensor]

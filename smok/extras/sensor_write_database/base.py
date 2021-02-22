@@ -1,5 +1,5 @@
-from abc import ABCMeta, abstractmethod
 import typing as tp
+from abc import ABCMeta, abstractmethod
 
 from smok.sensor import SensorWriteEvent
 

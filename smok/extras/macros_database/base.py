@@ -1,5 +1,4 @@
 import typing as tp
-import weakref
 from abc import ABCMeta, abstractmethod
 
 from smok.macro import Macro
@@ -54,4 +53,3 @@ class BaseMacroDatabase(metaclass=ABCMeta):
         """
         Called about each 20 seconds by communicator thread
         """
-

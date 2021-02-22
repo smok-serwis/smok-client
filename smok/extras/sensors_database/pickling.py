@@ -1,6 +1,6 @@
-import typing as tp
 import os
 import pickle
+import typing as tp
 
 from satella.coding import Monitor
 
@@ -49,4 +49,3 @@ class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
     def save(self):
         with open(self.path, 'wb') as f_out:
             pickle.dump(self.data, f_out, pickle.HIGHEST_PROTOCOL)
-

@@ -1,6 +1,6 @@
-import typing as tp
 import os
 import pickle
+import typing as tp
 
 from satella.coding import silence_excs, wraps
 
@@ -15,6 +15,7 @@ def always_sync(fun):
             return fun(self, *args, **kwargs)
         finally:
             self.sync()
+
     return inner
 
 
@@ -24,6 +25,7 @@ class PicklingMacroDatabase(InMemoryMacroDatabase):
 
     :param path: path to pickle file
     """
+
     def __init__(self, path):
         super().__init__()
         self.path = path
@@ -55,4 +57,3 @@ class PicklingMacroDatabase(InMemoryMacroDatabase):
     @always_sync
     def notify_macro_synced(self, macro_id: str, timestamp: int) -> None:
         return super().notify_macro_synced(macro_id, timestamp)
-

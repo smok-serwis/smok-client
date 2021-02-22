@@ -33,4 +33,3 @@ class InMemoryBAOBDatabase(BaseBAOBDatabase, Monitor):
         self.baobs_values = {}
         self.baobs_versions = {}
         Monitor.__init__(self)
-

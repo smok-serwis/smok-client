@@ -1,6 +1,6 @@
+import queue
 import time
 import typing as tp
-import queue
 from urllib.parse import urlencode, quote_plus
 
 from satella.coding import for_argument, queue_get
@@ -26,9 +26,9 @@ class PlainDataUpdater:
         key, value, timestamp = msg
 
         if not value:
-            self.device.api.delete('/v1/device/metadata/plain/%s' % (urlencode(key), ))
+            self.device.api.delete('/v1/device/metadata/plain/%s' % (urlencode(key),))
         else:
-            self.device.api.put('/v1/device/metadata/plain/%s' % (quote_plus(key), ),
+            self.device.api.put('/v1/device/metadata/plain/%s' % (quote_plus(key),),
                                 json={'value': value, 'unless_timestamp_higher': timestamp})
 
 
@@ -112,4 +112,3 @@ class PlainMetadata(CacheDict):
             del self.cached_for[key]
         except KeyError:
             pass
-

@@ -15,7 +15,6 @@ from .typing import PathpointValueType, ValueOrExcept
 from ..basics import StorageLevel
 from ..exceptions import OperationFailedError, InstanceNotReady
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -25,6 +24,7 @@ def must_have_device(fun):
         if not self.device:
             raise InstanceNotReady('You need to attach this pathpoint to a device first')
         return fun(self, *args, **kwargs)
+
     return inner
 
 
@@ -84,7 +84,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
     def get_archive(self,
                     starting_at: int,
                     stopping_at: tp.Optional[int] = None) -> tp.Iterator[
-            tp.Tuple[int, ValueOrExcept]]:
+        tp.Tuple[int, ValueOrExcept]]:
         """
         Get archive readings.
 

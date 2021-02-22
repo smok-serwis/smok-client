@@ -38,4 +38,3 @@ class InMemoryMetadataDatabase(BaseMetadataDatabase):
     def get_all_plain(self) -> tp.Iterator[tp.Tuple[str, str, float]]:
         for key, row in self.db_plain.items():
             yield (key, *row)
-

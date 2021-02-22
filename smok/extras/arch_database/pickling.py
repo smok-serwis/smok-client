@@ -9,6 +9,7 @@ class PicklingArchivesDatabase(BaseArchivesDatabase):
 
     :param path: path to the pickle. If does not exist, will be created
     """
+
     def on_archiving_data_sync(self, new_data) -> None:
         self.data = new_data
         with open(self.path, 'wb') as f_out:
@@ -24,4 +25,3 @@ class PicklingArchivesDatabase(BaseArchivesDatabase):
                 self.data = pickle.load(f_in)
         except (FileNotFoundError, pickle.UnpicklingError):
             self.data = {}
-

@@ -2,19 +2,15 @@ import logging
 import typing as tp
 import weakref
 
-from satella.coding import rethrow_as
 from satella.coding.transforms import merge_series
 from satella.coding.typing import Number
 from satella.time import time_ms
 
-from smok.exceptions import NotReadedError, OperationFailedError
-from smok.pathpoint import AdviseLevel, PathpointValueType
+from smok.exceptions import OperationFailedError
+from smok.pathpoint import AdviseLevel
 from smok.pathpoint.orders import Section, ReadOrder
-from smok.sensor import reparse_funs
-from .write_logs import SensorWriteEvent
-from smok.sensor.reparse import parse
 from smok.sensor.types import SensorValueType, get_type, SVTOrExcept
-
+from .write_logs import SensorWriteEvent
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +71,7 @@ class Sensor:
     def get_archive(self,
                     starting_at: int,
                     stopping_at: tp.Optional[int] = None) -> tp.Iterator[
-            tp.Tuple[int, SVTOrExcept]]:
+        tp.Tuple[int, SVTOrExcept]]:
         """
         Get archive readings.
 

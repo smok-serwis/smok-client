@@ -52,4 +52,3 @@ def to_type(value: PathpointValueType, type_: PathpointType) -> PathpointValueTy
     else:
         raise ValueError('Invalid type given')
     return v
-

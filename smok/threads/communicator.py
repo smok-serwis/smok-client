@@ -37,7 +37,7 @@ def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
 
 COMMUNICATOR_INTERVAL = 20
 PREDICATE_SYNC_INTERVAL = 300
-BAOB_SYNC_INTERVAL = 60*60  # an hour
+BAOB_SYNC_INTERVAL = 60 * 60  # an hour
 
 
 class CommunicatorThread(TerminableThread):
@@ -132,7 +132,8 @@ class CommunicatorThread(TerminableThread):
     def sync_sensors(self) -> None:
         resp = self.device.api.get('/v1/device/sensors')
 
-        self.device.sensor_database.on_sensors_sync([Sensor.from_json(self.device, data) for data in resp])
+        self.device.sensor_database.on_sensors_sync(
+            [Sensor.from_json(self.device, data) for data in resp])
         self.last_sensors_synced = time.monotonic()
 
     @retry(3, ResponseError)
@@ -197,14 +198,17 @@ class CommunicatorThread(TerminableThread):
         for key_to_download in data['should_download']:
             resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
                                                 direct_response=True)
-            self.device.baob_database.set_baob_value(key_to_download, resp, int(headers['X-SMOK-BAOB-Version']))
+            self.device.baob_database.set_baob_value(key_to_download, resp,
+                                                     int(headers['X-SMOK-BAOB-Version']))
             logger.debug('Downloaded BAOB %s', key_to_download)
             if self.last_baob_synced:
                 self.device.on_baob_updated(key_to_download)
         for key_to_upload in data['should_upload']:
             self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
                 'file': self.device.baob_database.get_baob_value(key_to_upload),
-                'data': ujson.dumps({'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode('utf8')
+                'data': ujson.dumps(
+                    {'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode(
+                    'utf8')
             })
             logger.debug('Uploaded BAOB %s', key_to_upload)
         self.last_baob_synced = time.monotonic()
@@ -284,7 +288,7 @@ class CommunicatorThread(TerminableThread):
 
             # Wait for variables to refresh, do we need to upload any?
             time_to_wait = COMMUNICATOR_INTERVAL - measurement()
-            while time_to_wait > 0.1:       # for float roundings
+            while time_to_wait > 0.1:  # for float roundings
                 try:
                     ttw = min(time_to_wait, 5)
                     self.data_to_update.wait(timeout=ttw)

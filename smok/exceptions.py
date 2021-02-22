@@ -1,5 +1,4 @@
 import enum
-import time
 import typing as tp
 
 __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',

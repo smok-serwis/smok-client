@@ -10,5 +10,3 @@ class InMemoryArchivesDatabase(BaseArchivesDatabase):
 
     def __init__(self):
         self.data = {}
-
-

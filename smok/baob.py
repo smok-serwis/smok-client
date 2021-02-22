@@ -38,8 +38,6 @@ class BAOB:
         """
         if self.device.dont_do_baobs:
             raise UnavailableError('Client was launched as not supporting BAOBs!')
-        self.device.baob_database.set_baob_value(self.key, new_data, self.version+1)
+        self.device.baob_database.set_baob_value(self.key, new_data, self.version + 1)
         self.device.getter.last_baob_synced = 0
         self.device.getter.data_to_update.notify()
-
-

@@ -18,6 +18,7 @@ class SMOKLogHandler(Handler, Monitor):
     :param device: SMOKDevice that this logger is attached to
     :param service_name: name of the service
     """
+
     def __init__(self, device: 'SMOKDevice', service_name: str):
         super().__init__()
         Monitor.__init__(self)
@@ -34,10 +35,11 @@ class SMOKLogHandler(Handler, Monitor):
         try:
             msg = self.format(record)
         except (TypeError, ValueError):
-            msg = record.message + ' '+','.join(map(repr, record.args))
+            msg = record.message + ' ' + ','.join(map(repr, record.args))
 
         if len(msg) > 1000:
-            msg_content = base64.b64encode(gzip.compress(msg.encode('utf8'), compresslevel=8)).decode('utf8')
+            msg_content = base64.b64encode(
+                gzip.compress(msg.encode('utf8'), compresslevel=8)).decode('utf8')
             msg = {'encoding': 'base64-gzip', 'content': msg_content}
 
         dct = {
@@ -50,7 +52,8 @@ class SMOKLogHandler(Handler, Monitor):
         if record.exc_info:
             f = frame_from_traceback(record.exc_info[2])
             tb = Traceback(f)
-            tb_json = base64.b64encode(gzip.compress(ujson.dumps(tb.to_json()).encode('utf-8'), 9)).decode('utf-8')
+            tb_json = base64.b64encode(
+                gzip.compress(ujson.dumps(tb.to_json()).encode('utf-8'), 9)).decode('utf-8')
             dct.update(exception_text=tb.pretty_format(),
                        exception_traceback=tb_json)
 
@@ -61,4 +64,3 @@ class SMOKLogHandler(Handler, Monitor):
 
     def close(self) -> None:
         pass
-

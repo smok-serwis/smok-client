@@ -1,5 +1,5 @@
-import typing as tp
 import json
+import typing as tp
 
 import requests
 from satella.files import read_in_file
@@ -38,7 +38,7 @@ class RequestsAPI:
                     'X-SSL-Client-Certificate': self.cert
                 }, **kwargs)
         except requests.RequestException as e:
-            raise ResponseError(599, 'Requests error: %s' % (str(e), ))
+            raise ResponseError(599, 'Requests error: %s' % (str(e),))
 
         if resp is None and self.environment == Environment.LOCAL_DEVELOPMENT:
             # special case for CI

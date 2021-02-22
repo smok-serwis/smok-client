@@ -6,6 +6,7 @@ class BaseMetadataDatabase(metaclass=ABCMeta):
     """
     Base class for metadata databases
     """
+
     @abstractmethod
     def put_plain(self, key: str, value: str, timestamp: tp.Optional[float] = None) -> None:
         """
