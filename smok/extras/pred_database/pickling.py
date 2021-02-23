@@ -7,19 +7,19 @@ from .base import BasePredicateDatabase
 
 class PicklingPredicateDatabase(BasePredicateDatabase):
     def __init__(self, path: str):
-        self.path = path
-        self.predicates = []
-        if os.path.exists(self.path):
-            with open(self.path, 'rb') as f_in:
-                self.predicates = pickle.load(f_in)
+        self.__path = path
+        self.__predicates = []
+        if os.path.exists(self.__path):
+            with open(self.__path, 'rb') as f_in:
+                self.__predicates = pickle.load(f_in)
 
     def sync(self):
-        with open(self.path, 'wb') as f_out:
-            pickle.dump(self.predicates, f_out)
+        with open(self.__path, 'wb') as f_out:
+            pickle.dump(self.__predicates, f_out)
 
     def get_all_predicates(self) -> tp.List[tp.Dict]:
-        return self.predicates
+        return self.__predicates
 
     def set_new_predicates(self, v: tp.List[tp.Dict]):
-        self.predicates = v
+        self.__predicates = v
         self.sync()
