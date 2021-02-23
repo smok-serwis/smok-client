@@ -14,7 +14,7 @@ def always_sync(fun):
         try:
             return fun(self, *args, **kwargs)
         finally:
-            self.sync()
+            self.__sync()
 
     return inner
 
@@ -34,7 +34,7 @@ class PicklingMacroDatabase(InMemoryMacroDatabase):
             with open(self.__path, 'rb') as f_in, silence_excs(pickle.PickleError):
                 self.macros_to_execute, self.executions_to_sync = pickle.load(f_in)
 
-    def sync(self):
+    def __sync(self):
         with open(self.__path, 'wb') as f_out:
             pickle.dump((self.macros_to_execute, self.executions_to_sync), f_out,
                         pickle.HIGHEST_PROTOCOL)

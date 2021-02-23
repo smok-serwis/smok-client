@@ -13,7 +13,7 @@ class PicklingPredicateDatabase(BasePredicateDatabase):
             with open(self.__path, 'rb') as f_in:
                 self.__predicates = pickle.load(f_in)
 
-    def sync(self):
+    def __sync(self):
         with open(self.__path, 'wb') as f_out:
             pickle.dump(self.__predicates, f_out, pickle.HIGHEST_PROTOCOL)
 
@@ -22,4 +22,4 @@ class PicklingPredicateDatabase(BasePredicateDatabase):
 
     def set_new_predicates(self, v: tp.List[tp.Dict]):
         self.__predicates = v
-        self.sync()
+        self.__sync()

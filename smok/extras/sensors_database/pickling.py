@@ -33,12 +33,12 @@ class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
         self.__data = {}
         for sensor in sensors:
             self.__data[sensor.fqts] = sensor.fqts, sensor.path, sensor.type_name
-        self.save()
+        self.__save()
 
     def get_all_sensors(self) -> tp.Iterator[Sensor]:
         for key in self.__data.keys():
             yield self.get_sensor(key)
 
-    def save(self):
+    def __save(self):
         with open(self.__path, 'wb') as f_out:
             pickle.dump(self.__data, f_out, pickle.HIGHEST_PROTOCOL)
