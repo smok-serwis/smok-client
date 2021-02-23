@@ -4,16 +4,8 @@ import typing as tp
 
 from satella.coding import Monitor
 
-from smok.extras.sensors_database import BaseSensorDatabase
+from smok.extras import BaseSensorDatabase
 from smok.sensor import Sensor
-
-
-def from_dict(device: 'SMOKDevice', data: tuple):
-    return Sensor(device, *data)
-
-
-def to_dict(s: Sensor) -> tuple:
-    return s.fqts, s.path, s.type_name
 
 
 class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
@@ -32,7 +24,7 @@ class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
     @Monitor.synchronized
     def get_sensor(self, fqts: str) -> Sensor:
         if fqts not in self.sensor_cache:
-            sensor = from_dict(self.device, self.__data[fqts])
+            sensor = Sensor(self.device, *self.__data[fqts])
             self.sensor_cache[fqts] = sensor
         return self.sensor_cache[fqts]
 
@@ -40,7 +32,7 @@ class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
     def on_sensors_sync(self, sensors: tp.List[Sensor]):
         self.__data = {}
         for sensor in sensors:
-            self.__data[sensor.fqts] = to_dict(sensor)
+            self.__data[sensor.fqts] = sensor.fqts, sensor.path, sensor.type_name
         self.save()
 
     def get_all_sensors(self) -> tp.Iterator[Sensor]:
