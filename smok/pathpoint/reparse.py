@@ -5,7 +5,8 @@ from satella.coding.transforms import merge_series
 from satella.coding.typing import Number
 from satella.exceptions import ImpossibleError
 
-from . import AdviseLevel, Section, PathpointValueType, ValueOrExcept
+from .orders import AdviseLevel, Section
+from .typing import PathpointValueType, ValueOrExcept
 from .pathpoint import Pathpoint
 from ..basics import StorageLevel
 from ..exceptions import OperationFailedError
