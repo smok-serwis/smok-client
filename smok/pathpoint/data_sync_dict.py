@@ -1,9 +1,9 @@
-import time
 import typing as tp
 
 from satella.coding import Monitor
 from satella.coding.concurrent import Condition
 from satella.coding.structures import DirtyDict
+from satella.time import time_ms
 
 from .typing import PathpointValueType
 from ..exceptions import OperationFailedError, OperationFailedReason
@@ -16,11 +16,11 @@ class DataSyncDict(DirtyDict, Monitor):
         self.updated_condition = Condition()
 
     def on_readed_successfully(self, pathpoint: str, value: PathpointValueType,
-                               timestamp: tp.Optional[float] = None):
-        self.append(pathpoint, timestamp or time.time(), value)
+                               timestamp: tp.Optional[float] = None) -> None:
+        self.append(pathpoint, timestamp or time_ms(), value)
 
     @Monitor.synchronized
-    def append(self, pathpoint, timestamp, value):
+    def append(self, pathpoint, timestamp, value) -> None:
         tpl = (timestamp, value)
         if pathpoint not in self:
             self[pathpoint] = [tpl]
@@ -42,7 +42,7 @@ class DataSyncDict(DirtyDict, Monitor):
                 self.append(pp_name, value['timestamp'], val)
 
     @Monitor.synchronized
-    def to_json(self):
+    def to_json(self) -> tp.List[dict]:
         output = []
         for pathpoint, pathpoint_values in self.items():
             values = []
@@ -60,5 +60,5 @@ class DataSyncDict(DirtyDict, Monitor):
         return output
 
     def on_read_failed(self, pathpoint: str, error: OperationFailedError,
-                       timestamp: tp.Optional[float] = None):
-        self.append(pathpoint, timestamp or time.time(), error)
+                       timestamp: tp.Optional[float] = None) -> None:
+        self.append(pathpoint, timestamp or time_ms(), error)
