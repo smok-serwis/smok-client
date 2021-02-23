@@ -10,7 +10,7 @@ from satella.time import time_ms
 from smok.basics import Environment, StorageLevel
 from smok.client import SMOKDevice
 from smok.exceptions import NotReadedError, OperationFailedError
-from smok.extras import PicklingArchivesDatabase, PicklingMacroDatabase
+from smok.extras import PicklingArchivesDatabase, PicklingMacroDatabase, PicklingPredicateDatabase
 from smok.logging import SMOKLogHandler
 from smok.pathpoint.orders import AdviseLevel
 from smok.pathpoint.pathpoint import Pathpoint
@@ -57,7 +57,8 @@ class MyDevice(SMOKDevice):
     def __init__(self):
         super().__init__('dev.crt', 'key.crt', 'predicate_db.pickle',
                          arch_database=PicklingArchivesDatabase('arch_pickle.db'),
-                         macro_database=PicklingMacroDatabase('macro_pickle.db'))
+                         macro_database=PicklingMacroDatabase('macro_pickle.db'),
+                         pred_database=PicklingPredicateDatabase('pred_pickle.db'))
 
     def provide_unknown_pathpoint(self, name: str,
                                   storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:

@@ -17,6 +17,7 @@ Non-API breaking changes:
 * certificates given with CRLF line ends will be processed successfully
 * fixed a bug in `DataSyncDict`
 * added `SMOKDevice.reset_predicates`
+* added predicate databasing
 
 v0.13
 ~~~~~

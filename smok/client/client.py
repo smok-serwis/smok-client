@@ -23,13 +23,14 @@ from ..basics import DeviceInfo, Environment, StorageLevel
 from ..exceptions import ResponseError, UnavailableError
 from ..extras import BaseSensorDatabase, BaseEventDatabase, BaseMacroDatabase, \
     BasePathpointDatabase, BaseMetadataDatabase, BaseBAOBDatabase, BaseArchivesDatabase, \
-    BaseSensorWriteDatabase
+    BaseSensorWriteDatabase, BasePredicateDatabase
 from ..extras.arch_database.in_memory import InMemoryArchivesDatabase
 from ..extras.baob_database.memory import InMemoryBAOBDatabase
 from ..extras.event_database import InMemoryEventDatabase
 from ..extras.macros_database.in_memory import InMemoryMacroDatabase
 from ..extras.metadata_database import InMemoryMetadataDatabase
 from ..extras.pp_database.in_memory import InMemoryPathpointDatabase
+from ..extras.pred_database.in_memory import InMemoryPredicateDatabase
 from ..extras.sensor_write_database.in_memory import InMemorySensorWriteDatabase
 from ..extras.sensors_database.in_memory import InMemorySensorDatabase
 from ..metadata import PlainMetadata
@@ -37,6 +38,7 @@ from ..pathpoint import Pathpoint, ReparsePathpoint
 from ..pathpoint.orders import Section, MessageOrder
 from ..predicate import BaseStatistic, Event, Color
 from ..predicate.registration import CollectionOfStatistics, StatisticRegistration
+from ..predicate.undefined import UndefinedStatistic
 from ..sensor import Sensor, fqtsify, SensorWriteEvent
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
@@ -70,6 +72,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param sensor_database: custom sensor database. Default value of None will result in an
         in-memory implementation
     :param baob_database: custom BAOB database. Default value of None will result in an
+        in-memory implementation
+    :param pred_database: custom Predicate database. Default value of None will result in an
         in-memory implementation
     :param arch_database: custom archives database. Default value of None will result in an
         in-memory implementation
@@ -170,6 +174,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  meta_database: tp.Optional[BaseMetadataDatabase] = None,
                  sensor_database: tp.Optional[BaseSensorDatabase] = None,
                  baob_database: tp.Optional[BaseBAOBDatabase] = None,
+                 pred_database: tp.Optional[BasePredicateDatabase] = None,
                  arch_database: tp.Optional[BaseArchivesDatabase] = None,
                  sensor_write_database: tp.Optional[BaseSensorWriteDatabase] = None,
                  allow_sync: bool = True,
@@ -196,6 +201,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.evt_database = evt_database
         self.macros_database = macro_database or InMemoryMacroDatabase()
         self.meta_database = meta_database or InMemoryMetadataDatabase()
+        self.pred_database = pred_database or InMemoryPredicateDatabase()
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)
         self.arch_database = arch_database or InMemoryArchivesDatabase()
@@ -204,7 +210,14 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.metadata = PlainMetadata(self)
         self.ready_lock = threading.Lock()
         self.ready_lock.acquire()
+
         self.predicates = {}  # type: tp.Dict[str, BaseStatistic]
+
+        # Load cached predicates
+        for predicate in self.pred_database.get_all_predicates():
+            udf = UndefinedStatistic(device=self, **predicate)
+            self.predicates[udf.predicate_id] = udf
+
         self._timezone = None
         self.statistic_registration = CollectionOfStatistics()
         self._statistics_updated = False

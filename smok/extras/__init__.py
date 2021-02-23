@@ -8,6 +8,7 @@ from .pp_database import BasePathpointDatabase, BaseDataToSynchronize, PicklingP
 from .sensor_write_database import BaseSensorWriteDatabase, BaseSensorWriteSynchronization, \
     PicklingSensorWriteDatabase
 from .sensors_database import BaseSensorDatabase, PicklingSensorDatabase
+from .pred_database import BasePredicateDatabase, PicklingPredicateDatabase
 
 __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointDatabase',
            'BaseEventDatabase', 'BaseEventSynchronization', 'PicklingEventDatabase',
@@ -17,4 +18,5 @@ __all__ = ['BasePathpointDatabase', 'BaseDataToSynchronize', 'PicklingPathpointD
            'BAOBDigest', 'BaseBAOBDatabase', 'NullEventDatabase',
            'BaseArchivesDatabase', 'PicklingArchivesDatabase',
            'BaseSensorWriteSynchronization', 'BaseSensorWriteDatabase',
-           'PicklingSensorWriteDatabase']
+           'PicklingSensorWriteDatabase', 'BasePredicateDatabase',
+           'PicklingPredicateDatabase']

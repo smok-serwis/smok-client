@@ -10,6 +10,19 @@ Most options are, for this time, geared towards extended work in an Internet-les
 Note that if documentation says that client threads can invoke these routines, you should make them
 as threadsafe as feasible for you.
 
+Predicate database
+------------------
+
+Implement a class with this interface:
+
+.. autoclass:: smok.extras.BasePredicateDatabase
+    :members:
+
+If you need a quick pickling solution, use:
+
+.. autoclass:: smok.extras.PicklingPredicateDatabase
+    :members:
+
 Sensor writes database
 ----------------------
 

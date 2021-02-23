@@ -81,7 +81,7 @@ class BaseStatistic(metaclass=ABCMeta):
     def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str,
                  silencing: tp.List[DisabledTime],
                  configuration: tp.Optional[dict], statistic: tp.Optional[str] = None,
-                 group: str = 'B'):
+                 group: str = 'B', **kwargs):
         self.device = weakref.proxy(device)
         self.predicate_id = predicate_id
         self.verbose_name = verbose_name
@@ -90,6 +90,13 @@ class BaseStatistic(metaclass=ABCMeta):
         self.statistic = statistic
         self.group = group
         self.state = None
+        self.kwargs = kwargs
+
+    def to_kwargs(self) -> dict:
+        return {'group': self.group, 'predicate_id': self.predicate_id,
+                'verbose_name': self.verbose_name, 'silencing': self.silencing,
+                'configuration': self.configuration, 'statistic': self.statistic,
+                **self.kwargs}
 
     @abstractmethod
     def on_tick(self) -> None:
