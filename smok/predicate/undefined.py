@@ -23,11 +23,12 @@ class UndefinedStatistic(BaseStatistic):
             pred = self.device.predicates[predicate_id]
             if isinstance(pred, UndefinedStatistic):
                 statistic_name = pred.statistic
-                if statistic_name in self.device.predicate_classes:
-                    logger.info(f'Initialized missing predicate ID %s statistic %s', predicate_id,
-                                statistic_name)
-                    statistic_class = self.device.predicate_classes[statistic_name]
-                    self.device.predicates[predicate_id] = pred.initialize(statistic_class)
+                for predicate, base_class in self.device.predicate_classes:
+                    if predicate(pred.statistic, pred.configuration):
+                        logger.info(f'Initialized missing predicate ID %s statistic %s', predicate_id,
+                                    statistic_name)
+                        statistic_class = base_class
+                        self.device.predicates[predicate_id] = pred.initialize(statistic_class)
 
     def on_tick(self) -> None:
         # check whether the correct statistic classes were loaded and substitute

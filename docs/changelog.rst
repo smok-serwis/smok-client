@@ -10,6 +10,7 @@ v0.14
 * added `on_failed_sync` and `on_successful_sync`
 * certificates given with CRLF line ends will be processed successfully
 * fixed a bug in `DataSyncDict`
+* refactored registering statistics
 
 v0.13
 ~~~~~

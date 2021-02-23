@@ -91,11 +91,6 @@ class BaseStatistic(metaclass=ABCMeta):
         self.group = group
         self.state = None
 
-    @property
-    @classmethod
-    def statistic_name(cls) -> str:  #: obtain the :term:`statistic` name
-        return None
-
     @abstractmethod
     def on_tick(self) -> None:
         """

@@ -204,7 +204,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.ready_lock.acquire()
         self.predicates = {}  # type: tp.Dict[str, BaseStatistic]
         self._timezone = None
-        self.predicate_classes = {}  # type: tp.Dict[str, tp.Type[BaseStatistic]]
+        self.predicate_classes = []
         self._statistics_updated = False
         self.pathpoints = DirtyDict()  # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
@@ -461,7 +461,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         return pp
 
     def register_statistic(self, stat: tp.Type[BaseStatistic],
-                           statistic: tp.Optional[str] = None) -> None:
+                           statistic: tp.Union[tp.Callable[[str, dict], bool], str]) -> None:
         """
         Register a new statistic.
 
@@ -469,16 +469,20 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         instances will be created for them shortly by the communicator thread.
 
         :param stat: a class (not an instance) to register
-        :param statistic: explicit statistic name to use, disregard the class-bound one if given
+        :param statistic: explicit statistic name to use, disregard the class-bound one if given or
+            a callable that will return True if given predicate, identified by two of it's
+            arguments - statistic name and configuration, should be employed by this statistic
 
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
-        if statistic is None:
-            statistic = stat.statistic_name
-        self.predicate_classes[statistic] = stat
+        if isinstance(statistic):
+            my_predicate = lambda stat, conf: stat == statistic
+        else:
+            my_predicate = statistic
+        self.predicate_classes.append((my_predicate, stat))
 
     def register_pathpoint(self, pp: Pathpoint) -> None:
         """
