@@ -16,6 +16,7 @@ Non-API breaking changes:
 * added `on_failed_sync` and `on_successful_sync`
 * certificates given with CRLF line ends will be processed successfully
 * fixed a bug in `DataSyncDict`
+* added `SMOKDevice.reset_predicates`
 
 v0.13
 ~~~~~

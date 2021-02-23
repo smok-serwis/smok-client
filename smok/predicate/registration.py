@@ -35,6 +35,9 @@ class CollectionOfStatistics:
     def __init__(self):
         self.registrations = []
 
+    def clear(self):
+        self.registrations = []
+
     def clear_cancelled(self):
         self.registrations = [reg for reg in self.registrations if not reg.cancelled]
 

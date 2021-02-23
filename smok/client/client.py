@@ -40,6 +40,7 @@ from ..predicate.registration import CollectionOfStatistics, StatisticRegistrati
 from ..sensor import Sensor, fqtsify, SensorWriteEvent
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
+from ..threads.communicator import PREDICATE_SYNC_INTERVAL
 
 logger = logging.getLogger(__name__)
 
@@ -267,6 +268,18 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param sw: sensor write event to upload
         """
         self.sensor_write_database.add_sw(sw)
+
+    def reset_predicates(self):
+        """
+        Clear all loaded predicates and force a renew of loading.
+
+        Discards all currently loaded Predicate instances.
+
+        .. warning:: Currently requires Internet access to restore predicates
+        """
+        self.predicates = {}
+        self.statistic_registration.clear()
+        self.getter.last_predicates_synced = time.monotonic() - PREDICATE_SYNC_INTERVAL
 
     def get_baob(self, key: str) -> BAOB:
         """
