@@ -20,7 +20,7 @@ class PicklingSensorWriteDatabase(InMemorySensorWriteDatabase):
 
     def sync(self):
         with open(self.__path, 'wb') as f_out:
-            pickle.dump(self.events, f_out)
+            pickle.dump(self.events, f_out, pickle.HIGHEST_PROTOCOL)
 
     def add_sw(self, event: SensorWriteEvent):
         super().add_sw(event)

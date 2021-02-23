@@ -19,6 +19,7 @@ Non-API breaking changes:
 * added `SMOKDevice.reset_predicates`
 * added predicate databasing
 * added name mangling to `PicklingDatabases`
+* fixed pickle to use highest protocol in `PicklingDatabases`
 
 v0.13
 ~~~~~
