@@ -15,7 +15,7 @@ class PicklingPredicateDatabase(BasePredicateDatabase):
 
     def sync(self):
         with open(self.__path, 'wb') as f_out:
-            pickle.dump(self.__predicates, f_out)
+            pickle.dump(self.__predicates, f_out, pickle.HIGHEST_PROTOCOL)
 
     def get_all_predicates(self) -> tp.List[tp.Dict]:
         return self.__predicates
