@@ -28,14 +28,14 @@ class PicklingMacroDatabase(InMemoryMacroDatabase):
 
     def __init__(self, path):
         super().__init__()
-        self.path = path
+        self.__path = path
 
-        if os.path.exists(self.path):
-            with open(self.path, 'rb') as f_in, silence_excs(pickle.PickleError):
+        if os.path.exists(self.__path):
+            with open(self.__path, 'rb') as f_in, silence_excs(pickle.PickleError):
                 self.macros_to_execute, self.executions_to_sync = pickle.load(f_in)
 
     def sync(self):
-        with open(self.path, 'wb') as f_out:
+        with open(self.__path, 'wb') as f_out:
             pickle.dump((self.macros_to_execute, self.executions_to_sync), f_out,
                         pickle.HIGHEST_PROTOCOL)
 

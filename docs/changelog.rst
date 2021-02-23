@@ -18,6 +18,7 @@ Non-API breaking changes:
 * fixed a bug in `DataSyncDict`
 * added `SMOKDevice.reset_predicates`
 * added predicate databasing
+* added name mangling to `PicklingDatabases`
 
 v0.13
 ~~~~~

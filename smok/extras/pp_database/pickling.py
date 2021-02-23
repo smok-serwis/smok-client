@@ -21,12 +21,12 @@ class PicklingPathpointDatabase(InMemoryPathpointDatabase):
 
     def __init__(self, path: str):
         super().__init__()
-        self.path = path
+        self.__path = path
         self.last_pathpoint_value = {}
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as f_in:
-                    self.pathpoints, self.last_pathpoint_value = pickle.load(f_in)
+                    self.__pathpoints, self.last_pathpoint_value = pickle.load(f_in)
             except pickle.PickleError:
                 pass
 
@@ -45,5 +45,5 @@ class PicklingPathpointDatabase(InMemoryPathpointDatabase):
 
     @Monitor.synchronized
     def checkpoint(self) -> None:
-        with open(self.path, 'wb') as f_out:
-            pickle.dump((self.pathpoints, self.last_pathpoint_value), f_out)
+        with open(self.__path, 'wb') as f_out:
+            pickle.dump((self.__pathpoints, self.last_pathpoint_value), f_out)

@@ -11,17 +11,17 @@ class PicklingArchivesDatabase(BaseArchivesDatabase):
     """
 
     def on_archiving_data_sync(self, new_data) -> None:
-        self.data = new_data
-        with open(self.path, 'wb') as f_out:
-            pickle.dump(self.data, f_out, pickle.HIGHEST_PROTOCOL)
+        self.__data = new_data
+        with open(self.__path, 'wb') as f_out:
+            pickle.dump(self.__data, f_out, pickle.HIGHEST_PROTOCOL)
 
     def get_archiving_instructions(self) -> dict:
-        return self.data
+        return self.__data
 
     def __init__(self, path: str):
-        self.path = path
+        self.__path = path
         try:
-            with open(self.path, 'rb') as f_in:
-                self.data = pickle.load(f_in)
+            with open(self.__path, 'rb') as f_in:
+                self.__data = pickle.load(f_in)
         except (FileNotFoundError, pickle.UnpicklingError):
-            self.data = {}
+            self.__data = {}

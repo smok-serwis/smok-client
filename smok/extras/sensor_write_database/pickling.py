@@ -8,7 +8,7 @@ from smok.sensor import SensorWriteEvent
 class PicklingSensorWriteDatabase(InMemorySensorWriteDatabase):
     def __init__(self, pickle_addr: str):
         super().__init__()
-        self.path = pickle_addr
+        self.__path = pickle_addr
         if os.path.exists(pickle_addr):
             try:
                 with open(pickle_addr, 'rb') as f_in:
@@ -19,7 +19,7 @@ class PicklingSensorWriteDatabase(InMemorySensorWriteDatabase):
             self.events = set()
 
     def sync(self):
-        with open(self.path, 'wb') as f_out:
+        with open(self.__path, 'wb') as f_out:
             pickle.dump(self.events, f_out)
 
     def add_sw(self, event: SensorWriteEvent):

@@ -19,15 +19,15 @@ class PicklingMetadataDatabase(BaseMetadataDatabase):
         self.pickle()
 
     def pickle(self):
-        with open(self.path, 'wb') as f_out:
+        with open(self.__path, 'wb') as f_out:
             pickle.dump(self.db_plain, f_out)
 
     def __init__(self, path: str):
         self.db_plain = {}
-        self.path = path
-        if os.path.exists(self.path):
+        self.__path = path
+        if os.path.exists(self.__path):
             try:
-                with open(self.path, 'rb') as f_in:
+                with open(self.__path, 'rb') as f_in:
                     self.db_plain = pickle.load(f_in)
             except pickle.PickleError:
                 pass
