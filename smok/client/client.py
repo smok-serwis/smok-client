@@ -36,6 +36,7 @@ from ..metadata import PlainMetadata
 from ..pathpoint import Pathpoint, ReparsePathpoint
 from ..pathpoint.orders import Section, MessageOrder
 from ..predicate import BaseStatistic, Event, Color
+from ..predicate.registration import CollectionOfStatistics, StatisticRegistration
 from ..sensor import Sensor, fqtsify, SensorWriteEvent
 from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacroThread, \
     LogPublisherThread
@@ -204,7 +205,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.ready_lock.acquire()
         self.predicates = {}  # type: tp.Dict[str, BaseStatistic]
         self._timezone = None
-        self.predicate_classes = []
+        self.statistic_registration = CollectionOfStatistics()
         self._statistics_updated = False
         self.pathpoints = DirtyDict()  # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
@@ -461,7 +462,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         return pp
 
     def register_statistic(self, stat: tp.Type[BaseStatistic],
-                           statistic: tp.Union[tp.Callable[[str, dict], bool], str]) -> None:
+                           predicate: tp.Callable[[str, dict], bool]) -> StatisticRegistration:
         """
         Register a new statistic.
 
@@ -469,20 +470,17 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         instances will be created for them shortly by the communicator thread.
 
         :param stat: a class (not an instance) to register
-        :param statistic: explicit statistic name to use, disregard the class-bound one if given or
-            a callable that will return True if given predicate, identified by two of it's
-            arguments - statistic name and configuration, should be employed by this statistic
-
+        :param predicate: a callable taking two arguments: statistic name and it's configuration.
+            The callable should return whether to apply stat to this predicate
+        :return: a Registration object. Can be later cancelled.
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         assert issubclass(stat, BaseStatistic), 'Not a subclass of BaseStatistic!'
-        if isinstance(statistic):
-            my_predicate = lambda stat, conf: stat == statistic
-        else:
-            my_predicate = statistic
-        self.predicate_classes.append((my_predicate, stat))
+        reg = StatisticRegistration(predicate, stat)
+        self.statistic_registration.add(reg)
+        return reg
 
     def register_pathpoint(self, pp: Pathpoint) -> None:
         """

@@ -39,7 +39,7 @@ Example:
                 self.close_event(self.state)
                 self.state = None
 
-    sd.register_statistic(MyStatistic)
+    sd.register_statistic(MyStatistic, lambda stat, cfg: stat == 'my_statistic')
 
 Silencing
 ---------
@@ -87,6 +87,14 @@ and close them with :meth:`~smok.predicate.BaseStatistic.close_event`. Example c
                 self.close_event(self.state)
                 self.state = None
 
-    sd.register_statistic(CustomPredicate)
+    sd.register_statistic(CustomPredicate, lambda stat_name, cfg: stat_name == 'my_statistic')
 
 Beware, :term:`point event`s cannot be closed as they do not span a period and are created closed.
+
+Registrations
+-------------
+
+A :meth:`~smok.client.SMOKDevice.register_statistic` returns objects of following type:
+
+.. autoclass:: smok.predicate.registration.StatisticRegistration
+    :members:

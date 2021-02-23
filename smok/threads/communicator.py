@@ -107,13 +107,11 @@ class CommunicatorThread(TerminableThread):
                 if predicate_id not in self.device.predicates:
                     stat_name = predicate_dict['statistic']
                     cfg = predicate_dict['configuration']
-                    for predicate, base_class in self.device.predicate_classes:
-                        if predicate(stat_name, cfg):
-                            self.device.predicates[predicate_id]
-                            predicate = base_class(self.device, predicate_id,
-                                                   predicate_dict['verbose_name'], silencing,
-                                                   cfg, stat_name)
-                            self.device.predicates[predicate_id] = predicate
+                    base_class = self.device.statistic_registration.try_match(stat_name, cfg)
+                    if base_class is not None:
+                        predicate = base_class(self.device, predicate_id, predicate_dict['verbose_name'],
+                                               silencing, cfg, stat_name)
+                        self.device.predicates[predicate_id] = predicate
                 else:
                     stat = self.device.predicates[predicate_id]
                     config = predicate_dict['configuration']

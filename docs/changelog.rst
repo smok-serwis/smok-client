@@ -4,13 +4,18 @@ Changelog
 v0.14
 ~~~~~
 
+API breaking change:
+
+* registering statistics overhauled
+
+Non-API breaking changes:
+
 * added `SMOKDevice.on_baob_updated`
 * added `SMOKDevice.allow_sync`
 * remove an useless `* 1.1` in `CommunicatorThread`
 * added `on_failed_sync` and `on_successful_sync`
 * certificates given with CRLF line ends will be processed successfully
 * fixed a bug in `DataSyncDict`
-* refactored registering statistics
 
 v0.13
 ~~~~~

@@ -79,7 +79,7 @@ if __name__ == '__main__':
     print(repr(sd.get_device_info()))
     sd.instrumentation = '{"ok": True}'
     a = PP(sd, 'W2')
-    sd.register_statistic(CustomPredicate)
+    sd.register_statistic(CustomPredicate, lambda stat, cfg: stat == 'my_statistic')
     sd.wait_until_synced()
     n_tn_run = int(sd.metadata.get('n_th.run', '0'))
     n_tn_run += 1
