@@ -6,7 +6,8 @@ from concurrent.futures import Future
 
 from satella.coding.structures import ReprableMixin
 
-from smok.pathpoint.typing import PathpointValueType
+from .typing import PathpointValueType
+
 
 __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
            'WaitOrder', 'MessageOrder', 'Section', 'sections_from_list',

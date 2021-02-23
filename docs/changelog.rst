@@ -8,6 +8,7 @@ v0.14
 * added `SMOKDevice.allow_sync`
 * remove an useless `* 1.1` in `CommunicatorThread`
 * added `on_failed_sync` and `on_successful_sync`
+* certificates given with CRLF line ends will be processed successfully
 
 v0.13
 ~~~~~

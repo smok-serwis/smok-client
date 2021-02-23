@@ -7,8 +7,7 @@ from satella.coding.typing import Number
 from satella.time import time_ms
 
 from smok.exceptions import OperationFailedError
-from smok.pathpoint import AdviseLevel
-from smok.pathpoint.orders import Section, ReadOrder
+from smok.pathpoint.orders import Section, ReadOrder, AdviseLevel
 from smok.sensor.types import SensorValueType, get_type, SVTOrExcept
 from .write_logs import SensorWriteEvent
 

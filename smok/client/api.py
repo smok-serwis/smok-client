@@ -15,7 +15,7 @@ class RequestsAPI:
         self.environment = device.environment
         self.base_url = device.url
         if self.environment == Environment.STAGING:
-            self.cert = read_in_file(device.cert[0], 'utf-8').replace('\n', '\t')
+            self.cert = read_in_file(device.cert[0], 'utf-8').replace('\r\n', '\n').replace('\n', '\t')
         else:
             self.cert = device.cert
 
