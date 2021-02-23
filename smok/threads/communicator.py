@@ -75,14 +75,22 @@ class CommunicatorThread(TerminableThread):
             resp = self.device.api.post('/v1/device/alarms',
                                         json=[evt.to_json() for evt in evt_to_sync.get_events()])
             evt_to_sync.acknowledge(*(data['uuid'] for data in resp))
+            self.device.on_successful_sync()
         except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
             logger.error('Failure syncing events: %s', e, exc_info=e)
             evt_to_sync.negative_acknowledge()
             raise
 
     @retry(3, ResponseError)
     def sync_predicates(self) -> None:
-        resp = self.device.api.get('/v1/device/predicates')
+        try:
+            resp = self.device.api.get('/v1/device/predicates')
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
 
         predicates_found = set()
         for predicate_dict in resp:
@@ -126,21 +134,34 @@ class CommunicatorThread(TerminableThread):
         if not self.last_predicates_synced:
             self.device.ready_lock.release()
         self.last_predicates_synced = time.monotonic()
+        self.device.on_successful_sync()
 
     @retry(3, ResponseError)
     def sync_sensors(self) -> None:
-        resp = self.device.api.get('/v1/device/sensors')
+        try:
+            resp = self.device.api.get('/v1/device/sensors')
 
-        self.device.sensor_database.on_sensors_sync(
-            [Sensor.from_json(self.device, data) for data in resp])
-        self.last_sensors_synced = time.monotonic()
+            self.device.sensor_database.on_sensors_sync(
+                [Sensor.from_json(self.device, data) for data in resp])
+            self.last_sensors_synced = time.monotonic()
+            self.device.on_successful_sync()
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
 
     @retry(3, ResponseError)
     def fetch_orders(self) -> None:
-        resp = self.device.api.post('/v1/device/orders')
-        if resp:
-            for section in sections_from_list(resp):
-                self.queue.put(section)
+        try:
+            resp = self.device.api.post('/v1/device/orders')
+            if resp:
+                for section in sections_from_list(resp):
+                    self.queue.put(section)
+            self.device.on_successful_sync()
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
 
     @retry(3, ResponseError)
     def sync_sensor_writes(self) -> None:
@@ -150,7 +171,10 @@ class CommunicatorThread(TerminableThread):
         try:
             self.device.api.put('/v1/device/sensor/write_log', json=sync.to_json())
             sync.ack()
+            self.device.on_successful_sync()
         except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
             if not e.is_clients_fault():
                 logger.debug(f'Failed to sync sensor writes: {e}', e, exc_info=e)
                 sync.nack()
@@ -172,7 +196,10 @@ class CommunicatorThread(TerminableThread):
                 return
             self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
+            self.device.on_successful_sync()
         except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
             if not e.is_clients_fault():
                 logger.debug('Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
@@ -188,29 +215,35 @@ class CommunicatorThread(TerminableThread):
 
     @retry(3, ResponseError)
     def _sync_baob(self) -> None:
-        keys = self.device.baob_database.get_all_keys()
-        data = []
-        for key in keys:
-            data.append({'key': key,
-                         'version': self.device.baob_database.get_baob_version(key)})
-        data = self.device.api.post('/v1/device/baobs', json=data)
-        for key_to_download in data['should_download']:
-            resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
-                                                direct_response=True)
-            self.device.baob_database.set_baob_value(key_to_download, resp,
-                                                     int(headers['X-SMOK-BAOB-Version']))
-            logger.debug('Downloaded BAOB %s', key_to_download)
-            if self.last_baob_synced:
-                self.device.on_baob_updated(key_to_download)
-        for key_to_upload in data['should_upload']:
-            self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
-                'file': self.device.baob_database.get_baob_value(key_to_upload),
-                'data': ujson.dumps(
-                    {'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode(
-                    'utf8')
-            })
-            logger.debug('Uploaded BAOB %s', key_to_upload)
-        self.last_baob_synced = time.monotonic()
+        try:
+            keys = self.device.baob_database.get_all_keys()
+            data = []
+            for key in keys:
+                data.append({'key': key,
+                             'version': self.device.baob_database.get_baob_version(key)})
+            data = self.device.api.post('/v1/device/baobs', json=data)
+            for key_to_download in data['should_download']:
+                resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
+                                                    direct_response=True)
+                self.device.baob_database.set_baob_value(key_to_download, resp,
+                                                         int(headers['X-SMOK-BAOB-Version']))
+                logger.debug('Downloaded BAOB %s', key_to_download)
+                if self.last_baob_synced:
+                    self.device.on_baob_updated(key_to_download)
+            for key_to_upload in data['should_upload']:
+                self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
+                    'file': self.device.baob_database.get_baob_value(key_to_upload),
+                    'data': ujson.dumps(
+                        {'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode(
+                        'utf8')
+                })
+                logger.debug('Uploaded BAOB %s', key_to_upload)
+            self.last_baob_synced = time.monotonic()
+            self.device.on_successful_sync()
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
 
     @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
@@ -230,7 +263,10 @@ class CommunicatorThread(TerminableThread):
                     stor_level = StorageLevel(pp.get('storage_level', 1))
                     if stor_level != pathpoint.storage_level:
                         pathpoint.on_new_storage_level(stor_level)
-        except ResponseError:
+            self.device.on_successful_sync()
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
             self.device.pathpoints.update(pps)
             self.device.pathpoints.dirty = True
             raise

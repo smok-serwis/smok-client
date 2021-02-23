@@ -1,7 +1,7 @@
 import logging
 import time
 
-from satella.coding import silence_excs, log_exceptions
+from satella.coding import log_exceptions
 from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
@@ -48,9 +48,15 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         if start == 0:
             start = time_as_int() - 2 * MACROS_UPDATING_INTERVAL
         stop = start + 5 * MACROS_UPDATING_INTERVAL
-        resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
-            start, stop
-        ))
+        try:
+            resp = self.device.api.get('/v1/device/macro/occurrences/%s-%s' % (
+                start, stop
+            ))
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
+        self.device.on_successful_sync()
         macros = [Macro.from_json(macro) for macro in resp]
         macros_to_execute = [macro for macro in macros if macro]
         self.device.macros_database.set_macros(macros_to_execute)
@@ -58,7 +64,12 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
 
     @retry(3, exc_classes=ResponseError)
     def update_archives(self):
-        data = self.device.api.get('/v1/device/pathpoints/archived')
+        try:
+            data = self.device.api.get('/v1/device/pathpoints/archived')
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
         entries_now = archiving_entries_from_json(data)
         dct = archiving_dict_from_json(data)
         self.device.arch_database.on_archiving_data_sync(dct)
@@ -69,6 +80,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         for entry in entries_to_add:
             self.archiving_entries.add(entry)
         self.archives_updated_on = time.time()
+        self.device.on_successful_sync()
 
     def loop(self) -> None:
         if self.device.allow_sync:
@@ -83,10 +95,14 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
                         macro.execute(self.device)
 
                 for macro_id, ts in mdb.get_done_macros():
-                    logger.warning(f'Syncing {macro_id} {ts}')
-                    with silence_excs(ResponseError):
+                    logger.debug('Syncing %s %s', macro_id, ts)
+                    try:
                         self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
-                        mdb.notify_macro_synced(macro_id, ts)
+                    except ResponseError as e:
+                        if e.is_no_link():
+                            self.device.on_failed_sync()
+                            continue
+                    mdb.notify_macro_synced(macro_id, ts)
 
             self.device.metadata.try_update()
 

@@ -44,8 +44,16 @@ class ResponseError(SMOKClientError):
         self.status_code = status_code
         self.status = status
 
+    def is_no_link(self) -> bool:
+        """
+        :return: whether this fault happened due to link failing
+        """
+        return self.status_code == 599
+
     def is_clients_fault(self) -> bool:
-        """Return whether this is our fault, or server's/connection's fault"""
+        """
+        :return: whether this is our fault, or server's/connection's fault
+        """
         return self.status_code // 100 == 4
 
 

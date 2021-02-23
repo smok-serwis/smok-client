@@ -36,7 +36,13 @@ class LogPublisherThread(TerminableThread):
 
     @retry(3, exc_classes=ResponseError)
     def sync(self, lst: tp.List[dict]):
-        self.device.api.put('/v1/device/device_logs', json=lst, timeout=20)
+        try:
+            self.device.api.put('/v1/device/device_logs', json=lst, timeout=20)
+            self.device.on_successful_sync()
+        except ResponseError as e:
+            if e.is_no_link():
+                self.device.on_failed_sync()
+            raise
 
     def cleanup(self):
         if self.device.allow_sync:

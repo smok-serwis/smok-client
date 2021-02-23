@@ -9,6 +9,7 @@ from pyasn1.codec.der.decoder import decode
 from pyasn1.error import PyAsn1Error
 from satella.coding import rethrow_as
 from satella.coding.structures import Singleton
+from satella.files import read_in_file
 
 from smok.basics import Environment
 from smok.exceptions import InvalidCredentials
@@ -28,8 +29,7 @@ def get_root_cert() -> bytes:
     Return the bytes sequence for SMOK's master CA certificate
     """
     ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt', )
-    with open(ca_file, 'rb') as f_in:
-        return f_in.read()
+    return read_in_file(ca_file)
 
 
 def get_dev_ca_cert() -> bytes:
@@ -37,8 +37,7 @@ def get_dev_ca_cert() -> bytes:
     Return the bytes sequence for SMOK's device signing CA
     """
     ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt', )
-    with open(ca_file, 'rb') as f_in:
-        return f_in.read()
+    return read_in_file(ca_file)
 
 
 @Singleton
@@ -47,10 +46,9 @@ class DevRootCertificateStore:
 
     def add_certificate(self, name: str):
         ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name,))
-        with open(ca_file, 'rb') as f_in:
-            cert_pem_data = f_in.read()
-            cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem_data)
-            self.store.add_cert(cert)
+        cert_pem_data = read_in_file(ca_file)
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem_data)
+        self.store.add_cert(cert)
 
     def __init__(self):
         self.store = crypto.X509Store()

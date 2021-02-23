@@ -304,8 +304,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         for i in range(3):
             try:
                 self.api.post('/v1/device/orders/message/' + order.uuid)
-            except ResponseError:
-                pass
+                self.on_successful_sync()
+            except ResponseError as e:
+                if e.is_no_link():
+                    self.on_failed_sync()
 
     @property
     def timezone(self) -> pytz.timezone:
@@ -560,12 +562,46 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Obtain information about the device.
 
+        Note that this will result in :meth:`~smok.client.SMOKDevice.on_failed_sync`
+        or :meth:`~smok.client.SMOKDevice.on_successful_sync` being called.
+
         :return: current device information
         :raises ResponseError: server responded (or not) with an invalid message
         """
-        resp = DeviceInfo.from_json(self.api.get('/v1/device'))
+        try:
+            resp = DeviceInfo.from_json(self.api.get('/v1/device'))
+        except ResponseError as e:
+            if e.is_no_link():
+                self.on_failed_sync()
+            raise
+        self.on_successful_sync()
         self._timezone = resp.timezone
         return resp
+
+    def on_successful_sync(self, *args, **kwargs) -> None:
+        """
+        Called by CommunicatorThread each time a part of the system synchronizes correctly with the
+        server. Can be used to implement link liveness detector.
+
+        args and kwargs left for future extendability.
+
+        Please note that if you set allow_sync to False this won't be called, as the client won't
+        try to talk to the server. The only chance is getting synces manually, as via
+        :meth:`~smok.client.SMOKDevice.get_device_info`
+        """
+
+    def on_failed_sync(self, *args, **kwargs) -> None:
+        """
+        Called by CommunicatorThread each time a part of the system fails to synchronize by
+        receiving no response at all from the server. Can be used to implement link liveness
+        detector.
+
+        args and kwargs left for future extendability
+
+        Please note that if you set allow_sync to False this won't be called, as the client won't
+        try to talk to the server. The only chance is getting synces manually, as via
+        :meth:`~smok.client.SMOKDevice.get_device_info`
+        """
 
     def get_local_time(self) -> datetime.datetime:
         """
