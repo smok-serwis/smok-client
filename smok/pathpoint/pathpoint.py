@@ -74,8 +74,6 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
             self.current_timestamp = e
             self.current_value = e
 
-        self.current_value = None  # type: ValueOrExcept
-        self.current_timestamp = None  # type: Number
         # noinspection PyProtectedMember
         if device is not None:
             device.register_pathpoint(self)

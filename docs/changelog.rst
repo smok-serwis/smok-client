@@ -1,8 +1,10 @@
 Changelog
 =========
 
-v0.15
-~~~~~
+v0.14.1
+~~~~~~~
+
+* hotfix for a critical bug in 0.14
 
 v0.14
 ~~~~~
