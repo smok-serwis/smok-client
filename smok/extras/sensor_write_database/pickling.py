@@ -1,7 +1,7 @@
 import os
 import pickle
 
-from smok.extras.sensor_write_database.in_memory import InMemorySensorWriteDatabase
+from .in_memory import InMemorySensorWriteDatabase
 from smok.sensor import SensorWriteEvent
 
 

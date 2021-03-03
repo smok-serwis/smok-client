@@ -4,8 +4,8 @@ import typing as tp
 
 from satella.coding import Monitor
 
-from smok.extras import BaseSensorDatabase
-from smok.sensor import Sensor
+from .base import BaseSensorDatabase
+from smok.sensor.sensor import Sensor
 
 
 class PicklingSensorDatabase(BaseSensorDatabase, Monitor):
