@@ -21,6 +21,7 @@ Non-API breaking changes:
 * added name mangling to `PicklingDatabases`
 * fixed pickle to use highest protocol in `PicklingDatabases`
 * Pathpoint will try to read it's previous current value upon startup
+* refactored `Pathpoint.get`
 
 v0.13
 ~~~~~

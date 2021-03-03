@@ -193,11 +193,10 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
 
         :return: a tuple of (last timestamp, when the operation has failed)
         :raises OperationFailedError: when pathpoint's read has failed
+        :raises NotReadedError: pathpoint not yet readed
         """
         if self.current_value is None:
-            ts, v = self.device.pp_database.get_current_value(self.name)  # raises NotReadedError
-            self.current_timestamp = ts
-            self.current_value = v
+            raise NotReadedError()
 
         if isinstance(self.current_value, OperationFailedError):
             raise self.current_value
