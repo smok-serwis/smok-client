@@ -286,12 +286,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Clear all loaded predicates and force a renew of loading.
 
-        Discards all currently loaded Predicate instances.
+        Discards all currently loaded Predicate instances. Currently registered statistics will
+        remain registered.
 
         .. warning:: Currently requires Internet access to restore predicates
         """
         self.predicates = {}
-        self.statistic_registration.clear()
         self.getter.last_predicates_synced = time.monotonic() - PREDICATE_SYNC_INTERVAL
 
     def get_baob(self, key: str) -> BAOB:
@@ -459,7 +459,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def execute(self, *secs: Section) -> None:
         """
-        Schedule sections to be executed
+        Schedule sections to be executed.
+
+        To be invoked by any thread. Use this to inject sections into device's execution loop.
 
         :param secs: sections to be executed, in that order, unless they're joinable
         """

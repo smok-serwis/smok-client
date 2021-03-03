@@ -4,7 +4,7 @@ Changelog
 v0.14.2
 ~~~~~~~
 
-* _TBA_
+* fixed `SMOKDevice.reset_predicates`
 
 v0.14.1
 ~~~~~~~
