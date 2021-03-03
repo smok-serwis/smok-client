@@ -13,7 +13,7 @@ from satella.instrumentation import Traceback
 from .orders import AdviseLevel, Section, ReadOrder, WriteOrder
 from .typing import PathpointValueType, ValueOrExcept
 from ..basics import StorageLevel
-from ..exceptions import OperationFailedError, InstanceNotReady
+from ..exceptions import OperationFailedError, InstanceNotReady, NotReadedError
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +64,16 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
         self.last_read = 0
         self.callable_on_change = callable_on_change
         self.storage_level = storage_level
+        # Try to load
+        try:
+            self.current_timestamp, self.current_value = device.pp_database.get_current_value(name)
+        except NotReadedError:
+            self.current_timestamp = None
+            self.current_value = None
+        except OperationFailedError as e:
+            self.current_timestamp = e
+            self.current_value = e
+
         self.current_value = None  # type: ValueOrExcept
         self.current_timestamp = None  # type: Number
         # noinspection PyProtectedMember
