@@ -4,6 +4,9 @@ from smok.exceptions import UnavailableError
 class BAOB:
     """
     A Binary All-sized OBject.
+
+    Note that a BAOB will not signal that it does not exist upon construction, it will rather do so
+    when queried about version or value.
     """
 
     __slots__ = ('device', 'key')
@@ -15,7 +18,7 @@ class BAOB:
     @property
     def version(self) -> int:
         """
-        :return: version of this BAOB
+        :return: version of this BAOB or -1 if does not exist.
         """
         try:
             return self.device.baob_database.get_baob_version(self.key)
@@ -28,6 +31,8 @@ class BAOB:
         This property is both gettable and settable.
 
         :return: value of this BAOB
+
+        :raises KeyError: this BAOB does not exist
         """
         return self.device.baob_database.get_baob_value(self.key)
 
