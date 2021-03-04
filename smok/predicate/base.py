@@ -54,14 +54,14 @@ class DisabledTime(OmniHashableMixin):
     def from_json(cls, x: dict) -> 'DisabledTime':
         return DisabledTime(Time.from_json(x['start']), Time.from_json(x['stop']))
 
-    def is_in_time(self, time: datetime) -> bool:
+    def is_in_time(self, t: datetime) -> bool:
         """
         Check whether provided time is inside the range of this silencing period.
 
         :return: True if the time is inside
         """
-        return self.start.to_tuple() <= (time.isoweekday(), time.hour, time.minute) \
-               <= self.stop.to_tuple()
+        return self.start.to_tuple() <= (t.isoweekday(), t.hour, t.minute) \
+            <= self.stop.to_tuple()
 
 
 class BaseStatistic(metaclass=ABCMeta):
@@ -140,6 +140,9 @@ class BaseStatistic(metaclass=ABCMeta):
     def open_event(self, msg: str, color: Color) -> tp.Optional[Event]:
         """
         Open an event.
+
+        This automatically checks for current silencing effect, and will return None
+        if current time indicates that the event should be silenced.
 
         :param msg: extra message for the event
         :param color: color of the event

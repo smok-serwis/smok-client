@@ -108,10 +108,11 @@ class CommunicatorThread(TerminableThread):
                     stat_name = predicate_dict['statistic']
                     cfg = predicate_dict['configuration']
                     base_class = self.device.statistic_registration.try_match(stat_name, cfg)
-                    if base_class is not None:
-                        predicate = base_class(self.device, predicate_id, predicate_dict['verbose_name'],
-                                               silencing, cfg, stat_name)
-                        self.device.predicates[predicate_id] = predicate
+                    if base_class is None:
+                        base_class = UndefinedStatistic
+                    predicate = base_class(self.device, predicate_id, predicate_dict['verbose_name'],
+                                           silencing, cfg, stat_name)
+                    self.device.predicates[predicate_id] = predicate
                 else:
                     stat = self.device.predicates[predicate_id]
                     config = predicate_dict['configuration']
@@ -136,6 +137,7 @@ class CommunicatorThread(TerminableThread):
         if not self.last_predicates_synced:
             self.device.ready_lock.release()
         self.last_predicates_synced = time.monotonic()
+        self.db_sync_predicates()
         self.device.on_successful_sync()
 
     def db_sync_predicates(self):
