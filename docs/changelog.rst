@@ -4,7 +4,7 @@ Changelog
 v0.14.3
 ~~~~~~~
 
-* _TBA_
+* added `Predicate.on_state_changed`
 
 v0.14.2
 ~~~~~~~

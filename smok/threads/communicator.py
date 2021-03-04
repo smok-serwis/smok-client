@@ -93,7 +93,6 @@ class CommunicatorThread(TerminableThread):
             raise
 
         predicates_found = set()
-        preds_to_dump = []
         for predicate_dict in resp:
             predicate_id = predicate_dict['predicate_id']
             predicates_found.add(predicate_id)
@@ -128,18 +127,22 @@ class CommunicatorThread(TerminableThread):
                         stat.on_group_changed(group)
 
                 predicate_dict['silencing'] = silencing
-                preds_to_dump.append(predicate_dict)
 
         predicates_to_delete = set(self.device.predicates.keys()) - predicates_found
         for predicate_id in predicates_to_delete:
             self.device.predicates[predicate_id].on_offline()
             del self.device.predicates[predicate_id]
-        self.device.pred_database.set_new_predicates(preds_to_dump)
 
         if not self.last_predicates_synced:
             self.device.ready_lock.release()
         self.last_predicates_synced = time.monotonic()
         self.device.on_successful_sync()
+
+    def db_sync_predicates(self):
+        lst = []
+        for predicate_id, predicate in self.device.predicates.values():
+            lst.append(predicate.to_kwargs())
+        self.device.pred_database.set_new_predicates(lst)
 
     @retry(3, ResponseError)
     def sync_sensors(self) -> None:

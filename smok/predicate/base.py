@@ -74,14 +74,14 @@ class BaseStatistic(metaclass=ABCMeta):
     :ivar silencing: periods during which the predicate shouldn't generate alerts
     :ivar configuration: a dictionary containing the predicate's configuration
     :ivar group: notification group
-    :ivar state: state of the predicate, persisted between calls
+    :ivar state: state of the predicate, persisted between calls (picklable)
     :cvar statistic_name: name of this statistic
     """
 
     def __init__(self, device: 'SMOKDevice', predicate_id: str, verbose_name: str,
                  silencing: tp.List[DisabledTime],
                  configuration: tp.Optional[dict], statistic: tp.Optional[str] = None,
-                 group: str = 'B', **kwargs):
+                 group: str = 'B', state=None, **kwargs):
         self.device = weakref.proxy(device)
         self.predicate_id = predicate_id
         self.verbose_name = verbose_name
@@ -89,13 +89,20 @@ class BaseStatistic(metaclass=ABCMeta):
         self.configuration = configuration
         self.statistic = statistic
         self.group = group
-        self.state = None
+        self.state = state
         self.kwargs = kwargs
+
+    def on_state_changed(self):
+        """
+        To be invoked by on_tick when state is changed, in order to sync it back.
+        """
+        self.device.getter.db_sync_predicates()
 
     def to_kwargs(self) -> dict:
         return {'group': self.group, 'predicate_id': self.predicate_id,
                 'verbose_name': self.verbose_name, 'silencing': self.silencing,
                 'configuration': self.configuration, 'statistic': self.statistic,
+                'state': self.state,
                 **self.kwargs}
 
     @abstractmethod
