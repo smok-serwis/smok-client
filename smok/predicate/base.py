@@ -4,7 +4,6 @@ import typing as tp
 import weakref
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-
 from satella.coding.structures import OmniHashableMixin
 
 from smok.predicate.event import Color, Event
