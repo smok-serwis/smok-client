@@ -14,10 +14,14 @@ class RequestsAPI:
     def __init__(self, device):
         self.environment = device.environment
         self.base_url = device.url
-        if self.environment == Environment.STAGING:
+
+        # Prepare the certificate
+        if self.environment == Environment.PRODUCTION:
+            self.cert = device.temp_file_for_cert, device.temp_file_for_key
+        elif self.environment == Environment.STAGING:
             self.cert = read_in_file(device.cert[0], 'utf-8').replace('\r\n', '\n').replace('\n', '\t')
         else:
-            self.cert = device.cert
+            self.cert = read_in_file('tests/dev.testing.crt', 'utf-8').replace('\r\n', '\n').replace('\n', '\t')
 
     def request(self, request_type: str, url: str,
                 direct_response: bool = False, **kwargs) -> tp.Union[dict, tp.Tuple[bytes, dict]]:

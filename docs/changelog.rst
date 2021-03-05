@@ -7,6 +7,7 @@ v0.14.3
 * Predicate state will be preserved each tick if it changes
 * changed the API of the predicate database
 * added option to specify a timestamp for event close
+* *bugfix* fixed certificate mess when connecting to production
 
 v0.14.2
 ~~~~~~~
