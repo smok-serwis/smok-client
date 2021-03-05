@@ -14,6 +14,7 @@ import pytz
 from satella.coding import Closeable, for_argument
 from satella.coding.concurrent import PeekableQueue
 from satella.coding.structures import DirtyDict
+from satella.time import time_as_int
 
 from .api import RequestsAPI
 from .certificate import get_device_info, get_root_cert, get_dev_ca_cert
@@ -345,15 +346,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.get_device_info()
         return pytz.timezone(self._timezone)
 
-    def close_event(self, event: Event) -> None:
+    def close_event(self, event: Event, timestamp: tp.Optional[int] = None) -> None:
         """
             Close the provided event
 
         :param event: event to close
+        :param timestamp: timestamp of close. Defaults to now
         """
         assert not event.is_closed()
         if event.ended_on is None:
-            event.ended_on = time.time()
+            event.ended_on = timestamp or time_as_int()
         self.evt_database.close_event(event)
 
     def get_open_event(self, event_id: str) -> Event:

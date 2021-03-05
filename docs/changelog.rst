@@ -6,6 +6,7 @@ v0.14.3
 
 * added `Predicate.on_state_changed`
 * Predicate state will be preserved as well
+* added option to specify a timestamp for event close
 
 v0.14.2
 ~~~~~~~
