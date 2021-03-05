@@ -117,6 +117,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar metadata: plain metadata for this device
         (class :class:`smokclient.metadata.PlainMetadata`)
     :ivar baobs_loaded: whether all BAOBS have been synchronized (bool)
+    :ivar cert_data: (bytes) device certificate as given by the user
 
     :raise ValueError: invalid combination of arguments was given
     """
