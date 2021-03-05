@@ -13,6 +13,12 @@ class BasePredicateDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def update_predicate(self, v: tp.Dict) -> None:
+        """
+        A single predicate has been changed
+        """
+
+    @abstractmethod
     def set_new_predicates(self, v: tp.List[tp.Dict]):
         """
         Called by CommunicatorThread upon a successful predicate synchronization from the server

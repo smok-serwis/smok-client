@@ -4,8 +4,8 @@ Changelog
 v0.14.3
 ~~~~~~~
 
-* added `Predicate.on_state_changed`
-* Predicate state will be preserved as well
+* Predicate state will be preserved each tick if it changes
+* changed the API of the predicate database
 * added option to specify a timestamp for event close
 
 v0.14.2

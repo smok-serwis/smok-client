@@ -91,12 +91,6 @@ class BaseStatistic(metaclass=ABCMeta):
         self.state = state
         self.kwargs = kwargs
 
-    def on_state_changed(self):
-        """
-        To be invoked by on_tick when state is changed, in order to sync it back.
-        """
-        self.device.getter.db_sync_predicates()
-
     def to_kwargs(self) -> dict:
         return {'group': self.group, 'predicate_id': self.predicate_id,
                 'verbose_name': self.verbose_name, 'silencing': self.silencing,

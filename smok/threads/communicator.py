@@ -64,7 +64,11 @@ class CommunicatorThread(TerminableThread):
     def tick_predicates(self) -> None:
         for predicate in self.device.predicates.values():
             # noinspection PyProtectedMember
+            kwargs = predicate.to_kwargs()
             predicate._call_method('on_tick')
+            new_kwargs = predicate.to_kwargs()
+            if kwargs != new_kwargs:
+                self.device.pred_database.update_predicate(new_kwargs)
 
     @retry(3, ResponseError)
     def sync_events(self) -> None:
