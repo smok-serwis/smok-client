@@ -7,6 +7,8 @@ class BAOB:
 
     Note that a BAOB will not signal that it does not exist upon construction, it will rather do so
     when queried about version or value.
+
+    To create a new BAOB, just get a BAOB from device with given name and assign any value to it.
     """
 
     __slots__ = ('device', 'key')
@@ -46,3 +48,5 @@ class BAOB:
         self.device.baob_database.set_baob_value(self.key, new_data, self.version + 1)
         self.device.getter.last_baob_synced = 1
         self.device.getter.data_to_update.notify()
+
+
