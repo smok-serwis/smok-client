@@ -26,15 +26,21 @@ x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 
 def get_root_cert() -> bytes:
     """
-    Return the bytes sequence for SMOK's master CA certificate
+    :return: the bytes sequence for SMOK's master CA certificate
     """
     ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt', )
     return read_in_file(ca_file)
 
 
+def get_rapid_ca_cert() -> bytes:
+    """
+    :return: the bytes sequence for a PEM-encoded RAPID host signing CA
+    """
+
+
 def get_dev_ca_cert() -> bytes:
     """
-    Return the bytes sequence for SMOK's device signing CA
+    :return: the bytes sequence for SMOK's device signing CA
     """
     ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt', )
     return read_in_file(ca_file)

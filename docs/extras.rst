@@ -156,3 +156,5 @@ Retrieving SMOK certificates
 .. autofunction:: smok.client.get_root_cert
 
 .. autofunction:: smok.client.get_dev_ca_cert
+
+.. autofunction:: smok.client.get_rapid_ca_cert
