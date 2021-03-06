@@ -8,6 +8,7 @@ v0.14.3
 * changed the API of the predicate database
 * added option to specify a timestamp for event close
 * *bugfix* fixed certificate mess when connecting to production
+* added the RAPID CA certificate
 
 v0.14.2
 ~~~~~~~

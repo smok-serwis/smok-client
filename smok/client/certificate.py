@@ -54,6 +54,7 @@ class DevRootCertificateStore:
         self.store = crypto.X509Store()
         self.add_certificate('root.crt')
         self.add_certificate('dev.crt')
+        self.add_certificate('rapid.crt')
 
 
 DevRootCertificateStore()
