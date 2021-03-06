@@ -448,13 +448,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param token: a string
         :param group: notification group
         :param message: human-readable message
-        :param metadata: extra metadata
+        :param metadata: extra metadata. This must be dict'able
         :return: the Event object
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
-        metadata = metadata or {}
+        metadata = dict(metadata or {})
         evt_uuid = uuid.uuid4().hex
         event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)

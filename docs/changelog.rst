@@ -4,7 +4,7 @@ Changelog
 v0.14.4
 ~~~~~~~
 
-* _TBA_
+* `SMOKDevice.open_event` will accept any dictable metadata
 
 v0.14.3
 ~~~~~~~
