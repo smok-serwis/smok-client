@@ -396,7 +396,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         After this is called, the new BAOB can be successfully loaded and it's new
         contents will be retrieved.
 
-        This is not invoked during the first synchronization.
+        This is not invoked during the first synchronization, nor after you change the BAOB
+        on the client side.
 
         :param baob_name: name of the BAOB that was just downloaded from the server
         """

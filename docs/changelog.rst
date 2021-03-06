@@ -9,6 +9,7 @@ v0.14.3
 * added option to specify a timestamp for event close
 * *bugfix* fixed certificate mess when connecting to production
 * added the RAPID CA certificate
+* *bugfix* updating a BAOB could trigger notification about BAOBs being synced for the first time
 
 v0.14.2
 ~~~~~~~
