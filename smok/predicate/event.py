@@ -103,7 +103,7 @@ class Event(JSONAble):
         }
         update_key_if_true(dct, 'uuid', self.uuid)
         update_key_if_true(dct, 'handled_by', self.handled_by)
-        update_key_if_true(dct, 'ended_on', self.uuid)
+        update_key_if_true(dct, 'ended_on', self.ended_on)
         return dct
 
     def is_closed(self) -> bool:

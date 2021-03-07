@@ -5,6 +5,7 @@ v0.14.4
 ~~~~~~~
 
 * `SMOKDevice.open_event` will accept any dictable metadata
+* fixed a bug about creating new events
 
 v0.14.3
 ~~~~~~~
