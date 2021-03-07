@@ -7,6 +7,8 @@ v0.14.4
 * `SMOKDevice.open_event` will accept any dictable metadata
 * fixed a bug about creating new events
 * delayed_boot
+* changed default provide_unknown_pathpoint to return a Pathpoint instead of raising a KeyError
+    by default
 
 v0.14.3
 ~~~~~~~

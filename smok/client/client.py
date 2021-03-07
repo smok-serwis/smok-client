@@ -142,7 +142,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: a Pathpoint instance corresponding to what was ordered
         :raises KeyError: pathpoint could not be generated
         """
-        raise KeyError()
+        return Pathpoint(self, name, storage_level)
 
     def sync_sections(self, termination_checker: tp.Callable[[], bool]):
         """
