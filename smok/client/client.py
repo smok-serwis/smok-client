@@ -458,6 +458,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         evt_uuid = uuid.uuid4().hex
         event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)
+        logger.warning('Got %s of type %s', event, type(event))
         self.evt_database.add_event(event)
         return event
 
