@@ -76,8 +76,10 @@ class CommunicatorThread(TerminableThread):
         if evt_to_sync is None:
             return
         try:
+            json = [evt.to_json() for evt in evt_to_sync.get_events()]
+            logger.warning('json is %s', json)
             resp = self.device.api.post('/v1/device/alarms',
-                                        json=[evt.to_json() for evt in evt_to_sync.get_events()])
+                                        json=json)
             evt_to_sync.acknowledge(*(data['uuid'] for data in resp))
             self.device.on_successful_sync()
         except ResponseError as e:
