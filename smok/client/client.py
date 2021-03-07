@@ -7,12 +7,14 @@ import threading
 import time
 import typing as tp
 import uuid
+import warnings
 import weakref
 from abc import ABCMeta
 
 import pytz
 from satella.coding import Closeable, for_argument
 from satella.coding.concurrent import PeekableQueue
+from satella.coding.optionals import Optional
 from satella.coding.structures import DirtyDict
 from satella.time import time_as_int
 
@@ -91,10 +93,14 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param dont_do_predicates: if set to True, this SMOKDevice won't do predicates
     :param dont_do_archives: if set to True, this SMOKDevice won't do archiving
     :param startup_delay: amount of seconds to wait after creation for CommunicatorThread to
-        start talking and OrderExecutorThread to start grabbing orders
+        start talking and OrderExecutorThread to start grabbing orders. Deprecated.
     :param cache_metadata_for: amount of seconds to cache downloaded metadata entry.
         Ie no attempt to download them from the server again will be made in that many
         seconds since the download.
+    :param delayed_boot: if set to True, you will need to call
+        :meth:`~smok.client.SMOKDevice.continue_boot` in order to start fetching orders and the
+        like. False by default.
+
 
     About 10 seconds from creation if CommunicatorThread was created, sensors will be synced and
     the device will start talking. To reduce this delay, set parameter startup_delay
@@ -188,7 +194,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  dont_do_baobs: bool = False,
                  dont_do_archives: bool = False,
                  cache_metadata_for: float = 60,
-                 startup_delay: float = 10):
+                 startup_delay: tp.Optional[float] = None,
+                 delayed_boot: bool = False):
+        if startup_delay is not None:
+            warnings.warn('This is depreacted. Use delayed_boot', DeprecationWarning)
+        else:
+            startup_delay = 0
         super().__init__()
         self.cache_metadata_for = cache_metadata_for
         self.dont_do_predicates = dont_do_predicates
@@ -204,6 +215,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.macros_database = macro_database or InMemoryMacroDatabase()
         self.meta_database = meta_database or InMemoryMetadataDatabase()
         self.pred_database = pred_database or InMemoryPredicateDatabase()
+        self.delayed_boot = delayed_boot
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)
         self.arch_database = arch_database or InMemoryArchivesDatabase()
@@ -257,24 +269,43 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self._order_queue = PeekableQueue()
         if not (dont_do_archives and dont_do_macros):
             self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue,
-                                                           dont_do_macros, dont_do_archives).start()
+                                                           dont_do_macros, dont_do_archives)
+            if not delayed_boot:
+                self.arch_and_macros.start()
         else:
             self.arch_and_macros = None
         self.dont_do_baobs = dont_do_baobs
         if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
                 not dont_do_baobs:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database,
-                                                startup_delay).start()
+                                                startup_delay)
             self.getter = CommunicatorThread(self, self._order_queue, self.pp_database,
                                              dont_obtain_orders,
                                              dont_do_baobs,
                                              dont_do_pathpoints,
                                              dont_do_predicates,
-                                             dont_sync_sensor_writes, startup_delay).start()
+                                             dont_sync_sensor_writes, startup_delay)
+            if not delayed_boot:
+                self.executor.start()
+                self.getter.start()
         else:
             self.executor = None
             self.getter = None
         self.log_publisher = LogPublisherThread(self).start()
+
+    def continue_boot(self):
+        """
+        Call this to continue the booting if delayed_start was given in the constructor
+
+        This will start the communicator and order executor thread.
+
+        :raise RuntimeError: delayed boot was not given
+        """
+        if not self.delayed_boot:
+            raise RuntimeError('Delayed boot was not given')
+        Optional(self.executor).start()
+        Optional(self.getter).start()
+        Optional(self.arch_and_macros).start()
 
     def log_sensor_write(self, sw: SensorWriteEvent):
         """
@@ -564,22 +595,18 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         This may block for up to 10 seconds.
         """
         if super().close():
-            if self.executor is not None:
-                self.executor.terminate()
-                self.getter.terminate()
+            Optional(self.executor).terminate()
+            Optional(self.getter).terminate()
             self.log_publisher.terminate()
-            if self.arch_and_macros is not None:
-                self.arch_and_macros.terminate()
+            Optional(self.arch_and_macros).terminate()
             if self.temp_file_for_cert:
                 os.unlink(self.temp_file_for_cert)
             if self.temp_file_for_key:
                 os.unlink(self.temp_file_for_key)
-            if self.executor is not None:
-                self.executor.join()
-                self.getter.join()
+            Optional(self.executor).join()
+            Optional(self.getter).join()
             self.log_publisher.join()
-            if self.arch_and_macros is not None:
-                self.arch_and_macros.join()
+            Optional(self.arch_and_macros).join()
 
     @for_argument(returns=list)
     def get_slaves(self) -> tp.List[SlaveDevice]:
