@@ -8,7 +8,8 @@ v0.14.4
 * fixed a bug about creating new events
 * delayed_boot
 * changed default provide_unknown_pathpoint to return a Pathpoint instead of raising a KeyError
-    by default
+    by default. I simply trust the user to provide a Pathpoint DB implementation sane enough
+    to realize his aims.
 
 v0.14.3
 ~~~~~~~
