@@ -152,7 +152,9 @@ class CommunicatorThread(TerminableThread):
             lst.append(predicate.to_kwargs())
         self.device.pred_database.set_new_predicates(lst)
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_sensors(self) -> None:
         try:
             resp = self.device.api.get('/v1/device/sensors')
@@ -166,7 +168,9 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def fetch_orders(self) -> None:
         try:
             resp = self.device.api.post('/v1/device/orders')
@@ -179,7 +183,9 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_sensor_writes(self) -> None:
         sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
@@ -199,8 +205,9 @@ class CommunicatorThread(TerminableThread):
                 logger.warning('Got HTTP %s on sync sensor writes, acking', e.status_code)
                 sync.ack()
 
-    @retry(3, ResponseError)
-    @log_exceptions(logger, logging.WARNING, 'Failed to sync data: {e}')
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
@@ -229,7 +236,9 @@ class CommunicatorThread(TerminableThread):
         self._sync_baob()
         self.device.baobs_loaded = True
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def _sync_baob(self) -> None:
         try:
             keys = self.device.baob_database.get_all_keys()
@@ -261,7 +270,9 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
