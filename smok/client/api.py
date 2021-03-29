@@ -1,3 +1,4 @@
+import logging
 import json
 import typing as tp
 
@@ -6,6 +7,9 @@ from satella.files import read_in_file
 
 from smok.basics import Environment
 from smok.exceptions import ResponseError
+
+
+logger = logging.getLogger(__name__)
 
 
 class RequestsAPI:
@@ -42,6 +46,7 @@ class RequestsAPI:
                     'X-SSL-Client-Certificate': self.cert
                 }, **kwargs)
         except requests.RequestException as e:
+            logger.error('Requests error %s', e, exc_info=e)
             raise ResponseError(599, 'Requests error: %s' % (str(e),))
 
         if resp is None and self.environment == Environment.LOCAL_DEVELOPMENT:
@@ -50,6 +55,7 @@ class RequestsAPI:
                 return '', 200
             else:
                 return {}
+        logger.debug('%s %s -> %s', request_type, url, resp.status_code)
 
         if resp.status_code not in (200, 201):
             if direct_response:

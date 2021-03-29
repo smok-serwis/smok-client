@@ -197,7 +197,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  startup_delay: tp.Optional[float] = None,
                  delayed_boot: bool = False):
         if startup_delay is not None:
-            warnings.warn('This is depreacted. Use delayed_boot', DeprecationWarning)
+            warnings.warn('This is deprecated. Use delayed_boot', DeprecationWarning)
         else:
             startup_delay = 0
         super().__init__()
