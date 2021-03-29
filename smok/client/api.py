@@ -55,7 +55,8 @@ class RequestsAPI:
                 return '', 200
             else:
                 return {}
-        logger.debug('%s %s -> %s', request_type, url, resp.status_code)
+        if 'device_logs' not in url:
+            logger.debug('%s %s -> %s', request_type, url, resp.status_code)
 
         if resp.status_code not in (200, 201):
             if direct_response:
