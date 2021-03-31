@@ -40,6 +40,12 @@ class BaseEventDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def get_all_events(self) -> tp.Iterator[Event]:
+        """
+        :return: all events kept in the database
+        """
+
+    @abstractmethod
     def close_event(self, event: Event) -> None:
         """
         Close provided event

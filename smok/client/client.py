@@ -456,6 +456,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 tag_set = fqtsify(tag_set)
             return self.sensor_database.get_sensor(tag_set)
 
+    def get_all_events(self) -> tp.Iterator[Event]:
+        """
+        Return all events kept in device's database
+
+        :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
+        return self.evt_database.get_all_events()
+
     def get_all_open_events(self) -> tp.Iterator[Event]:
         """
         Get all open events

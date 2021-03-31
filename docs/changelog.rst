@@ -4,7 +4,7 @@ Changelog
 v0.14.5
 ~~~~~~~
 
-* _to be announced_
+* added `get_all_events`
 
 v0.14.4
 ~~~~~~~

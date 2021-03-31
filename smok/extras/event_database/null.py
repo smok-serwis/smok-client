@@ -27,6 +27,9 @@ class NullEventDatabase(BaseEventDatabase):
     def close_event(self, event: Event) -> None:
         pass
 
+    def get_all_events(self) -> tp.Iterator[Event]:
+        return iter([])
+
     def get_open_events(self) -> tp.Iterator[Event]:
         return iter([])
 

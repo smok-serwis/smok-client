@@ -1,9 +1,11 @@
 import os
 import pickle
+import time
 import typing as tp
 import weakref
 
 from satella.coding import Monitor, silence_excs
+from satella.time import parse_time_string
 
 from .base import BaseEventDatabase, BaseEventSynchronization
 from ...predicate.event import Event
@@ -33,6 +35,14 @@ class InMemoryEventSynchronization(BaseEventSynchronization):
 
 
 class InMemoryEventDatabase(BaseEventDatabase, Monitor):
+    """
+    :param path: path to a DB file with pickled events
+    :param keep_in_memory_for: amount of time to keep events for
+    """
+
+    @Monitor.synchronized
+    def get_all_events(self) -> tp.Iterator[Event]:
+        return iter(list(self.events))
 
     @Monitor.synchronized
     def get_open_events(self) -> tp.Iterator[Event]:
@@ -56,7 +66,7 @@ class InMemoryEventDatabase(BaseEventDatabase, Monitor):
         self.events.append(event)
         self.events_to_sync.append(event)
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, keep_in_memory_for: tp.Union[str, int] = '30d'):
         self.events = []
         self.path = path
         self.internal_data = {}
@@ -68,9 +78,15 @@ class InMemoryEventDatabase(BaseEventDatabase, Monitor):
                     self.internal_data = pickle.load(f_in)
                 except pickle.PickleError:
                     pass
+        self.keep_in_memory_for = parse_time_string(keep_in_memory_for)
 
+    @Monitor.synchronized
     def checkpoint(self) -> None:
-        pass
+        for i in range(len(self.events)):
+            if self.events[i].is_closed():
+                if time.time() - self.events.started_on > self.keep_in_memory_for:
+                    del self.events[i]
+                    return
 
     def set_cache(self, predicate_id: str, cache) -> None:
         self.internal_data[predicate_id] = cache
