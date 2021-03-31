@@ -11,6 +11,7 @@ v0.14.4
     by default. I simply trust the user to provide a Pathpoint DB implementation sane enough
     to realize his aims.
 * fixed a bug where `get_all_keys` returns a key that later is proven not to exist
+* added consistency checked for `BaseBAOBDatabase`
 
 v0.14.3
 ~~~~~~~

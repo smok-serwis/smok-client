@@ -1,5 +1,9 @@
+import logging
 import typing as tp
 from abc import ABCMeta, abstractmethod
+
+
+logger = logging.getLogger(__name__)
 
 
 class BAOBDigest:
@@ -53,3 +57,20 @@ class BaseBAOBDatabase(metaclass=ABCMeta):
         """
         Store a particular version of a BAOB within the database
         """
+
+    def check_consistency(self) -> None:
+        """
+        Check that for all keys that are returned by `get_all_keys` version can be
+        obtained via `get_baob_version`.
+
+        If not, delete such a key and log an ERROR.
+
+        Called by constructor of :class:`~smok.client.SMOKDevice`
+        """
+        for key in self.get_all_keys():
+            try:
+                self.get_baob_version(key)
+            except KeyError:
+                logger.error(
+                    'Key %s mentioned in all keys but cannot get a version for it, deleting', key)
+                self.delete_baob(key)

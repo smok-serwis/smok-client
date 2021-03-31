@@ -201,6 +201,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             startup_delay = 0
         super().__init__()
+        Optional(baob_database).check_consistency()
         self.cache_metadata_for = cache_metadata_for
         self.dont_do_predicates = dont_do_predicates
         self.dont_do_pathpoints = dont_do_pathpoints
