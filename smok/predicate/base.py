@@ -92,11 +92,13 @@ class BaseStatistic(metaclass=ABCMeta):
         self.kwargs = kwargs
 
     def to_kwargs(self) -> dict:
-        return {'group': self.group, 'predicate_id': self.predicate_id,
-                'verbose_name': self.verbose_name, 'silencing': self.silencing,
-                'configuration': self.configuration, 'statistic': self.statistic,
-                'state': self.state,
-                **self.kwargs}
+        r = {'group': self.group, 'predicate_id': self.predicate_id,
+             'verbose_name': self.verbose_name, 'silencing': self.silencing,
+             'configuration': self.configuration, 'statistic': self.statistic,
+             'state': self.state, **self.kwargs}
+        if 'device' in r:
+            del r['device']
+        return r
 
     @abstractmethod
     def on_tick(self) -> None:
