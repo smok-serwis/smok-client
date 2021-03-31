@@ -258,8 +258,12 @@ class CommunicatorThread(TerminableThread):
             keys = self.device.baob_database.get_all_keys()
             data = []
             for key in keys:
-                data.append({'key': key,
-                             'version': self.device.baob_database.get_baob_version(key)})
+                try:
+                    data.append({'key': key,
+                                 'version': self.device.baob_database.get_baob_version(key)})
+                except KeyError:
+                    logger.error('Got key %s but the DB tells us that it does not exist', key)
+                    continue
             data = self.device.api.post('/v1/device/baobs', json=data)
             for key_to_download in data['should_download']:
                 resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',

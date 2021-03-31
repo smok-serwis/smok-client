@@ -10,6 +10,7 @@ v0.14.4
 * changed default provide_unknown_pathpoint to return a Pathpoint instead of raising a KeyError
     by default. I simply trust the user to provide a Pathpoint DB implementation sane enough
     to realize his aims.
+* fixed a bug where `get_all_keys` returns a key that later is proven not to exist
 
 v0.14.3
 ~~~~~~~
