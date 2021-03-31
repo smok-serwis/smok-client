@@ -12,6 +12,7 @@ v0.14.4
     to realize his aims.
 * fixed a bug where `get_all_keys` returns a key that later is proven not to exist
 * added consistency checked for `BaseBAOBDatabase`
+* fixed a bug with synchronizing predicates
 
 v0.14.3
 ~~~~~~~

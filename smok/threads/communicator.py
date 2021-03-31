@@ -155,7 +155,7 @@ class CommunicatorThread(TerminableThread):
 
     def db_sync_predicates(self):
         lst = []
-        for predicate_id, predicate in self.device.predicates.values():
+        for predicate in self.device.predicates.values():
             lst.append(predicate.to_kwargs())
         self.device.pred_database.set_new_predicates(lst)
 
