@@ -70,10 +70,14 @@ class CommunicatorThread(TerminableThread):
             if kwargs != new_kwargs:
                 self.device.pred_database.update_predicate(new_kwargs)
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_events(self) -> None:
+        logger.debug('Gonna sync events')
         evt_to_sync = self.device.evt_database.get_events_to_sync()
         if evt_to_sync is None:
+            logger.debug('But got nothing to sync!')
             return
         try:
             json = [evt.to_json() for evt in evt_to_sync.get_events()]
@@ -89,8 +93,11 @@ class CommunicatorThread(TerminableThread):
             evt_to_sync.negative_acknowledge()
             raise
 
-    @retry(3, ResponseError)
+    @silence_excs(ResponseError)
+    @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
+    @retry(3, ResponseError, swallow_exception=False)
     def sync_predicates(self) -> None:
+        logger.debug('Gonna sync predicates')
         try:
             resp = self.device.api.get('/v1/device/predicates')
         except ResponseError as e:
@@ -172,6 +179,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def fetch_orders(self) -> None:
+        logger.debug('Gonna fetch orders')
         try:
             resp = self.device.api.post('/v1/device/orders')
             if resp:
@@ -187,6 +195,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def sync_sensor_writes(self) -> None:
+        logger.debug('Gonna sync sensor writes')
         sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
             return
@@ -209,13 +218,17 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def sync_data(self) -> None:
+        logger.debug('Gonna sync data')
+
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
+            logger.debug('Nothing to sync')
             return
         try:
             data = sync.to_json()
             if not data:
                 sync.acknowledge()
+                logger.debug('Nothing to sync!')
                 return
             self.device.api.post('/v1/device/pathpoints', json=data)
             sync.acknowledge()
@@ -240,6 +253,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def _sync_baob(self) -> None:
+        logger.debug('Gonna sync BAOBs')
         try:
             keys = self.device.baob_database.get_all_keys()
             data = []
@@ -274,6 +288,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def sync_pathpoints(self) -> None:
+        logger.debug('Gonna sync pathpoints')
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
         try:
@@ -302,6 +317,7 @@ class CommunicatorThread(TerminableThread):
         # Give the app a moment to prepare and define it's pathpoints
         self.safe_sleep(self.startup_delay)
 
+    @log_exceptions(logger, logging.ERROR)
     def loop(self) -> None:
         with measure() as measurement:
             # Synchronize the data
