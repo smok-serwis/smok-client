@@ -77,6 +77,8 @@ class PlainMetadata(CacheDict):
                 raise KeyError()
             return self.db.get_plain(item)
         except KeyError:
+            if not self.device.allow_sync:
+                raise
             try:
                 resp = self.device.api.get('/v1/device/metadata/plain/%s' % (
                     quote_plus(item)
@@ -102,12 +104,15 @@ class PlainMetadata(CacheDict):
     @for_argument(None, None, str)
     def __setitem__(self, key, value):
         self.db.put_plain(key, value)
-        self.updater.add_update(key, value, time.time())
+        if self.device.allow_sync:
+            self.updater.add_update(key, value, time.time())
+
         self.cached_for[key] = time.monotonic()
 
     def __delitem__(self, key):
         self.db.delete_plain(key)
-        self.updater.add_update(key, None, time.time())
+        if self.device.allow_sync:
+            self.updater.add_update(key, None, time.time())
         try:
             del self.cached_for[key]
         except KeyError:

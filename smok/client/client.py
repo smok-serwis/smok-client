@@ -121,7 +121,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :ivar pathpoints: a dictionary, keying pathpoint names to their instances
     :ivar url: base URL for the API calls, without the trailing slash
     :ivar metadata: plain metadata for this device
-        (class :class:`smokclient.metadata.PlainMetadata`)
+        (class :class:`smok.metadata.PlainMetadata`)
     :ivar baobs_loaded: whether all BAOBS have been synchronized (bool)
     :ivar cert_data: (bytes) device certificate as given by the user
 
@@ -351,7 +351,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             yield BAOB(self, key)
 
     def wait_until_synced(self) -> None:
-        """Block until everything's synchronized with the server"""
+        """
+        Block until everything's synchronized with the server
+        """
         self.ready_lock.acquire()
         self.ready_lock.release()
 

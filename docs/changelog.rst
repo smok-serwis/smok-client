@@ -6,6 +6,7 @@ v0.14.5
 
 * added `get_all_events`
 * added support for deleting BAOBs
+* fixed a bug wherein metadata would still sync despite allow_sync being set to False
 
 v0.14.4
 ~~~~~~~
