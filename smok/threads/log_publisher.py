@@ -24,7 +24,7 @@ class LogPublisherThread(TerminableThread):
         return msgs
 
     @queue_get('queue', timeout=5)
-    def loop(self, msg):
+    def loop(self, msg) -> None:
         while not self.device.allow_sync:
             while self.queue.qsize() > MAX_LOG_BUFFER_SIZE:
                 self.queue.get()
@@ -44,7 +44,7 @@ class LogPublisherThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.device.allow_sync:
             while self.queue.qsize() > 0:
                 msgs = self.get_all_messages(self.queue.get())

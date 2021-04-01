@@ -22,7 +22,7 @@ class PlainDataUpdater:
 
     @queue_get('entries', 0)
     @retry(3, exc_classes=ResponseError)
-    def try_update(self, msg):
+    def try_update(self, msg) -> None:
         key, value, timestamp = msg
 
         if not value:
@@ -40,10 +40,10 @@ class StorageDict:
         return self.db.get_plain(item)
 
     @for_argument(None, None, str)
-    def __setitem__(self, key: str, value: str):
+    def __setitem__(self, key: str, value: str) -> None:
         self.db.set_plain(key, value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         self.db.delete_plain(key)
 
 
@@ -61,8 +61,9 @@ class PlainMetadata(CacheDict):
     """
     __slots__ = ('device', 'updater', 'db', 'cached_for')
 
-    def try_update(self):
-        self.updater.try_update()
+    def try_update(self) -> None:
+        if self.device.allow_sync:
+            self.updater.try_update()
 
     def __init__(self, device: 'SMOKDevice'):
         self.updater = PlainDataUpdater(device)
@@ -70,7 +71,7 @@ class PlainMetadata(CacheDict):
         self.device = device
         self.cached_for = {}
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> str:
         try:
             cached_for = self.cached_for[item]
             if time.monotonic() - cached_for > self.device.cache_metadata_for:
@@ -92,7 +93,7 @@ class PlainMetadata(CacheDict):
                     raise KeyError('key not found')
                 return self.db.get_plain(item)
 
-    def get(self, key: str, default=None):
+    def get(self, key: str, default=None) -> str:
         """
         Get a value for given metadata, returning default if it KeyErrors
         """
@@ -102,14 +103,14 @@ class PlainMetadata(CacheDict):
             return default
 
     @for_argument(None, None, str)
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         self.db.put_plain(key, value)
         if self.device.allow_sync:
             self.updater.add_update(key, value, time.time())
 
         self.cached_for[key] = time.monotonic()
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         self.db.delete_plain(key)
         if self.device.allow_sync:
             self.updater.add_update(key, None, time.time())
