@@ -63,8 +63,8 @@ class CommunicatorThread(TerminableThread):
 
     def tick_predicates(self) -> None:
         for predicate in self.device.predicates.values():
-            # noinspection PyProtectedMember
             kwargs = predicate.to_kwargs()
+            # noinspection PyProtectedMember
             predicate._call_method('on_tick')
             new_kwargs = predicate.to_kwargs()
             if kwargs != new_kwargs:
@@ -233,7 +233,7 @@ class CommunicatorThread(TerminableThread):
                                'Assuming is it damaged and marking as synced', e.status_code)
                 sync.acknowledge()
 
-    def sync_baob(self):
+    def sync_baob(self) -> None:
         self._sync_baob()
         self.device.baobs_loaded = True
 

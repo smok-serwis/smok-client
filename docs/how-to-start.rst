@@ -147,6 +147,10 @@ Threads
 * :code:`OrderExecutorThread` handles the loop executing orders.
 * :code:`LogPublisherThread` handles publishing your logs to the SMOK server
 
+:class:`~smok.client.SMOKDevice` also creates 2 temporary files which will hold the device
+certificate and private key, if the certificate and private key is given not as a path to file,
+but as raw :code:`bytes` data. . These are cleaned up on :meth:`~smok.client.SMOKDevice.close`.
+
 .. note:: You can opt not to launch first three threads. The log publisher thread will always start.
 
 .. warning:: This will fetch macros every 30 minutes, so don't schedule events to happen sooner

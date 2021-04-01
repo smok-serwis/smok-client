@@ -146,7 +146,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def sync_sections(self, termination_checker: tp.Callable[[], bool]):
         """
-        A CANNOT_JOIN section is about to be executed.
+        Called by order executor thread before a CANNOT_JOIN section is about to be executed.
+
+        Override this method if you are providing a custom
+        :meth:`~smok.client.SMOKDevice.execute_section`. Default does nothing.
 
         This needs to block until all orders issued up to this point are finished.
 
@@ -154,18 +157,16 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         Sections should be synchronized in bounded time.
 
-        Override this method. Default does nothing.
-
         :param termination_checker: a callable that can be called to determine whether given
             SMOKDevice is undergoing a shutdown. If this callable starts to return True,
-            the function should return.
+            the function should return at once.
         """
 
     def execute_section(self, section: Section) -> None:
         """
-        Overload to implement custom section execution.
+        Override to implement custom section execution.
 
-        If this is not overloaded, standard executor logic will be applied.
+        If this is not overridden, standard executor logic will be applied.
 
         Called by the order executor thread. If this is defined, then
         :meth:`~smok.client.SMOKDevice.sync_sections` is necessary as well, so this should just
@@ -606,6 +607,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Close the connection, clean up the resources.
 
         This may block for up to 10 seconds.
+
+        No-op if called more than once.
         """
         if super().close():
             Optional(self.executor).terminate()
@@ -642,7 +645,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :return: current device information
         :raises ResponseError: server responded (or not) with an invalid message
+        :raises RuntimeError: :attr:`~smok.client.SMOKDevice.allow_sync` was set to False
         """
+        if not self.allow_sync:
+            raise RuntimeError('allow_sync is False, cannot fetch the information')
         try:
             resp = DeviceInfo.from_json(self.api.get('/v1/device'))
         except ResponseError as e:
