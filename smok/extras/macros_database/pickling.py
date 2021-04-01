@@ -14,7 +14,7 @@ def always_sync(fun):
         try:
             return fun(self, *args, **kwargs)
         finally:
-            self.__sync()
+            getattr(self, '_PicklingMacroDatabase__sync')()
 
     return inner
 
