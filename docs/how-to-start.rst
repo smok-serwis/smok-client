@@ -134,18 +134,20 @@ but also a new one:
 Threads
 -------
 
-`SMOKDevice` spawns 3 threads to help it out with it's chores. They are as follows:
+:class:`~rapid.client.SMOKDevice` spawns 4 threads to help it out with it's chores. They are as follows:
 
-* `CommunicatorThread` handles communication with the SMOK server, and following things:
+* :code:`CommunicatorThread` handles communication with the SMOK server, and following things:
     * reading macros (tasks to be executed in the future)
     * synchronizes :ref:`BAOBs`
-    * fetches orders to execute on `OrderExecutorThread`
+    * fetches orders to execute on :code:`OrderExecutorThread`
     * synchronizes pathpoints and sensors
     * synchronizes and executes :ref:`predicates`
-* `ArchivingAndMacroThread` takes care of reading the pathpoints that are archived,
+* :code:`ArchivingAndMacroThread` takes care of reading the pathpoints that are archived,
   about executing macros, and synchronizes the metadata in the background.
-* `OrderExecutorThread` handles the loop executing orders.
-* `LogPublisherThread` handles publishing your logs to the SMOK server
+* :code:`OrderExecutorThread` handles the loop executing orders.
+* :code:`LogPublisherThread` handles publishing your logs to the SMOK server
+
+.. note:: You can opt not to launch first three threads. The log publisher thread will always start.
 
 .. warning:: This will fetch macros every 30 minutes, so don't schedule events to happen sooner
              than 30 minutes from now on, they are likely to be missed (but still will be executed).
