@@ -11,3 +11,7 @@ Upon reconnection, a synchronization with the server proceeds, with the usual la
 
 .. autoclass:: smok.baob.BAOB
     :members:
+
+Note that if a client has a BAOB that server doesn't, such BAOB will be deleted. A client can
+upload his BAOB to server only if server has lower version.
+

@@ -5,6 +5,7 @@ v0.14.5
 ~~~~~~~
 
 * added `get_all_events`
+* added support for deleting BAOBs
 
 v0.14.4
 ~~~~~~~

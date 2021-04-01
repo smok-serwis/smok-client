@@ -252,6 +252,11 @@ class CommunicatorThread(TerminableThread):
                     logger.error('Got key %s but the DB tells us that it does not exist', key)
                     continue
             data = self.device.api.post('/v1/device/baobs', json=data)
+
+            for key_to_delete in data['should_delete']:
+                self.device.baob_database.delete_baob(key_to_delete)
+                logger.debug('Deleted BAOB %s', key_to_delete)
+
             for key_to_download in data['should_download']:
                 resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
                                                     direct_response=True)
@@ -260,6 +265,7 @@ class CommunicatorThread(TerminableThread):
                 logger.debug('Downloaded BAOB %s', key_to_download)
                 if self.last_baob_synced:
                     self.device.on_baob_updated(key_to_download)
+
             for key_to_upload in data['should_upload']:
                 self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
                     'file': self.device.baob_database.get_baob_value(key_to_upload),
