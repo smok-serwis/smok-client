@@ -20,4 +20,5 @@ Then you should add it to your list of handlers:
 .. note:: Service name is used to distinguish multiple processes running as the same device.
 
 .. note:: Logging events are not stored for later submission. Either they are submitted at the moment,
-    or they are lost forever.
+    or they are lost forever. Therefore take care to log somewhere else than only to server (you
+    can for example log to stdout)

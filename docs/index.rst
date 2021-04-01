@@ -10,6 +10,7 @@ Welcome to SMOK Client's documentation!
    slave_devices
    orders
    sensors
+   metadata
    predicates
    extras
    logging
