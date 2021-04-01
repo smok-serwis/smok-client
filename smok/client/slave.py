@@ -31,7 +31,7 @@ class SlaveDevice:
         """
         An (initially empty) dictionary of format (OpenAPI 3.0):
 
-        ::
+        .. code-block: yaml
 
             type: object
             properties:
