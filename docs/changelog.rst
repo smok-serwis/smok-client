@@ -4,7 +4,7 @@ Changelog
 v0.14.6
 ~~~~~~~
 
-* *TBA*
+* API endpoint changed to https for testing
 
 v0.14.5
 ~~~~~~~

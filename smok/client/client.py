@@ -262,7 +262,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if self.environment == Environment.PRODUCTION:
             self.url = 'https://api.smok.co'
         elif self.environment == Environment.STAGING:
-            self.url = 'http://api.test.smok-serwis.pl'
+            self.url = 'https://api.test.smok-serwis.pl'
         elif self.environment == Environment.LOCAL_DEVELOPMENT:
             self.url = 'http://http-api'
 
