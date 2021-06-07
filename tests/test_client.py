@@ -1,5 +1,5 @@
 import unittest
-import mock
+from unittest import mock
 from smok.basics import Environment
 from smok.client import SMOKDevice
 
