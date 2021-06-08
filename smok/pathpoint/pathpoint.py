@@ -71,7 +71,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
             self.current_timestamp = None
             self.current_value = None
         except OperationFailedError as e:
-            self.current_timestamp = e
+            self.current_timestamp = e.timestamp
             self.current_value = e
 
         # noinspection PyProtectedMember

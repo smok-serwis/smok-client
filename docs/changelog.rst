@@ -5,6 +5,7 @@ v0.14.7
 ~~~~~~~
 
 * added alternate syntax to PathpointValue.set_new_value
+* bugfix for setting new values to pathpoints
 
 v0.14.6
 ~~~~~~~
