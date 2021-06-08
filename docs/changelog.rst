@@ -4,7 +4,7 @@ Changelog
 v0.14.7
 ~~~~~~~
 
-* _TBA_
+* added alternate syntax to PathpointValue.set_new_value
 
 v0.14.6
 ~~~~~~~

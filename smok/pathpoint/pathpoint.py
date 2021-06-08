@@ -106,15 +106,28 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
         yield from self.device.pp_database.get_archive_data(self.name, starting_at, stopping_at)
 
     @must_have_device
-    def set_new_value(self, timestamp: Number, value: ValueOrExcept) -> None:
+    def set_new_value(self, *args) -> None:
         """
         May be called asynchronously by user threads to asynchronously update a pathpoint.
 
         This is also called by the executor thread upon reading a new piece of data.
 
+        You can use it in one of two ways:
+
+        >>> pp.set_new_value(timestamp, value)
+
+        or:
+
+        >>> pp.set_new_value(OperationFailedError(...))
+
         :param timestamp: new timestamp
         :param value: new value
         """
+        if len(args) == 1:
+            value, = args
+            timestamp = value.timestamp
+        else:
+            timestamp, value = args
         if self.current_timestamp is not None:
             if self.current_timestamp > timestamp:
                 warnings.warn('Given lower timestamp (%s) than current one (%s), ignoring' % (
