@@ -92,7 +92,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
     def get_archive(self,
                     starting_at: int,
                     stopping_at: tp.Optional[int] = None) -> tp.Iterator[
-        tp.Tuple[int, ValueOrExcept]]:
+            tp.Tuple[int, ValueOrExcept]]:
         """
         Get archive readings.
 
