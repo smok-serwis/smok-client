@@ -95,7 +95,6 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
                         macro.execute(self.device)
 
                 for macro_id, ts in mdb.get_done_macros():
-                    logger.debug('Syncing %s %s', macro_id, ts)
                     try:
                         self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
                     except ResponseError as e:
