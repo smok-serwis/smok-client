@@ -34,7 +34,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         try:
             self.connection.sync_pathpoints(data).result()
         except DataStreamSyncFailed:
-            raise SyncError(False)
+            raise SyncError(False, True)
 
     def close(self):
         self.connection.close()

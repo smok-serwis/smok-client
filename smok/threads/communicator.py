@@ -19,6 +19,7 @@ from smok.pathpoint.pathpoint import Pathpoint
 from smok.predicate import DisabledTime
 from smok.predicate.undefined import UndefinedStatistic
 from smok.sensor import Sensor
+from smok.sync_workers.base import SyncError
 
 logger = logging.getLogger(__name__)
 
@@ -218,10 +219,10 @@ class CommunicatorThread(TerminableThread):
             if not data:
                 sync.acknowledge()
                 return
-            self.device.api.post('/v1/device/pathpoints', json=data)
+            self.device.sync_worker.sync_pathpoints(data)
             sync.acknowledge()
             self.device.on_successful_sync()
-        except ResponseError as e:
+        except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
@@ -344,7 +345,7 @@ class CommunicatorThread(TerminableThread):
                     self.sync_sensor_writes()
 
                 # Fetch the orders
-                if not self.dont_obtain_orders:
+                if not self.dont_obtain_orders and not self.device.sync_worker.has_async_orders:
                     self.fetch_orders()
 
                 if not self.dont_do_predicates:
