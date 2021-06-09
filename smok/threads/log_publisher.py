@@ -35,7 +35,7 @@ class LogPublisherThread(TerminableThread):
         msgs = self.get_all_messages(msg)
         self.sync(msgs)
 
-    @retry(3, exc_classes=ResponseError)
+    @retry(3, exc_classes=SyncError)
     def sync(self, lst: tp.List[dict]):
         try:
             self.device.sync_worker.sync_logs(lst)
