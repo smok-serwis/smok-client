@@ -6,6 +6,7 @@ from satella.coding.concurrent import TerminableThread
 from satella.coding.decorators import retry
 
 from ..exceptions import ResponseError
+from ..sync_workers.base import SyncError
 
 MAX_SYNC_AT_ONCE = 50
 MAX_LOG_BUFFER_SIZE = 20000
@@ -37,9 +38,9 @@ class LogPublisherThread(TerminableThread):
     @retry(3, exc_classes=ResponseError)
     def sync(self, lst: tp.List[dict]):
         try:
-            self.device.api.put('/v1/device/device_logs', json=lst, timeout=20)
+            self.device.sync_worker.sync_logs(lst)
             self.device.on_successful_sync()
-        except ResponseError as e:
+        except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
             raise

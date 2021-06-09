@@ -50,6 +50,14 @@ from ..threads.communicator import PREDICATE_SYNC_INTERVAL
 logger = logging.getLogger(__name__)
 
 
+try:
+    import ngtt
+    NGTT_AVAILABLE = True
+except ImportError:
+    NGTT_AVAILABLE = False
+
+
+
 class SMOKDevice(Closeable, metaclass=ABCMeta):
     """
     A base class for a SMOK device.
@@ -267,6 +275,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.url = 'http://http-api'
 
         self.api = RequestsAPI(self)
+
+        if NGTT_AVAILABLE:
+            from smok.sync_workers.ngtt import NGTTSyncWorker
+            self.sync_worker = NGTTSyncWorker(self)
+        else:
+            from smok.sync_workers.http import HTTPSyncWorker
+            self.sync_worker = HTTPSyncWorker(self)
 
         self._order_queue = PeekableQueue()
         if not (dont_do_archives and dont_do_macros):
