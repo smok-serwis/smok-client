@@ -197,12 +197,16 @@ class Section(ReprableMixin):
     :param disposition: if Disposition.JOINABLE then this section can be joined with
         other sections. If Disposition.CANNOT_JOIN then all orders from this section
         will be executed before proceeding to next one
+
+    :ivar future: a future that completes upon this section being finished.
+        If this future is cancelled, and section did not start executing, it will be.
     """
     _REPR_FIELDS = ('orders', 'disposition')
     __slots__ = ('orders', 'disposition', 'future')
 
     def __init__(self, orders: tp.List[Order] = None,
                  disposition: Disposition = Disposition.JOINABLE):
+
         self.future = Future()
         self.orders = orders or []
         self.disposition = disposition
@@ -224,8 +228,8 @@ class Section(ReprableMixin):
         if isinstance(other, Order):
             self.orders.append(other)
         else:
-            other.future = self.future
             self.orders.extend(other.orders)
+            self.future = other.future
         return self
 
     def is_joinable(self) -> bool:

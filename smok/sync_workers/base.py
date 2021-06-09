@@ -16,9 +16,13 @@ class SyncError(Exception):
 class BaseSyncWorker(metaclass=ABCMeta):
     """
     Base class for synchronizing archives and logs
+
+    :ivar has_async_orders: (bool) whether this can asynchronously issue orders. If it can,
+        you need to take care to inject received orders appropriately.
     """
-    def __init__(self, device: 'SMOKDevice'):
+    def __init__(self, device: 'SMOKDevice', has_async_orders: bool):
         self.device = device
+        self.has_async_orders = has_async_orders
 
     @abstractmethod
     def sync_logs(self, data: tp.List[dict]):

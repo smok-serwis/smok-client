@@ -7,6 +7,7 @@ from ..exceptions import ResponseError
 
 
 class HTTPSyncWorker(BaseSyncWorker):
+
     @reraise_as(ResponseError, SyncError)
     def sync_logs(self, data: tp.List[dict]):
         try:
@@ -15,7 +16,7 @@ class HTTPSyncWorker(BaseSyncWorker):
             raise SyncError(e.is_no_link())
 
     def __init__(self, device: 'SMOKDevice'):
-        super().__init__(device)
+        super().__init__(device, False)
         self.api = device.api
 
     def close(self):

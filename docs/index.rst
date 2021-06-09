@@ -39,6 +39,13 @@ Generally `smok-client` is fully prepared to work offline, but in order for it t
 to the best of it's capability, you might need to implement some :ref:`extras`, although
 the solutions bundled with SMOK Client might suffice if you don't need very high performance.
 
+Note that if you want your logs, data and orders to be synced over TLS, you can additionally
+install the NGTT_ package.
+
+Doing so will drastically reduce your data usage, as NGTT_ streams orders directly to the device,
+skipping the need of the device to poll the API.
+
+.. _NGTT: https://github.com/smok-serwis/ngtt
 
 Indices and tables
 ==================

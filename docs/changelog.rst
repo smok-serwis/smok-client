@@ -4,7 +4,7 @@ Changelog
 v0.14.8
 ~~~~~~~
 
-* _TBA_
+* added support for the NGTT protocol
 
 v0.14.7
 ~~~~~~~

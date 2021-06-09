@@ -3,19 +3,31 @@ import typing as tp
 from satella.coding import reraise_as
 
 from ngtt.exceptions import ConnectionFailed
+from ngtt.orders import Order
+from smok.pathpoint.orders import sections_from_list
 from smok.sync_workers.base import BaseSyncWorker, SyncError
 from ngtt.uplink import NGTTConnection
 
 
 class NGTTSyncWorker(BaseSyncWorker):
-    @reraise_as(ConnectionFailed, SyncError)
+
     def sync_logs(self, data: tp.List[dict]):
-        self.connection.stream_logs(data)
+        try:
+            self.connection.stream_logs(data)
+        except ConnectionFailed as e:
+            raise SyncError(e.is_due_to_no_internet)
 
     def __init__(self, device: 'SMOKDevice'):
-        super().__init__(device)
+        super().__init__(device, True)
         self.connection = NGTTConnection(device.temp_file_for_cert,
-                                         device.temp_file_for_key)
+                                         device.temp_file_for_key,
+                                         self.process_orders)
+
+    def process_orders(self, orders: Order):
+        sections = sections_from_list(orders.data)
+        sections[-1].future.add_done_callback(lambda fut: orders.acknowledge())
+        for sec in sections:
+            self.device.executor.queue.put(sec)
 
     def close(self):
         self.connection.close()
