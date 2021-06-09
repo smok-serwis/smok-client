@@ -247,16 +247,24 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self._statistics_updated = False
         self.pathpoints = DirtyDict()  # type: tp.Dict[str, Pathpoint]
         self.temp_file_for_cert = None
+        self.cert_file_name = None
         if not isinstance(cert, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as cert_file:
                 cert_file.write(cert.read())
             cert = self.temp_file_for_cert = cert_file.name
+        else:
+            self.cert_file_name = cert
+            self.temp_file_for_cert = cert
 
+        self.priv_key_file_name = None
         self.temp_file_for_key = None
         if not isinstance(priv_key, str):
             with tempfile.NamedTemporaryFile('w', delete=False) as key_file:
                 key_file.write(priv_key.read())
             priv_key = self.temp_file_for_key = key_file.name
+        else:
+            self.priv_key_file_name = priv_key
+            self.temp_file_for_key = priv_key
 
         self.cert = cert, priv_key
 
@@ -630,10 +638,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             Optional(self.getter).terminate()
             self.log_publisher.terminate()
             Optional(self.arch_and_macros).terminate()
-            if self.temp_file_for_cert:
-                os.unlink(self.temp_file_for_cert)
-            if self.temp_file_for_key:
+            if self.priv_key_file_name is not None:
                 os.unlink(self.temp_file_for_key)
+            if self.cert_file_name is not None:
+                os.unlink(self.temp_file_for_cert)
             Optional(self.executor).join()
             Optional(self.getter).join()
             self.log_publisher.join()

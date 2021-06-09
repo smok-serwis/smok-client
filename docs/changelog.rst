@@ -5,6 +5,7 @@ v0.14.8
 ~~~~~~~
 
 * added support for the NGTT protocol
+* fixed the bug with loading certificates
 
 v0.14.7
 ~~~~~~~
