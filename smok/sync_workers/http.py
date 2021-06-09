@@ -8,6 +8,12 @@ from ..exceptions import ResponseError
 
 class HTTPSyncWorker(BaseSyncWorker):
 
+    def sync_pathpoints(self, data: tp.List[dict]):
+        try:
+            self.api.post('/v1/device/pathpoints', json=data)
+        except ResponseError as e:
+            raise SyncError(e.is_no_link())
+
     @reraise_as(ResponseError, SyncError)
     def sync_logs(self, data: tp.List[dict]):
         try:
@@ -18,6 +24,8 @@ class HTTPSyncWorker(BaseSyncWorker):
     def __init__(self, device: 'SMOKDevice'):
         super().__init__(device, False)
         self.api = device.api
+
+
 
     def close(self):
         pass

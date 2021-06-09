@@ -26,9 +26,16 @@ class BaseSyncWorker(metaclass=ABCMeta):
 
     @abstractmethod
     def sync_logs(self, data: tp.List[dict]):
-        ...
+        """
+        :raises SyncError: on failure
+        """
 
     @abstractmethod
     def close(self):
         ...
 
+    @abstractmethod
+    def sync_pathpoints(self, data: tp.List[dict]):
+        """
+        :raises SyncError: on failure
+        """

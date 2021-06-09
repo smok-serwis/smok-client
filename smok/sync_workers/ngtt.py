@@ -1,8 +1,6 @@
 import typing as tp
 
-from satella.coding import reraise_as
-
-from ngtt.exceptions import ConnectionFailed
+from ngtt.exceptions import ConnectionFailed, DataStreamSyncFailed
 from ngtt.orders import Order
 from smok.pathpoint.orders import sections_from_list
 from smok.sync_workers.base import BaseSyncWorker, SyncError
@@ -28,6 +26,15 @@ class NGTTSyncWorker(BaseSyncWorker):
         sections[-1].future.add_done_callback(lambda fut: orders.acknowledge())
         for sec in sections:
             self.device.executor.queue.put(sec)
+
+    def sync_pathpoints(self, data: tp.List[dict]):
+        """
+        :raises SyncError: on failure
+        """
+        try:
+            self.connection.sync_pathpoints(data).result()
+        except DataStreamSyncFailed:
+            raise SyncError(False)
 
     def close(self):
         self.connection.close()
