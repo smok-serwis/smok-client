@@ -291,6 +291,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             from smok.sync_workers.http import HTTPSyncWorker
             self.sync_worker = HTTPSyncWorker(self)
 
+        self.log_publisher = LogPublisherThread(self).start()
+
         self._order_queue = PeekableQueue()
         if not (dont_do_archives and dont_do_macros):
             self.arch_and_macros = ArchivingAndMacroThread(self, self._order_queue,
@@ -316,7 +318,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             self.executor = None
             self.getter = None
-        self.log_publisher = LogPublisherThread(self).start()
 
     def continue_boot(self):
         """
