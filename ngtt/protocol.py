@@ -1,9 +1,5 @@
 import minijson
 
-try:
-    import ujson as json
-except ImportError:
-    import json
 import struct
 import typing as tp
 
