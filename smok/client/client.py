@@ -18,6 +18,8 @@ from satella.coding.optionals import Optional
 from satella.coding.structures import DirtyDict
 from satella.time import time_as_int
 
+from smok.sync_workers.ngtt import NGTTSyncWorker
+from smok.sync_workers.http import HTTPSyncWorker
 from .api import RequestsAPI
 from .certificate import get_device_info, get_root_cert, get_dev_ca_cert
 from .slave import SlaveDevice
@@ -48,14 +50,6 @@ from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacro
 from ..threads.communicator import PREDICATE_SYNC_INTERVAL
 
 logger = logging.getLogger(__name__)
-
-
-try:
-    import ngtt
-    NGTT_AVAILABLE = True
-except ImportError:
-    NGTT_AVAILABLE = False
-
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):
@@ -108,6 +102,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param delayed_boot: if set to True, you will need to call
         :meth:`~smok.client.SMOKDevice.continue_boot` in order to start fetching orders and the
         like. False by default.
+    :param use_ngtt: if set to True, logs, orders and pathpoint data will be transmitted over
+        a persistent TLS connection instead of HTTP API.
 
 
     About 10 seconds from creation if CommunicatorThread was created, sensors will be synced and
@@ -204,7 +200,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                  dont_do_archives: bool = False,
                  cache_metadata_for: float = 60,
                  startup_delay: tp.Optional[float] = None,
-                 delayed_boot: bool = False):
+                 delayed_boot: bool = False,
+                 use_ngtt: bool = False):
         if startup_delay is not None:
             warnings.warn('This is deprecated. Use delayed_boot', DeprecationWarning)
         else:
@@ -282,11 +279,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         self.api = RequestsAPI(self)
 
-        if NGTT_AVAILABLE:
-            from smok.sync_workers.ngtt import NGTTSyncWorker
+        if use_ngtt:
             self.sync_worker = NGTTSyncWorker(self)
         else:
-            from smok.sync_workers.http import HTTPSyncWorker
             self.sync_worker = HTTPSyncWorker(self)
 
         self.log_publisher = LogPublisherThread(self).start()

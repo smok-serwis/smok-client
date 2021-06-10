@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.14.8
-~~~~~~~
+v0.15
+~~~~~
 
-* added support for the NGTT protocol
+* added support for the NGTT protocol to this package
 * fixed the bug with loading certificates
 
 v0.14.7

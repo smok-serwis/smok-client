@@ -3,7 +3,8 @@ import typing as tp
 
 __all__ = ['SMOKClientError', 'InvalidCredentials', 'ResponseError',
            'OperationFailedReason', 'OperationFailedError',
-           'NotReadedError', 'InstanceNotReady']
+           'NotReadedError', 'InstanceNotReady',
+           'UnavailableError']
 
 from satella.coding.typing import Number
 from satella.time import time_ms

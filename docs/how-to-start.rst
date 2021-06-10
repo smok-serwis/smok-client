@@ -131,6 +131,19 @@ but also a new one:
 
     sd.close()      # this may block for like 10 seconds
 
+NGTT
+----
+
+:code:`smok-client` can use one of two ways to fetch orders:
+
+* polling via HTTPS API
+* persistent TLS connection to the server
+
+You can choose which one of these two you want to use. NGTT is recommended for applications
+that generate data or execute orders, whereas an application which only submits logs can safely
+use HTTPS. This is to reduce data footprint, as :code:`smok-client` devices frequently run over
+cellular links/
+
 Threads
 -------
 
