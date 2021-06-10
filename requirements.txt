@@ -5,3 +5,4 @@ cryptography
 pyopenssl
 pytz
 ujson
+minijson

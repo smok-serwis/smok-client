@@ -4,6 +4,8 @@ Changelog
 v0.15.1
 ~~~~~~~
 
+* **bugfix release** added minijson to requirements
+* v0.15 was pulled
 
 v0.15
 ~~~~~
