@@ -28,7 +28,7 @@ def get_root_cert() -> bytes:
     """
     :return: the bytes sequence for SMOK's master CA certificate
     """
-    ca_file = pkg_resources.resource_filename(__name__, '../certs/root.crt', )
+    ca_file = pkg_resources.resource_filename('smok', 'certs/root.crt', )
     return read_in_file(ca_file)
 
 
@@ -42,7 +42,7 @@ def get_dev_ca_cert() -> bytes:
     """
     :return: the bytes sequence for SMOK's device signing CA
     """
-    ca_file = pkg_resources.resource_filename(__name__, '../certs/dev.crt', )
+    ca_file = pkg_resources.resource_filename('smok', 'certs/dev.crt', )
     return read_in_file(ca_file)
 
 
@@ -51,7 +51,7 @@ class DevRootCertificateStore:
     __slots__ = ('store',)
 
     def add_certificate(self, name: str):
-        ca_file = pkg_resources.resource_filename(__name__, '../certs/%s' % (name,))
+        ca_file = pkg_resources.resource_filename('smok', 'certs/%s' % (name,))
         cert_pem_data = read_in_file(ca_file)
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_pem_data)
         self.store.add_cert(cert)
