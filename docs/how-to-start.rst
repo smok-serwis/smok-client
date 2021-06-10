@@ -134,15 +134,27 @@ but also a new one:
 NGTT
 ----
 
+Standing for **Next Generation TransporT protocol** it is basically frames of minijson_
+going over TLS. It it a better way to transmit data and orders if there's a limit on
+the amount of data that can be sent. This way orders arrive precisely when they arrive,
+and the device does not have to poll for them over HTTP.
+
+.. _minijson: https://github.com/Dronehub/minijson
+
 :code:`smok-client` can use one of two ways to fetch orders:
 
 * polling via HTTPS API
 * persistent TLS connection to the server
 
-You can choose which one of these two you want to use. NGTT is recommended for applications
-that generate data or execute orders, whereas an application which only submits logs can safely
-use HTTPS. This is to reduce data footprint, as :code:`smok-client` devices frequently run over
-cellular links/
+Note that choosing NGTT will not mean that HTTP API will be unused. It will be still used for all
+things, except for:
+
+* sending logs
+* sending pathpoint data
+* receiving orders
+
+These three positions are fully supported by NGTT, and if it's chosen then HTTP API will be still
+used for other things, such as obtaining device configuration.
 
 .. note:: :code:`smok-client` will create temporary files to host it's public certificate chain.
 
