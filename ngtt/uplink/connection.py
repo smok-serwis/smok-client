@@ -67,7 +67,7 @@ class NGTTSocket(Closeable):
         self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
-    @reraise_as(ssl.SSLError, ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
     @must_be_connected
     def send_frame(self, tid: int, header: NGTTHeaderType, data: bytes = b'') -> None:
@@ -115,7 +115,7 @@ class NGTTSocket(Closeable):
     def fileno(self) -> int:
         return self.socket.fileno()
 
-    @reraise_as(ssl.SSLError, ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     @must_be_connected
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
