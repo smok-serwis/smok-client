@@ -2,6 +2,7 @@ import logging
 import os
 import socket
 import ssl
+import sys
 import tempfile
 import threading
 import time
@@ -39,13 +40,13 @@ class NGTTSocket(Closeable):
         return bool(self.w_buffer)
 
     def __init__(self, cert_file: str, key_file: str):
-        logger.info('New connection %s %s', cert_file, key_file)
+        sys.stdout.write('New connection %s %s\n' % (cert_file, key_file))
         self.socket = None
         self.connected = False
         self.connection_lock = threading.Lock()
         environment = get_device_info(read_in_file(cert_file))[1]
         self.host = env_to_hostname(environment)
-        logger.info('Environment is %s', environment)
+        sys.stdout.write('Environment is %s\n' % (environment, ))
         self.cert_file = cert_file
         self.key_file = key_file
         self.buffer = bytearray()
@@ -79,7 +80,7 @@ class NGTTSocket(Closeable):
         """
         if self.closed:
             return
-        logger.debug('Sending %s', NGTTFrame(tid, header, data))
+        sys.stdout.write('Sending %s\n' % (NGTTFrame(tid, header, data), ))
         self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
         self.w_buffer.extend(data)
         data_sent = self.socket.send(self.w_buffer)
@@ -132,15 +133,17 @@ class NGTTSocket(Closeable):
         if len(self.buffer) > STRUCT_LHH.size:
             length, tid, h_type = STRUCT_LHH.unpack(self.buffer[:STRUCT_LHH.size])
             if len(self.buffer) < STRUCT_LHH.size + length:
-                return
+                return None
             data = self.buffer[STRUCT_LHH.size:STRUCT_LHH.size + length]
             del self.buffer[:STRUCT_LHH.size + length]
-            return NGTTFrame(tid, NGTTHeaderType(h_type), data)
+            frame = NGTTFrame(tid, NGTTHeaderType(h_type), data)
+            sys.stdout.write('Received %s\n' % (frame, ))
+            return frame
 
     def close(self, wait_for_me: bool = True):
-        logger.info('Closing %s %s %s', self.closed, self.connected, self.socket)
+        sys.stdout.write('Closing %s %s %s\n' % (self.closed, self.connected, self.socket))
         if super().close():
-            logger.info('Actually closing')
+            sys.stdout.write('Actually closing\n')
             self.disconnect()
             try:
                 os.unlink(self.chain_file_name)
