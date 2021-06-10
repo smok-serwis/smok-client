@@ -144,6 +144,8 @@ that generate data or execute orders, whereas an application which only submits 
 use HTTPS. This is to reduce data footprint, as :code:`smok-client` devices frequently run over
 cellular links/
 
+.. note:: :code:`smok-client` will create temporary files to host it's public certificate chain.
+
 Threads
 -------
 
