@@ -132,13 +132,14 @@ class NGTTSocket(Closeable):
         self.buffer.extend(data)
         if len(self.buffer) > STRUCT_LHH.size:
             length, tid, h_type = STRUCT_LHH.unpack(self.buffer[:STRUCT_LHH.size])
-            if len(self.buffer) < STRUCT_LHH.size + length:
-                return None
+
+        if len(self.buffer) >= STRUCT_LHH.size + length:
             data = self.buffer[STRUCT_LHH.size:STRUCT_LHH.size + length]
             del self.buffer[:STRUCT_LHH.size + length]
             frame = NGTTFrame(tid, NGTTHeaderType(h_type), data)
             sys.stdout.write('Received %s\n' % (frame, ))
             return frame
+        return None
 
     def close(self, wait_for_me: bool = True):
         sys.stdout.write('Closing %s %s %s\n' % (self.closed, self.connected, self.socket))
