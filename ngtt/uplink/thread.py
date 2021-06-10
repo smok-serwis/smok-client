@@ -32,9 +32,6 @@ def must_be_connected(fun):
     return outer
 
 
-def encode_data(y) -> bytes:
-    return minijson.dumps(y)
-
 
 class NGTTConnection(TerminableThread):
     """
@@ -108,7 +105,7 @@ class NGTTConnection(TerminableThread):
         logger.debug('Successfully connected')
 
     @must_be_connected
-    @for_argument(None, encode_data)
+    @for_argument(None, minijson.dumps)
     def sync_pathpoints(self, data) -> Future:
         """
         Try to synchronize pathpoints.
@@ -151,7 +148,7 @@ class NGTTConnection(TerminableThread):
             self.current_connection.got_ping()
         elif frame.packet_type == NGTTHeaderType.ORDER:
             try:
-                data = minijson.loads(frame.data)
+                data = minijson.loads(bytes(frame.data))
             except ValueError:
                 logger.error('Received invalid JSON over the wire')
                 raise ConnectionFailed('Got invalid JSON')
@@ -200,7 +197,7 @@ class NGTTConnection(TerminableThread):
         self.current_connection = None
 
     @must_be_connected
-    @for_argument(None, encode_data)
+    @for_argument(None, minijson.dumps)
     def sync_baobs(self, baobs) -> Future:
         """
         Request to synchronize BAOBs
@@ -225,7 +222,7 @@ class NGTTConnection(TerminableThread):
         return fut
 
     @must_be_connected
-    @for_argument(None, encode_data)
+    @for_argument(None, minijson.dumps)
     def stream_logs(self, data: tp.List) -> None:
         """
         Stream logs to the server
