@@ -4,6 +4,8 @@ Changelog
 v0.15.2
 ~~~~~~~
 
+* **bugfix release** forgot to import a thing
+* v0.15.1 was pulled
 
 v0.15.1
 ~~~~~~~

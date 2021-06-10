@@ -56,7 +56,7 @@ class NGTTSocket(Closeable):
             with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
                 chain_file.write(get_dev_ca_cert())
                 chain_file.write(b'\n')
-                chain_file.write(get_root_ca_cert())
+                chain_file.write(get_root_cert())
                 chain_file.close()
                 self.chain_file_name = chain_file.name
         except Exception as e:
