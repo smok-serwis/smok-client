@@ -6,6 +6,7 @@ from satella.coding import wraps, for_argument, silence_excs
 from satella.coding.optionals import Optional
 from satella.coding.predicates import x
 from satella.coding.sequences import index_of
+from satella.exceptions import Empty
 from satella.time import ExponentialBackoff
 
 from ..orders import Order
@@ -99,7 +100,12 @@ class NGTTConnection(TerminableThread):
 
         self.op_id_to_op = {}
         for h_type, data, fut in self.currently_running_ops:
-            id_ = self.current_connection.id_assigner.allocate_int()
+            try:
+                id_ = self.current_connection.id_assigner.allocate_int()
+            except Empty as e:
+                logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
+                raise ConnectionFailed('Ran out of IDs to assign')
+
             self.current_connection.send_frame(id_, h_type, data)
             self.op_id_to_op[id_] = fut
         logger.debug('Successfully connected')
@@ -118,7 +124,12 @@ class NGTTConnection(TerminableThread):
         """
         fut = Future()
         fut.set_running_or_notify_cancel()
-        tid = self.current_connection.id_assigner.allocate_int()
+        try:
+            tid = self.current_connection.id_assigner.allocate_int()
+        except Empty as e:
+            logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
+            raise ConnectionFailed('Ran out of IDs to assign')
+
         self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
         try:
             self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
@@ -210,7 +221,12 @@ class NGTTConnection(TerminableThread):
         """
         fut = Future()
         fut.set_running_or_notify_cancel()
-        tid = self.current_connection.id_assigner.allocate_int()
+        try:
+            tid = self.current_connection.id_assigner.allocate_int()
+        except Empty as e:
+            logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
+            raise ConnectionFailed('Ran out of IDs to assign')
+
         self.currently_running_ops.append((NGTTHeaderType.SYNC_BAOB_REQUEST, baobs, fut))
         try:
             self.current_connection.send_frame(tid, NGTTHeaderType.SYNC_BAOB_REQUEST, baobs)

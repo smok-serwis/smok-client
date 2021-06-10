@@ -64,7 +64,7 @@ class NGTTSocket(Closeable):
             logger.error('Found exception %s', e, exc_info=e)
             raise
 
-        self.id_assigner = IDAllocator(start_at=1)
+        self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
     @reraise_as(ssl.SSLError, ConnectionFailed)
