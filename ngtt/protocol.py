@@ -1,3 +1,5 @@
+import minijson
+
 try:
     import ujson as json
 except ImportError:
@@ -29,7 +31,7 @@ class NGTTFrame:
     def __init__(self, tid: int, packet_type: NGTTHeaderType, data: bytes):
         self.tid = tid
         self.packet_type = packet_type
-        self.data = data
+        self.data = bytes(data)
 
     def __repr__(self) -> str:
         return f'NGTTFrame({self.tid}, {self.packet_type}, {self.data})'
@@ -42,13 +44,13 @@ class NGTTFrame:
         """
         :return: JSON unserialized data
         """
-        return json.loads(self.data.decode('utf-8'))
+        return minijson.loads(self.data)
 
     def __len__(self):
         return STRUCT_LHH.size + len(self.data)
 
     def __bytes__(self):
-        return STRUCT_LHH.pack(len(self.data), self.tid, self.packet_type.value)
+        return STRUCT_LHH.pack(len(self.data), self.tid, self.packet_type.value) + self.data
 
     @classmethod
     def from_bytes(cls, b: tp.Union[bytes, bytearray]) -> 'NGTTFrame':
