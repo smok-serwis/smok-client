@@ -24,7 +24,7 @@ jobs:
           name: Before the build
       - run:
           command: |
-            pytest --cov=smok
+            pytest --cov=smok --cov=ngtt
           name: Test
       - run:
           command: |
