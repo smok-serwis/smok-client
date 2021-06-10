@@ -2,6 +2,7 @@
 branch=1
 source=
   smok
+  ngtt
 concurrency=thread
 omit=
   tests/*
@@ -12,4 +13,4 @@ omit=
 [report]
 include=
     smok/*
-
+    ngtt/*
