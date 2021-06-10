@@ -187,20 +187,25 @@ class NGTTConnection(TerminableThread):
                 fut.set_result(frame.real_data)
 
     def loop(self) -> None:
-        try:
-            while not self.connected and not self.terminating:
-                self.connect()
-                logger.debug('Reconnecting')
-            if self.terminating:
-                return
-            self.inner_loop()
-        except ConnectionFailed as e:
-            logger.debug('Connection failed, retrying', exc_info=e)
-            self.cleanup()
+        eb = ExponentialBackoff(limit=60)
+        while not self.connected and not self.terminating:
             try:
                 self.connect()
+                eb.success()
+                logger.debug('Reconnected successfully')
+                break
             except ConnectionFailed:
-                pass
+                logger.debug('Failed to connect')
+                eb.sleep()
+                eb.failed()
+        if self.terminating:
+            return
+
+        try:
+            self.inner_loop()
+        except ConnectionFailed as e:
+            logger.debug('Connection failed, retrying')
+            self.cleanup()
 
     def cleanup(self):
         Optional(self.current_connection).close()

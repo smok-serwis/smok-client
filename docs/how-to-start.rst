@@ -158,6 +158,9 @@ used for other things, such as obtaining device configuration.
 
 .. note:: :code:`smok-client` will create temporary files to host it's public certificate chain.
 
+If a connection is broken, smok-client will try to reestablish it using an exponential backoff algorithm
+with starting size of 1 second and maximum time of 60 seconds.
+
 Threads
 -------
 
