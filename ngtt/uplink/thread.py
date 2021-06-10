@@ -129,7 +129,6 @@ class NGTTConnection(TerminableThread):
         return fut
 
     def inner_loop(self):
-        logger.debug('Inner loop')
         self.current_connection.try_ping()
         ccon = [self.current_connection]
         rx, wx, ex = select.select(ccon,
