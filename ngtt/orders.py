@@ -25,3 +25,11 @@ class Order:
         if not self.confirmed:
             self.sock.send_frame(self.tid, NGTTHeaderType.ORDER_CONFIRM, b'')
             self.confirmed = True
+
+    def nack(self):
+        """
+        Signal the server that the order has been rejected
+        """
+        if not self.confirmed:
+            self.sock.send_frame(self.tid, NGTTHeaderType.ORDER_REJECT, b'')
+            self.confirmed = True
