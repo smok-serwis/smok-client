@@ -35,10 +35,18 @@ def must_be_connected(fun):
 
 class NGTTConnection(TerminableThread):
     """
-    A thread maintaining connection in the background.
+    An interface to NGTT, also a thread maintaining connection in the background.
 
     Note that instantiating this object is the same as calling start. You do not need to call
     start on this object after you initialize it.
+
+    :param cert_file: path to file with certificate. This file should contain only the device
+        certificate, attaching entire certificate chain is not required.
+    :param key_file: path to private key
+    :param on_new_order: a callable taking only a single argument and returning nothing, the
+        callable to call when a new order appears. Note that you have to call
+        either :meth:`~ngtt.orders.Order.acknowledge` or :meth:`~ngtt.orders.Order.nack` for each
+        received order.
 
     :ivar connected (bool) is connection opened
     """
@@ -70,6 +78,9 @@ class NGTTConnection(TerminableThread):
         self.stopped = True
 
     def close(self):
+        """
+        Alias for :meth:`~ngtt.uplink.NGTTConnection.stop`.
+        """
         self.stop()
         if self.current_connection is not None:
             self.current_connection.close()
@@ -79,6 +90,7 @@ class NGTTConnection(TerminableThread):
     @property
     @silence_excs(AttributeError, returns=False)
     def connected(self) -> bool:
+        """Are we connected to target server?"""
         return self.current_connection.connected
 
     def connect(self):
@@ -175,8 +187,10 @@ class NGTTConnection(TerminableThread):
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
+                    logger.debug('Successfully confirmed data frame %s', frame.tid)
                 elif frame.packet_type == NGTTHeaderType.DATA_STREAM_REJECT:
                     fut.set_exception(DataStreamSyncFailed())
+                    logger.debug('Received error for data frame %s', frame.tid)
         elif frame.packet_type == NGTTHeaderType.SYNC_BAOB_RESPONSE:
             if frame.tid in self.op_id_to_op:
                 fut = self.op_id_to_op.pop(frame.tid)
@@ -210,36 +224,6 @@ class NGTTConnection(TerminableThread):
     def cleanup(self):
         Optional(self.current_connection).close()
         self.current_connection = None
-
-    @must_be_connected
-    @for_argument(None, minijson.dumps)
-    def sync_baobs(self, baobs) -> Future:
-        """
-        Request to synchronize BAOBs
-
-        :param baobs: a dictionary of locally kept BAOB name => local version (tp.Dict[str, int])
-        :return: a Future that will receive a result of dict
-        {"download": [.. list of BAOBs to download from the server ..],
-         "upload": [.. list of BAOBs to upload to the server ..]}
-
-        :raises ConnectionFailed: connection failed
-        """
-        fut = Future()
-        fut.set_running_or_notify_cancel()
-        try:
-            tid = self.current_connection.id_assigner.allocate_int()
-        except Empty as e:
-            logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
-            raise ConnectionFailed('Ran out of IDs to assign')
-
-        self.currently_running_ops.append((NGTTHeaderType.SYNC_BAOB_REQUEST, baobs, fut))
-        try:
-            self.current_connection.send_frame(tid, NGTTHeaderType.SYNC_BAOB_REQUEST, baobs)
-        except ConnectionFailed:
-            self.cleanup()
-            raise
-        self.op_id_to_op[tid] = fut
-        return fut
 
     @must_be_connected
     @for_argument(None, minijson.dumps)

@@ -46,4 +46,9 @@ Since authentication is done via certificates, only frames fly.
     :members:
 
 NGTT is disabled by default. If you want to enable it, use a flag in the constructor
-of :class:`~smok.client.SMOKDevice`.
+of :class:`~smok.client.SMOKDevice`. :class:`~smok.client.SMOKDevice` will take care of managing
+the NGTT object, but it you wish to use it as a standalone package, here's the spec:
+
+.. autoclass:: ngtt.uplink.NGTTConnection
+    :members:
+
