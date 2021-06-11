@@ -27,6 +27,7 @@ def must_be_connected(fun):
     def outer(self, *args, **kwargs):
         if self.current_connection is None:
             self.connect()
+        if not self.connected:
             raise ConnectionFailed(True)
         return fun(self, *args, **kwargs)
 
@@ -146,7 +147,8 @@ class NGTTConnection(TerminableThread):
         self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
         try:
             self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
-        except ConnectionFailed:
+        except ConnectionFailed as e:
+            logger.debug('Connection gone due to cannot send frame', exc_info=e)
             self.cleanup()
             raise
         self.op_id_to_op[tid] = fut
@@ -218,8 +220,8 @@ class NGTTConnection(TerminableThread):
 
         try:
             self.inner_loop()
-        except ConnectionFailed:
-            logger.debug('Connection failed, retrying')
+        except ConnectionFailed as e:
+            logger.debug('Connection failed, retrying', exc_info=e)
             self.cleanup()
 
     def cleanup(self):
@@ -238,6 +240,7 @@ class NGTTConnection(TerminableThread):
         """
         try:
             self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)
-        except ConnectionFailed:
+        except ConnectionFailed as e:
             self.cleanup()
+            logger.debug('Failed to stream logs', exc_info=e)
             raise

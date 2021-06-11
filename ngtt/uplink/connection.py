@@ -109,6 +109,9 @@ class NGTTSocket(Closeable):
 
     @user_method
     def try_ping(self):
+        if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL:
+            raise ConnectionFailed('timed out')
+
         if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
             self.ping_id = self.id_assigner.allocate_int()
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
@@ -134,7 +137,7 @@ class NGTTSocket(Closeable):
         """
         data = self.socket.recv(512)
         if not data:
-            raise ConnectionFailed()
+            raise ConnectionFailed('gracefully closed')
         self.last_read = time.monotonic()
         self.buffer.extend(data)
 
@@ -204,3 +207,4 @@ class NGTTSocket(Closeable):
             self.buffer = bytearray()
             self.w_buffer = bytearray()
             self.connected = True
+            logger.debug('Successfully connected')
