@@ -146,7 +146,7 @@ class NGTTConnection(TerminableThread):
         ccon = [self.current_connection]
         rx, wx, ex = select.select(ccon,
                                    ccon if self.current_connection.wants_write else [], [],
-                                   timeout=5)
+                                   5)
         if not rx:
             return
         if wx:

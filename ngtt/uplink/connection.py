@@ -32,6 +32,17 @@ def must_be_connected(fun):
     return outer
 
 
+def close_on_exception(fun):
+    @wraps(fun)
+    def outer(self, *args, **kwargs):
+        try:
+            return fun(self, *args, **kwargs)
+        except ConnectionFailed:
+            self.close()
+            raise
+    return outer
+
+
 class NGTTSocket(Closeable):
     @property
     def wants_write(self) -> bool:
@@ -63,6 +74,7 @@ class NGTTSocket(Closeable):
         self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
+    @close_on_exception
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
     @must_be_connected
@@ -81,6 +93,7 @@ class NGTTSocket(Closeable):
         data_sent = self.socket.send(self.w_buffer)
         del self.w_buffer[:data_sent]
 
+    @close_on_exception
     @reraise_as(ssl.SSLError, ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
     @must_be_connected
@@ -110,7 +123,7 @@ class NGTTSocket(Closeable):
     def fileno(self) -> int:
         return self.socket.fileno()
 
-    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError, TimeoutError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     @must_be_connected
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
@@ -135,7 +148,7 @@ class NGTTSocket(Closeable):
             return frame
         return None
 
-    def close(self, wait_for_me: bool = True):
+    def close(self):
         if super().close():
             self.disconnect()
             try:
@@ -152,7 +165,8 @@ class NGTTSocket(Closeable):
         Disconnect from the remote host
         """
         if self.socket is not None:
-            self.socket.close()
+            with silence_excs(OSError):
+                self.socket.close()
             self.socket = None
             self.connected = False
 

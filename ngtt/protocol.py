@@ -25,7 +25,21 @@ STRUCT_LHH = struct.Struct('>LHH')
 
 
 class NGTTFrame:
-    def __init__(self, tid: int, packet_type: NGTTHeaderType, data: bytes):
+    """
+    A basic NGTT protocol frame. It's big endian. It starts with a header of:
+
+    uint32 data_size
+    uint16 order_id
+    uint16 packet_type
+    bytes[data_size] data
+
+    Data is represented using minijson.
+
+    :param tid: order ID
+    :param packet_type: type of the packet
+    :param data: data. Any class that has a __bytes__ property will do.
+    """
+    def __init__(self, tid: int, packet_type: NGTTHeaderType, data):
         self.tid = tid
         self.packet_type = packet_type
         self.data = bytes(data)
@@ -39,6 +53,8 @@ class NGTTFrame:
     @property
     def real_data(self) -> tp.Union[dict, list]:
         """
+        Unserialize the data
+
         :return: JSON unserialized data
         """
         return minijson.loads(self.data)

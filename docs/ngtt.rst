@@ -33,6 +33,13 @@ used for other things, such as obtaining device configuration.
 If a connection is broken, smok-client will try to reestablish it using an exponential backoff algorithm
 with starting size of 1 second and maximum time of 60 seconds.
 
+NGTT has also an other important advantage. When querying via HTTP, all orders are acknowledged
+as soon as they are presented to the client, which leaves open the possibility of order loss.
+The connection may fail and the orders may be lost in transit. In NGTT the client has to manually
+acknowledge the execution of every order, and will not load more than
+the amount which server will send it. So it will process orders more safely. So orders will be
+buffered on the server, which is nice.
+
 Since authentication is done via certificates, only frames fly.
 
 .. autoclass:: ngtt.protocol.NGTTFrame
