@@ -152,7 +152,6 @@ class NGTTConnection(TerminableThread):
             self.current_connection.try_send()
         frame = self.current_connection.recv_frame()
         if frame is None:
-            logger.debug('Received nothing')
             return
         logger.debug('Received %s', frame)
         if frame.packet_type == NGTTHeaderType.PING:
@@ -252,6 +251,7 @@ class NGTTConnection(TerminableThread):
 
         :param data: the same thing that you would PUT /v1/device/device_logs
         """
+        logger.debug('Streaming %s log entries', len(data))
         try:
             self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)
         except ConnectionFailed:
