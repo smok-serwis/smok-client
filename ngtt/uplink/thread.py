@@ -171,6 +171,7 @@ class NGTTConnection(TerminableThread):
         elif frame.packet_type == NGTTHeaderType.ORDER:
             try:
                 data = minijson.loads(bytes(frame.data))
+                logger.debug('Received orders %s', data)
             except ValueError:
                 logger.error('Received invalid JSON over the wire')
                 raise ConnectionFailed('Got invalid JSON')
