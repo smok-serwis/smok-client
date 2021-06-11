@@ -6,6 +6,7 @@ v0.15.2
 
 * **bugfix release** forgot to import a thing
 * v0.15.1 was pulled
+* made use of a new feature to upload data in smaller representation
 
 v0.15.1
 ~~~~~~~

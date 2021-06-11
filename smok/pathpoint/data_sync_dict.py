@@ -51,8 +51,7 @@ class DataSyncDict(DirtyDict, Monitor):
                     values.append({'timestamp': int(timestamp),
                                    'error_code': value.reason.value})
                 else:
-                    values.append({'timestamp': int(timestamp),
-                                   'value': value})
+                    values.append([int(timestamp), value])
             output.append({'path': pathpoint,
                            'values': values})
         self.clear()
