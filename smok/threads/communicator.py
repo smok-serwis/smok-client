@@ -49,10 +49,13 @@ def redo_data(data):
     for pp in data:
         values = []
         for ts in pp['values']:
-            if 'error_code' in ts:
-                values.append([False, ts['timestamp'], ts['value']])
+            if isinstance(ts, dict):
+                if 'error_code' in ts:
+                    values.append([False, ts['timestamp'], ts['value']])
+                else:
+                    values.append([ts['timestamp'], ts['value']])
             else:
-                values.append([ts['timestamp'], ts['value']])
+                values.append(ts)
         output.append({'path': pp['path'],
                        'values': values})
     return output
@@ -229,7 +232,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def sync_data(self) -> None:
-        sync = redo_data(self.data_to_sync.get_data_to_sync())
+        sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
             return
         try:
@@ -237,7 +240,7 @@ class CommunicatorThread(TerminableThread):
             if not data:
                 sync.acknowledge()
                 return
-            self.device.sync_worker.sync_pathpoints(data)
+            self.device.sync_worker.sync_pathpoints(redo_data(data))
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:
