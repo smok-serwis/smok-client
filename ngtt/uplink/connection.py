@@ -19,6 +19,7 @@ from ..exceptions import ConnectionFailed
 from ..protocol import NGTTHeaderType, STRUCT_LHH, env_to_hostname, NGTTFrame
 
 PING_INTERVAL_TIME = 30
+INTERVAL_TIME_NO_RESPONSE_KILL = 70
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +33,9 @@ def user_method(fun):
         try:
             if not self.connected:
                 self.connect()
+            if self.last_read is not None:
+                if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL:
+                    raise ConnectionFailed('timed out')
             return fun(self, *args, **kwargs)
         except ConnectionFailed:
             self.close()
@@ -85,7 +89,8 @@ class NGTTSocket(Closeable):
             return
         self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
         self.w_buffer.extend(data)
-        data_sent = self.socket.send(self.w_buffer)
+        with silence_excs(TimeoutError):
+            data_sent = self.socket.send(self.w_buffer)
         del self.w_buffer[:data_sent]
 
     @user_method
@@ -118,7 +123,7 @@ class NGTTSocket(Closeable):
         return self.socket.fileno()
 
     @user_method
-    @reraise_as((BrokenPipeError, ssl.SSLError, TimeoutError), ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
         """
