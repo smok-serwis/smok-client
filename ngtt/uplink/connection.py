@@ -98,14 +98,11 @@ class NGTTSocket(Closeable):
     @silence_excs(ssl.SSLWantWriteError)
     def try_send(self):
         """
-        Try to send some data
+        Try to send some data. This is called only when the socket is writeable.
         """
         if self.w_buffer:
-            try:
-                data_sent = self.socket.send(self.w_buffer)
-                del self.w_buffer[:data_sent]
-            except socket.timeout:
-                return
+            data_sent = self.socket.send(self.w_buffer)
+            del self.w_buffer[:data_sent]
 
     @user_method
     def try_ping(self):
