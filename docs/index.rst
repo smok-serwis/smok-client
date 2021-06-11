@@ -16,6 +16,7 @@ Welcome to SMOK Client's documentation!
    logging
    exceptions
    baob
+   ngtt
    glossary
 
 SMOK devices are devices that consist of a bunch of pathpoints (ie. named variables, eg. a

@@ -55,6 +55,23 @@ class NGTTFrame:
             raise InvalidFrame('Unrecognized packet type %s' % (h_type,))
         return NGTTFrame(tid, NGTTHeaderType(h_type), b[STRUCT_LHH.size:STRUCT_LHH.size + length])
 
+    @classmethod
+    def from_buffer(cls, buffer: bytearray) -> tp.Optional[tp.Tuple[int, 'NGTTFrame']]:
+        """
+        Try to construct a frame from a buffer.
+
+        If successful, a tuple will be output of amount of bytes consumed and an instance of
+        :class:`~ngtt.protocol.NGTTFrame`.
+        If failure, None will be returned
+        """
+        if len(buffer) < STRUCT_LHH.size:
+            return None
+        length, tid, h_type = STRUCT_LHH.unpack(buffer[:STRUCT_LHH.size])
+        if len(buffer) < length+STRUCT_LHH.size:
+            return None
+        return length+STRUCT_LHH.size, NGTTFrame(tid, NGTTHeaderType(h_type),
+                                                 buffer[STRUCT_LHH.size:STRUCT_LHH.size + length])
+
 
 def env_to_hostname(env: int) -> str:
     return {0: 'api.smok.co',

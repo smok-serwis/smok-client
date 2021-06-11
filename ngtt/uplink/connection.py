@@ -130,13 +130,13 @@ class NGTTSocket(Closeable):
             raise ConnectionFailed()
         self.last_read = time.monotonic()
         self.buffer.extend(data)
-        if len(self.buffer) > STRUCT_LHH.size:
-            length, tid, h_type = STRUCT_LHH.unpack(self.buffer[:STRUCT_LHH.size])
 
-        if len(self.buffer) >= STRUCT_LHH.size + length:
-            data = self.buffer[STRUCT_LHH.size:STRUCT_LHH.size + length]
-            del self.buffer[:STRUCT_LHH.size + length]
-            frame = NGTTFrame(tid, NGTTHeaderType(h_type), data)
+        result = NGTTFrame.from_buffer(self.buffer)
+        if result is None:
+            return
+        else:
+            length, frame = result
+            del self.buffer[length]
             sys.stdout.write('Received %s\n' % (frame, ))
             return frame
         return None
