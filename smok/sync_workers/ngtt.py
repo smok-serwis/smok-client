@@ -1,3 +1,4 @@
+import logging
 import typing as tp
 
 from ngtt.exceptions import ConnectionFailed, DataStreamSyncFailed
@@ -5,6 +6,9 @@ from ngtt.orders import Order
 from smok.pathpoint.orders import sections_from_list
 from smok.sync_workers.base import BaseSyncWorker, SyncError
 from ngtt.uplink import NGTTConnection
+
+
+logger = logging.getLogger(__name__)
 
 
 class NGTTSyncWorker(BaseSyncWorker):
@@ -22,8 +26,14 @@ class NGTTSyncWorker(BaseSyncWorker):
                                          self.process_orders)
 
     def process_orders(self, orders: Order):
+        logger.info('Received orders %s', orders)
         sections = sections_from_list(orders.data)
-        sections[-1].future.add_done_callback(lambda fut: orders.acknowledge())
+
+        def confirm(fut):
+            orders.acknowledge()
+            logger.info('Acknowledged orders')
+
+        sections[-1].future.add_done_callback(confirm)
         for sec in sections:
             self.device.executor.queue.put(sec)
 
