@@ -51,7 +51,7 @@ def redo_data(data):
         for ts in pp['values']:
             if isinstance(ts, dict):
                 if 'error_code' in ts:
-                    values.append([False, ts['timestamp'], ts['value']])
+                    values.append([False, ts['timestamp'], ts['error_code']])
                 else:
                     values.append([ts['timestamp'], ts['value']])
             else:

@@ -1,13 +1,12 @@
 Changelog
 =========
 
-v0.15.2
-~~~~~~~
+v0.16
+~~~~~
 
-* **bugfix release** forgot to import a thing
-* v0.15.1 was pulled
 * new feature: improved compression of data being sent
-* new feature: pathpoint and log upload via minijson
+* new feature: pathpoint and log upload via NGTT
+* added NGTT module
 
 v0.15.1
 ~~~~~~~
