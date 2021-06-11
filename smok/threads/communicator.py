@@ -13,7 +13,8 @@ from satella.time import measure
 
 from smok.basics import StorageLevel
 from smok.exceptions import ResponseError
-from smok.pathpoint.data_sync_dict import DataSyncDict
+
+from smok.extras import BasePathpointDatabase
 from smok.pathpoint.orders import sections_from_list
 from smok.pathpoint.pathpoint import Pathpoint
 from smok.predicate import DisabledTime
@@ -40,9 +41,26 @@ PREDICATE_SYNC_INTERVAL = 300
 BAOB_SYNC_INTERVAL = 60 * 60  # an hour
 
 
+def redo_data(data):
+    """
+    Alter the data received from the backend to our way
+    """
+    output = []
+    for pp in data:
+        values = []
+        for ts in pp['values']:
+            if 'error_code' in ts:
+                values.append([False, ts['timestamp'], ts['value']])
+            else:
+                values.append([ts['timestamp'], ts['value']])
+        output.append({'path': pp['path'],
+                       'values': values})
+    return output
+
+
 class CommunicatorThread(TerminableThread):
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
-                 data_to_sync: DataSyncDict, dont_obtain_orders: bool,
+                 data_to_sync: BasePathpointDatabase, dont_obtain_orders: bool,
                  dont_do_baobs: bool, dont_do_pathpoints: bool,
                  dont_do_predicates: bool,
                  dont_sync_sensor_writes: bool,
@@ -211,7 +229,7 @@ class CommunicatorThread(TerminableThread):
     @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
     @retry(3, ResponseError, swallow_exception=False)
     def sync_data(self) -> None:
-        sync = self.data_to_sync.get_data_to_sync()
+        sync = redo_data(self.data_to_sync.get_data_to_sync())
         if sync is None:
             return
         try:
