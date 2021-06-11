@@ -138,7 +138,7 @@ class NGTTConnection(TerminableThread):
         """
         fut = Future()
         fut.set_running_or_notify_cancel()
-        logger.info('Syncing %s', data[0]['path'])
+        logger.info('Syncing %s', data[:40])
         try:
             tid = self.current_connection.id_assigner.allocate_int()
         except Empty as e:
