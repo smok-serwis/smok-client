@@ -120,7 +120,9 @@ class NGTTConnection(TerminableThread):
 
         :param data: exactly the same thing that you would submit to POST
         at POST https://api.smok.co/v1/device/
-        :return: a Future telling you whether this succeeds or fails
+        :return: a Future telling you whether this succeeds or fails. If succeeds, it will
+            end with a result of None, if fails, it will end with a
+            :class:`~ngtt.exceptions.DataStreamSyncFailed`
         """
         fut = Future()
         fut.set_running_or_notify_cancel()
