@@ -162,7 +162,7 @@ class OrderExecutorThread(TerminableThread):
                 if measurement() < time_to_wait:
                     self.safe_sleep(time_to_wait - measurement())
 
-            section.future.set_result(None)
+            section.mark_as_done()
         else:
             self.device.execute_section(section)
 

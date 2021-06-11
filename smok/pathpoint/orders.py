@@ -211,6 +211,12 @@ class Section(ReprableMixin):
         self.orders = orders or []
         self.disposition = disposition
 
+    def mark_as_done(self) -> None:
+        """
+        Should be invoked by your custom executor when executing this section completes.
+        """
+        self.future.set_result(None)
+
     def cancel(self) -> bool:
         return self.future.cancel()
 
