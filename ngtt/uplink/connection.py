@@ -2,7 +2,6 @@ import logging
 import os
 import socket
 import ssl
-import sys
 import tempfile
 import threading
 import time
@@ -11,7 +10,6 @@ from ssl import SSLContext, PROTOCOL_TLS_CLIENT, SSLError, CERT_REQUIRED
 
 from satella.coding import silence_excs, reraise_as, Closeable, wraps
 from satella.coding.concurrent import IDAllocator
-from satella.coding.optionals import Optional
 from satella.files import read_in_file
 from satella.instrumentation import Traceback
 
@@ -40,13 +38,11 @@ class NGTTSocket(Closeable):
         return bool(self.w_buffer)
 
     def __init__(self, cert_file: str, key_file: str):
-        sys.stdout.write('New connection %s %s\n' % (cert_file, key_file))
         self.socket = None
         self.connected = False
         self.connection_lock = threading.Lock()
         environment = get_device_info(read_in_file(cert_file))[1]
         self.host = env_to_hostname(environment)
-        sys.stdout.write('Environment is %s\n' % (environment, ))
         self.cert_file = cert_file
         self.key_file = key_file
         self.buffer = bytearray()
@@ -80,7 +76,6 @@ class NGTTSocket(Closeable):
         """
         if self.closed:
             return
-        sys.stdout.write('Sending %s\n' % (NGTTFrame(tid, header, data), ))
         self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
         self.w_buffer.extend(data)
         data_sent = self.socket.send(self.w_buffer)
@@ -137,14 +132,11 @@ class NGTTSocket(Closeable):
         else:
             length, frame = result
             del self.buffer[length]
-            sys.stdout.write('Received %s\n' % (frame, ))
             return frame
         return None
 
     def close(self, wait_for_me: bool = True):
-        sys.stdout.write('Closing %s %s %s\n' % (self.closed, self.connected, self.socket))
         if super().close():
-            sys.stdout.write('Actually closing\n')
             self.disconnect()
             try:
                 os.unlink(self.chain_file_name)
