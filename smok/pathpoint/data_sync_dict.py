@@ -48,10 +48,10 @@ class DataSyncDict(DirtyDict, Monitor):
             values = []
             for timestamp, value in pathpoint_values:
                 if isinstance(value, OperationFailedError):
-                    values.append({'timestamp': int(timestamp),
-                                   'error_code': value.reason.value})
+                    v = [False, int(timestamp), value.reason.value]
                 else:
-                    values.append([int(timestamp), value])
+                    v = [int(timestamp), value]
+                values.append(v)
             output.append({'path': pathpoint,
                            'values': values})
         self.clear()
