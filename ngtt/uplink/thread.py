@@ -251,7 +251,6 @@ class NGTTConnection(TerminableThread):
 
         :param data: the same thing that you would PUT /v1/device/device_logs
         """
-        logger.debug('Streaming %s log entries', len(data))
         try:
             self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)
         except ConnectionFailed:
