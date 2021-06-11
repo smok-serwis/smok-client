@@ -33,7 +33,6 @@ def must_be_connected(fun):
     return outer
 
 
-
 class NGTTConnection(TerminableThread):
     """
     A thread maintaining connection in the background.
@@ -205,7 +204,7 @@ class NGTTConnection(TerminableThread):
 
         try:
             self.inner_loop()
-        except ConnectionFailed as e:
+        except ConnectionFailed:
             logger.debug('Connection failed, retrying')
             self.cleanup()
 

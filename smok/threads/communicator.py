@@ -11,7 +11,6 @@ from satella.coding.transforms import jsonify
 from satella.exceptions import WouldWaitMore
 from satella.time import measure
 
-import rapid_rs.client.operations.sync_pathpoints
 from smok.basics import StorageLevel
 from smok.exceptions import ResponseError
 from smok.pathpoint.data_sync_dict import DataSyncDict
@@ -220,7 +219,7 @@ class CommunicatorThread(TerminableThread):
             if not data:
                 sync.acknowledge()
                 return
-            rapid_rs.client.operations.sync_pathpoints.sync_pathpoints(data)
+            self.device.sync_worker.sync_pathpoints(data)
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:

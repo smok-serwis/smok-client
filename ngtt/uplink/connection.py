@@ -22,20 +22,16 @@ PING_INTERVAL_TIME = 30
 logger = logging.getLogger(__name__)
 
 
-def must_be_connected(fun):
-    @wraps(fun)
-    def outer(self, *args, **kwargs):
-        if not self.connected:
-            self.connect()
-        return fun(self, *args, **kwargs)
-
-    return outer
-
-
-def close_on_exception(fun):
+def user_method(fun):
+    """
+    1. Socket must be connected before the call
+    2. If the call fails, call close()
+    """
     @wraps(fun)
     def outer(self, *args, **kwargs):
         try:
+            if not self.connected:
+                self.connect()
             return fun(self, *args, **kwargs)
         except ConnectionFailed:
             self.close()
@@ -74,10 +70,9 @@ class NGTTSocket(Closeable):
         self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
-    @close_on_exception
+    @user_method
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
-    @must_be_connected
     def send_frame(self, tid: int, header: NGTTHeaderType, data: bytes = b'') -> None:
         """
         Schedule a frame to be sent
@@ -93,10 +88,9 @@ class NGTTSocket(Closeable):
         data_sent = self.socket.send(self.w_buffer)
         del self.w_buffer[:data_sent]
 
-    @close_on_exception
+    @user_method
     @reraise_as(ssl.SSLError, ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
-    @must_be_connected
     def try_send(self):
         """
         Try to send some data
@@ -108,13 +102,13 @@ class NGTTSocket(Closeable):
             except socket.timeout:
                 return
 
-    @must_be_connected
+    @user_method
     def try_ping(self):
         if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
             self.ping_id = self.id_assigner.allocate_int()
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
 
-    @must_be_connected
+    @user_method
     def got_ping(self):
         if self.ping_id is not None:
             self.id_assigner.mark_as_free(self.ping_id)
@@ -123,9 +117,9 @@ class NGTTSocket(Closeable):
     def fileno(self) -> int:
         return self.socket.fileno()
 
+    @user_method
     @reraise_as((BrokenPipeError, ssl.SSLError, TimeoutError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
-    @must_be_connected
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
         """
         Receive a frame from remote socket, or None if nothing could be assembled as of now.
