@@ -191,6 +191,9 @@ class NGTTSocket(Closeable):
             try:
                 ssl_sock.connect((self.host, 2408))
                 ssl_sock.do_handshake()
+            except ConnectionRefusedError as e:
+                ssl_sock.close()
+                raise ConnectionFailed(True) from e
             except (socket.error, SSLError) as e:
                 logger.error(Traceback().pretty_print())
                 ssl_sock.close()
