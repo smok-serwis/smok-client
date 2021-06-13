@@ -208,6 +208,7 @@ class NGTTConnection(TerminableThread):
     def loop(self) -> None:
         eb = ExponentialBackoff(limit=60)
         while not self.connected and not self.terminating:
+            logger.info('Retrying the loop')
             try:
                 self.connect()
                 eb.success()
