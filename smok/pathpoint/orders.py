@@ -161,7 +161,12 @@ class ReadOrder(Order, ReprableMixin):
 def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
     orders = []
     for order in lst:
-        order_type = order['type']
+        try:
+            order_type = order['type']
+        except KeyError:
+            logger.error('Received order (%s) without a type, ignoring', order)
+            continue
+
         if order_type == 'message':
             o = MessageOrder.from_json(order)
         elif order_type == 'read':
@@ -173,11 +178,10 @@ def orders_from_list(lst: tp.List[dict]) -> tp.List[Order]:
         elif order_type == 'write':
             o = WriteOrder.from_json(order)
         else:
-            logger.info('Received unknown order type of %s, ignoring', order_type)
+            logger.error('Received unknown order type of %s, ignoring', order_type)
             continue
 
-        if o:
-            orders.append(o)
+        orders.append(o)
     return orders
 
 
