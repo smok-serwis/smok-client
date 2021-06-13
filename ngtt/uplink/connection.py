@@ -10,6 +10,7 @@ from ssl import SSLContext, PROTOCOL_TLS_CLIENT, SSLError, CERT_REQUIRED
 
 from satella.coding import silence_excs, reraise_as, Closeable, wraps
 from satella.coding.concurrent import IDAllocator
+from satella.exceptions import Empty
 from satella.files import read_in_file
 from satella.instrumentation import Traceback
 
@@ -111,7 +112,12 @@ class NGTTSocket(Closeable):
             raise ConnectionFailed('timed out')
 
         if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
-            self.ping_id = self.id_assigner.allocate_int()
+            try:
+                self.ping_id = self.id_assigner.allocate_int()
+            except Empty:
+                logger.error('Ran out of IDs while processing ping send')
+                raise ConnectionFailed('ran out of IDs on ping')
+
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
 
     @user_method
@@ -153,9 +159,6 @@ class NGTTSocket(Closeable):
             self.disconnect()
             try:
                 os.unlink(self.chain_file_name)
-            except TypeError:
-                logger.error('Tried to close an uninitialized object')
-                logger.warning(Traceback().pretty_print())
             except OSError as e:
                 logger.error('Failure to remove certificate chain file %s', self.chain_file_name,
                              exc_info=e)
@@ -205,5 +208,7 @@ class NGTTSocket(Closeable):
             self.buffer = bytearray()
             self.w_buffer = bytearray()
             self.connected = True
-            self.ping_id = None
+            if self.ping_id is not None:
+                self.id_assigner.mark_as_free(self.ping_id)
+                self.ping_id = None
             logger.debug('Successfully connected')
