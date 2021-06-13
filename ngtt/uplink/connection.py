@@ -24,22 +24,6 @@ INTERVAL_TIME_NO_RESPONSE_KILL = 70
 logger = logging.getLogger(__name__)
 
 
-def user_method(fun):
-    """
-    1. Socket must be connected before the call
-    2. If the call fails, call close()
-    """
-    @wraps(fun)
-    def outer(self, *args, **kwargs):
-        try:
-            if not self.connected:
-                self.connect()
-            return fun(self, *args, **kwargs)
-        except ConnectionFailed:
-            self.close()
-            raise
-    return outer
-
 
 class NGTTSocket(Closeable, RMonitor):
     @property
@@ -73,9 +57,6 @@ class NGTTSocket(Closeable, RMonitor):
         super().__init__()
 
     @RMonitor.synchronized
-    @user_method
-    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
-    @silence_excs(ssl.SSLWantWriteError)
     def send_frame(self, tid: int, header: NGTTHeaderType, data: bytes = b'') -> None:
         """
         Schedule a frame to be sent.
@@ -93,8 +74,7 @@ class NGTTSocket(Closeable, RMonitor):
         self.w_buffer.extend(data)
 
     @RMonitor.synchronized
-    @user_method
-    @reraise_as(ssl.SSLError, ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
     def try_send(self):
         """
@@ -105,7 +85,6 @@ class NGTTSocket(Closeable, RMonitor):
             del self.w_buffer[:data_sent]
 
     @RMonitor.synchronized
-    @user_method
     def try_ping(self):
         if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
@@ -121,7 +100,6 @@ class NGTTSocket(Closeable, RMonitor):
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
 
     @RMonitor.synchronized
-    @user_method
     def got_ping(self):
         if self.ping_id is not None:
             self.id_assigner.mark_as_free(self.ping_id)
@@ -132,7 +110,6 @@ class NGTTSocket(Closeable, RMonitor):
         return self.socket.fileno()
 
     @RMonitor.synchronized
-    @user_method
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
