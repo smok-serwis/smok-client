@@ -215,6 +215,15 @@ class Section(ReprableMixin):
         self.orders = orders or []
         self.disposition = disposition
 
+    def __str__(self) -> str:
+        if self.disposition == Disposition.JOINABLE:
+            return f'<Section({repr(self.orders)})>'
+        else:
+            return f'<Section({repr(self.orders)}, Disposition.CANNOT_JOIN)>'
+
+    def __repr__(self) -> str:
+        return str(self)
+
     def mark_as_done(self) -> None:
         """
         Should be invoked by your custom executor when executing this section completes.
