@@ -133,6 +133,10 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
                 warnings.warn('Given lower timestamp (%s) than current one (%s), ignoring' % (
                     timestamp, self.current_timestamp), UserWarning)
                 return
+            if self.current_timestamp == timestamp:
+                warnings.warn('Given timestamp (%s) equal to current one, ignoring' % (
+                    timestamp, self.current_timestamp), UserWarning)
+                return
         self.device.pp_database.on_new_data(self.name, timestamp, value)
         if self.device.getter is not None:
             self.device.getter.data_to_update.notify()
