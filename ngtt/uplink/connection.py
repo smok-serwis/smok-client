@@ -192,7 +192,4 @@ class NGTTSocket(Closeable):
         self.buffer = bytearray()
         self.w_buffer = bytearray()
         self.connected = True
-        if self.ping_id is not None:
-            self.id_assigner.mark_as_free(self.ping_id)
-            self.ping_id = None
-        logger.debug('Successfully connected')
+        self.ping_id = None

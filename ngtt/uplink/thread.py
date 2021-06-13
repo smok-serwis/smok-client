@@ -60,7 +60,6 @@ class NGTTConnection(TerminableThread):
         self.current_connection = None
         self.currently_running_ops = []  # type: tp.List[tp.Tuple[NGTTHeaderType, bytes, Future]]
         self.op_id_to_op = {}  # type: tp.Dict[int, Future]
-        logger.info('NGTT starting up')
         self.start()
 
     def stop(self, wait_for_completion: bool = True):
@@ -97,7 +96,6 @@ class NGTTConnection(TerminableThread):
             return
         eb = ExponentialBackoff(1, 30, self.safe_sleep)
         while not self.terminating and not self.connected:
-            logger.info('Retrying the loop, connected status is %s', self.connected)
             try:
                 self.current_connection = NGTTSocket(self.cert_file, self.key_file)
                 self.current_connection.connect()
@@ -121,7 +119,6 @@ class NGTTConnection(TerminableThread):
 
             self.current_connection.send_frame(id_, h_type, data)
             self.op_id_to_op[id_] = fut
-        logger.debug('Successfully connected')
 
     @must_be_connected_else_raise
     @for_argument(None, minijson.dumps)
@@ -139,7 +136,6 @@ class NGTTConnection(TerminableThread):
         """
         fut = Future()
         fut.set_running_or_notify_cancel()
-        logger.info('Syncing %s', data[:40])
         try:
             tid = self.current_connection.id_assigner.allocate_int()
         except Empty as e:
@@ -164,13 +160,11 @@ class NGTTConnection(TerminableThread):
         frame = self.current_connection.recv_frame()
         if frame is None:
             return
-        logger.debug('Received %s', frame)
         if frame.packet_type == NGTTHeaderType.PING:
             self.current_connection.got_ping()
         elif frame.packet_type == NGTTHeaderType.ORDER:
             try:
                 data = minijson.loads(bytes(frame.data))
-                logger.debug('Received orders %s', data)
             except ValueError:
                 logger.error('Received invalid JSON over the wire')
                 raise ConnectionFailed('Got invalid JSON')
@@ -201,12 +195,9 @@ class NGTTConnection(TerminableThread):
                 fut.set_result(frame.real_data)
 
     def loop(self) -> None:
-        logger.debug('Looping')
         try:
             self.connect()
-            logger.debug('Reconnected successfully')
         except ConnectionFailed:
-            logger.debug('Failed to connect')
             return
 
         if self.terminating:
@@ -215,7 +206,6 @@ class NGTTConnection(TerminableThread):
         try:
             self.inner_loop()
         except ConnectionFailed as e:
-            logger.debug('Connection failed, retrying', exc_info=e)
             self.cleanup()
 
     def cleanup(self):
