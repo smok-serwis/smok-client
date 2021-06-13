@@ -34,9 +34,6 @@ def user_method(fun):
         try:
             if not self.connected:
                 self.connect()
-            if self.last_read is not None:
-                if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL:
-                    raise ConnectionFailed('timed out')
             return fun(self, *args, **kwargs)
         except ConnectionFailed:
             self.close()
@@ -61,7 +58,7 @@ class NGTTSocket(Closeable, RMonitor):
         self.buffer = bytearray()
         self.w_buffer = bytearray()
         self.ping_id = None
-        self.last_read = None
+        self.last_read = time.monotonic()
         try:
             with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
                 chain_file.write(get_dev_ca_cert())
@@ -114,7 +111,7 @@ class NGTTSocket(Closeable, RMonitor):
     def try_ping(self):
         if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
-            raise ConnectionFailed('timed out')
+            raise ConnectionFailed('timed out due to ping')
 
         if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
             try:
@@ -130,6 +127,7 @@ class NGTTSocket(Closeable, RMonitor):
     def got_ping(self):
         if self.ping_id is not None:
             self.id_assigner.mark_as_free(self.ping_id)
+            self.last_read = time.monotonic()
             self.ping_id = None
 
     def fileno(self) -> int:
