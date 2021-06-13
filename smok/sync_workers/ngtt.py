@@ -1,4 +1,5 @@
 import logging
+import time
 import typing as tp
 
 from ngtt.exceptions import ConnectionFailed, DataStreamSyncFailed
@@ -24,6 +25,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         self.connection = NGTTConnection(device.temp_file_for_cert,
                                          device.temp_file_for_key,
                                          self.process_orders)
+        time.sleep(5)   # Give it some time to connect
 
     def process_orders(self, orders: Order):
         logger.info('Received orders %s', orders)
@@ -45,6 +47,8 @@ class NGTTSyncWorker(BaseSyncWorker):
             self.connection.sync_pathpoints(data).result()
         except DataStreamSyncFailed:
             raise SyncError(False, True)
+        except ConnectionFailed as e:
+            raise SyncError(e.is_due_to_no_internet)
 
     def close(self):
         self.connection.close()

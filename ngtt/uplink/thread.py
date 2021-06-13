@@ -22,11 +22,9 @@ from .connection import NGTTSocket
 logger = logging.getLogger(__name__)
 
 
-def must_be_connected(fun):
+def must_be_connected_else_raise(fun):
     @wraps(fun)
     def outer(self, *args, **kwargs):
-        if self.current_connection is None:
-            self.connect()
         if not self.connected:
             raise ConnectionFailed(True)
         return fun(self, *args, **kwargs)
@@ -123,7 +121,7 @@ class NGTTConnection(TerminableThread):
             self.op_id_to_op[id_] = fut
         logger.debug('Successfully connected')
 
-    @must_be_connected
+    @must_be_connected_else_raise
     @for_argument(None, minijson.dumps)
     def sync_pathpoints(self, data) -> Future:
         """
@@ -147,12 +145,7 @@ class NGTTConnection(TerminableThread):
             raise ConnectionFailed('Ran out of IDs to assign')
 
         self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
-        try:
-            self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
-        except ConnectionFailed as e:
-            logger.debug('Connection gone due to cannot send frame', exc_info=e)
-            self.cleanup()
-            raise
+        self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
         self.op_id_to_op[tid] = fut
         return fut
 
@@ -227,7 +220,7 @@ class NGTTConnection(TerminableThread):
         Optional(self.current_connection).close()
         self.current_connection = None
 
-    @must_be_connected
+    @must_be_connected_else_raise
     @for_argument(None, minijson.dumps)
     def stream_logs(self, data: tp.List) -> None:
         """
@@ -237,9 +230,4 @@ class NGTTConnection(TerminableThread):
 
         :param data: the same thing that you would PUT /v1/device/device_logs
         """
-        try:
-            self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)
-        except ConnectionFailed as e:
-            self.cleanup()
-            logger.debug('Failed to stream logs', exc_info=e)
-            raise
+        self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)

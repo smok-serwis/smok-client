@@ -50,7 +50,6 @@ class NGTTSocket(Closeable, RMonitor):
         RMonitor.__init__(self)
         self.socket = None
         self.connected = False
-        self.connection_lock = threading.Lock()
         environment = get_device_info(read_in_file(cert_file))[1]
         self.host = env_to_hostname(environment)
         self.cert_file = cert_file
@@ -79,7 +78,10 @@ class NGTTSocket(Closeable, RMonitor):
     @silence_excs(ssl.SSLWantWriteError)
     def send_frame(self, tid: int, header: NGTTHeaderType, data: bytes = b'') -> None:
         """
-        Schedule a frame to be sent
+        Schedule a frame to be sent.
+
+        This will be actually send in a background thread. May have a delay of
+        up to 5 seconds, which is acceptable.
 
         :param tid: transaction ID
         :param header: packet type
@@ -87,12 +89,8 @@ class NGTTSocket(Closeable, RMonitor):
         """
         if self.closed:
             return
-        with self.connection_lock:
-            self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
-            self.w_buffer.extend(data)
-            with silence_excs(TimeoutError):
-                data_sent = self.socket.send(self.w_buffer)
-            del self.w_buffer[:data_sent]
+        self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
+        self.w_buffer.extend(data)
 
     @RMonitor.synchronized
     @user_method
