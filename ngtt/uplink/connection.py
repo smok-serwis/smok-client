@@ -24,14 +24,13 @@ INTERVAL_TIME_NO_RESPONSE_KILL = 70
 logger = logging.getLogger(__name__)
 
 
-
-class NGTTSocket(Closeable, RMonitor):
+class NGTTSocket(Closeable):
     @property
     def wants_write(self) -> bool:
         return bool(self.w_buffer)
 
     def __init__(self, cert_file: str, key_file: str):
-        RMonitor.__init__(self)
+        self.monitor = RMonitor()
         self.socket = None
         self.connected = False
         environment = get_device_info(read_in_file(cert_file))[1]
@@ -56,7 +55,7 @@ class NGTTSocket(Closeable, RMonitor):
         self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def send_frame(self, tid: int, header: NGTTHeaderType, data: bytes = b'') -> None:
         """
         Schedule a frame to be sent.
@@ -73,7 +72,7 @@ class NGTTSocket(Closeable, RMonitor):
         self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
         self.w_buffer.extend(data)
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
     def try_send(self):
@@ -84,7 +83,7 @@ class NGTTSocket(Closeable, RMonitor):
             data_sent = self.socket.send(self.w_buffer)
             del self.w_buffer[:data_sent]
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def try_ping(self):
         if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
@@ -99,7 +98,7 @@ class NGTTSocket(Closeable, RMonitor):
 
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def got_ping(self):
         if self.ping_id is not None:
             self.id_assigner.mark_as_free(self.ping_id)
@@ -109,7 +108,7 @@ class NGTTSocket(Closeable, RMonitor):
     def fileno(self) -> int:
         return self.socket.fileno()
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
@@ -137,7 +136,7 @@ class NGTTSocket(Closeable, RMonitor):
             return frame
         return None
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def close(self):
         if super().close():
             self.disconnect()
@@ -147,7 +146,7 @@ class NGTTSocket(Closeable, RMonitor):
                 logger.error('Failure to remove certificate chain file %s', self.chain_file_name,
                              exc_info=e)
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def disconnect(self):
         """
         Disconnect from the remote host
@@ -158,7 +157,7 @@ class NGTTSocket(Closeable, RMonitor):
             self.socket = None
             self.connected = False
 
-    @RMonitor.synchronized
+    @RMonitor.synchronize_on_attribute('monitor')
     def connect(self):
         """
         Connect to remote host
