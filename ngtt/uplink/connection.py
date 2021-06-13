@@ -136,6 +136,9 @@ class NGTTSocket(Closeable):
         """
         Receive a frame from remote socket, or None if nothing could be assembled as of now.
 
+        This should only be called when it is determined that the socket is readable, for example
+        via :code:`select`.
+
         :raises ConnectionFailed: connection closed
         :return: a tuple of transaction ID, header type, data
         """

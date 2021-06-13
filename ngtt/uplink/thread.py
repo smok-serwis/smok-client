@@ -99,6 +99,7 @@ class NGTTConnection(TerminableThread):
             return
         eb = ExponentialBackoff(1, 30, self.safe_sleep)
         while not self.terminating and not self.connected:
+            logger.info('Retrying the loop')
             try:
                 self.current_connection = NGTTSocket(self.cert_file, self.key_file)
                 self.current_connection.connect()
