@@ -8,7 +8,7 @@ import time
 import typing as tp
 from ssl import SSLContext, PROTOCOL_TLS_CLIENT, SSLError, CERT_REQUIRED
 
-from satella.coding import silence_excs, reraise_as, Closeable, wraps
+from satella.coding import silence_excs, reraise_as, Closeable, wraps, Monitor, RMonitor
 from satella.coding.concurrent import IDAllocator
 from satella.exceptions import Empty
 from satella.files import read_in_file
@@ -44,12 +44,13 @@ def user_method(fun):
     return outer
 
 
-class NGTTSocket(Closeable):
+class NGTTSocket(Closeable, RMonitor):
     @property
     def wants_write(self) -> bool:
         return bool(self.w_buffer)
 
     def __init__(self, cert_file: str, key_file: str):
+        RMonitor.__init__(self)
         self.socket = None
         self.connected = False
         self.connection_lock = threading.Lock()
@@ -75,6 +76,7 @@ class NGTTSocket(Closeable):
         self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
         super().__init__()
 
+    @RMonitor.synchronized
     @user_method
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
@@ -88,12 +90,14 @@ class NGTTSocket(Closeable):
         """
         if self.closed:
             return
-        self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
-        self.w_buffer.extend(data)
-        with silence_excs(TimeoutError):
-            data_sent = self.socket.send(self.w_buffer)
-        del self.w_buffer[:data_sent]
+        with self.connection_lock:
+            self.w_buffer.extend(STRUCT_LHH.pack(len(data), tid, header.value))
+            self.w_buffer.extend(data)
+            with silence_excs(TimeoutError):
+                data_sent = self.socket.send(self.w_buffer)
+            del self.w_buffer[:data_sent]
 
+    @RMonitor.synchronized
     @user_method
     @reraise_as(ssl.SSLError, ConnectionFailed)
     @silence_excs(ssl.SSLWantWriteError)
@@ -105,6 +109,7 @@ class NGTTSocket(Closeable):
             data_sent = self.socket.send(self.w_buffer)
             del self.w_buffer[:data_sent]
 
+    @RMonitor.synchronized
     @user_method
     def try_ping(self):
         if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
@@ -120,6 +125,7 @@ class NGTTSocket(Closeable):
 
             self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
 
+    @RMonitor.synchronized
     @user_method
     def got_ping(self):
         if self.ping_id is not None:
@@ -129,6 +135,7 @@ class NGTTSocket(Closeable):
     def fileno(self) -> int:
         return self.socket.fileno()
 
+    @RMonitor.synchronized
     @user_method
     @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
@@ -157,6 +164,7 @@ class NGTTSocket(Closeable):
             return frame
         return None
 
+    @RMonitor.synchronized
     def close(self):
         if super().close():
             self.disconnect()
@@ -166,6 +174,7 @@ class NGTTSocket(Closeable):
                 logger.error('Failure to remove certificate chain file %s', self.chain_file_name,
                              exc_info=e)
 
+    @RMonitor.synchronized
     def disconnect(self):
         """
         Disconnect from the remote host
@@ -176,6 +185,7 @@ class NGTTSocket(Closeable):
             self.socket = None
             self.connected = False
 
+    @RMonitor.synchronized
     def connect(self):
         """
         Connect to remote host
@@ -183,35 +193,34 @@ class NGTTSocket(Closeable):
         :raises SSLError: an error occurred
         :raises RuntimeError: upon connection being closed
         """
-        with self.connection_lock:
-            if self.closed:
-                raise RuntimeError('This connection is closed!')
-            if self.connected:
-                return
-            ssl_context = SSLContext(PROTOCOL_TLS_CLIENT)
-            ssl_context.load_verify_locations(self.chain_file_name)
-            ssl_context.load_cert_chain(self.cert_file, self.key_file)
-            ssl_context.verify_mode = CERT_REQUIRED
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(10)
-            ssl_sock = ssl_context.wrap_socket(sock, server_hostname=self.host)
-            try:
-                ssl_sock.connect((self.host, 2408))
-                ssl_sock.do_handshake()
-            except ConnectionRefusedError as e:
-                ssl_sock.close()
-                raise ConnectionFailed(True) from e
-            except (socket.error, SSLError) as e:
-                logger.error(Traceback().pretty_print())
-                ssl_sock.close()
-                raise ConnectionFailed(True) from e
-            self.socket = ssl_sock
-            self.socket.setblocking(False)
-            self.last_read = time.monotonic()
-            self.buffer = bytearray()
-            self.w_buffer = bytearray()
-            self.connected = True
-            if self.ping_id is not None:
-                self.id_assigner.mark_as_free(self.ping_id)
-                self.ping_id = None
-            logger.debug('Successfully connected')
+        if self.closed:
+            raise RuntimeError('This connection is closed!')
+        if self.connected:
+            return
+        ssl_context = SSLContext(PROTOCOL_TLS_CLIENT)
+        ssl_context.load_verify_locations(self.chain_file_name)
+        ssl_context.load_cert_chain(self.cert_file, self.key_file)
+        ssl_context.verify_mode = CERT_REQUIRED
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(10)
+        ssl_sock = ssl_context.wrap_socket(sock, server_hostname=self.host)
+        try:
+            ssl_sock.connect((self.host, 2408))
+            ssl_sock.do_handshake()
+        except ConnectionRefusedError as e:
+            ssl_sock.close()
+            raise ConnectionFailed(True) from e
+        except (socket.error, SSLError) as e:
+            logger.error(Traceback().pretty_print())
+            ssl_sock.close()
+            raise ConnectionFailed(True) from e
+        self.socket = ssl_sock
+        self.socket.setblocking(False)
+        self.last_read = time.monotonic()
+        self.buffer = bytearray()
+        self.w_buffer = bytearray()
+        self.connected = True
+        if self.ping_id is not None:
+            self.id_assigner.mark_as_free(self.ping_id)
+            self.ping_id = None
+        logger.debug('Successfully connected')

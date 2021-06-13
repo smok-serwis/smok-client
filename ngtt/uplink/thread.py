@@ -99,7 +99,7 @@ class NGTTConnection(TerminableThread):
             return
         eb = ExponentialBackoff(1, 30, self.safe_sleep)
         while not self.terminating and not self.connected:
-            logger.info('Retrying the loop')
+            logger.info('Retrying the loop, connected status is %s', self.connected)
             try:
                 self.current_connection = NGTTSocket(self.cert_file, self.key_file)
                 self.current_connection.connect()
@@ -206,18 +206,14 @@ class NGTTConnection(TerminableThread):
                 fut.set_result(frame.real_data)
 
     def loop(self) -> None:
-        eb = ExponentialBackoff(limit=60)
-        while not self.connected and not self.terminating:
-            logger.info('Retrying the loop')
-            try:
-                self.connect()
-                eb.success()
-                logger.debug('Reconnected successfully')
-                break
-            except ConnectionFailed:
-                logger.debug('Failed to connect')
-                eb.sleep()
-                eb.failed()
+        logger.debug('Looping')
+        try:
+            self.connect()
+            logger.debug('Reconnected successfully')
+        except ConnectionFailed:
+            logger.debug('Failed to connect')
+            return
+
         if self.terminating:
             return
 
