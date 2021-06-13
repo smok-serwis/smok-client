@@ -45,13 +45,13 @@ class NGTTConnection(TerminableThread):
     :param on_new_order: a callable taking only a single argument and returning nothing, the
         callable to call when a new order appears. Note that you have to call
         either :meth:`~ngtt.orders.Order.acknowledge` or :meth:`~ngtt.orders.Order.nack` for each
-        received order.
+        received order. Leave at default (None) if orders are not meant to be fetched.
 
     :ivar connected (bool) is connection opened
     """
 
     def __init__(self, cert_file: str, key_file: str,
-                 on_new_order: tp.Callable[[Order], None]):
+                 on_new_order: tp.Optional[tp.Callable[[Order], None]] = None):
         super().__init__(name='ngtt uplink')
         self.on_new_order = on_new_order
         self.cert_file = cert_file
@@ -101,6 +101,8 @@ class NGTTConnection(TerminableThread):
             try:
                 self.current_connection = NGTTSocket(self.cert_file, self.key_file)
                 self.current_connection.connect()
+                if self.on_new_order:
+                    self.current_connection.send_frame(0, NGTTHeaderType.FETCH_ORDERS)
             except ConnectionFailed as e:
                 logger.warning('Failure reconnecting', exc_info=e)
                 eb.failed()

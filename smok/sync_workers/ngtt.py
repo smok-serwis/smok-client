@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class NGTTSyncWorker(BaseSyncWorker):
+    """
+    Note that this is ready to start when .executor on the device is ready
+    """
 
     def sync_logs(self, data: tp.List[dict]):
         try:
@@ -24,7 +27,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         super().__init__(device, True)
         self.connection = NGTTConnection(device.temp_file_for_cert,
                                          device.temp_file_for_key,
-                                         self.process_orders)
+                                         None if self.device.dont_do_orders else self.process_orders)
         time.sleep(5)   # Give it some time to connect
 
     def process_orders(self, orders: Order):

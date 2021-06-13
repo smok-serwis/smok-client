@@ -13,7 +13,7 @@ from abc import ABCMeta
 
 import pytz
 from satella.coding import Closeable, for_argument
-from satella.coding.concurrent import PeekableQueue
+from satella.coding.concurrent import PeekableQueue, Condition
 from satella.coding.optionals import Optional
 from satella.coding.structures import DirtyDict
 from satella.time import time_as_int
@@ -228,6 +228,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.delayed_boot = delayed_boot
         self.sensor_database = sensor_database or InMemorySensorDatabase()
         self.sensor_database.on_register(self)
+        self.use_ngtt = use_ngtt
         self.arch_database = arch_database or InMemoryArchivesDatabase()
         self.baob_database = baob_database or InMemoryBAOBDatabase()
         self.sensor_write_database = sensor_write_database or InMemorySensorWriteDatabase()
@@ -281,12 +282,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.url = 'http://http-api'
 
         self.api = RequestsAPI(self)
-
-        if use_ngtt:
-            self.sync_worker = NGTTSyncWorker(self)
-        else:
-            self.sync_worker = HTTPSyncWorker(self)
-
         self.log_publisher = LogPublisherThread(self).start()
 
         self._order_queue = PeekableQueue()
@@ -298,6 +293,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         else:
             self.arch_and_macros = None
         self.dont_do_baobs = dont_do_baobs
+        self.dont_do_orders = dont_obtain_orders
         if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
                 not dont_do_baobs:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database,
@@ -309,6 +305,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                                              dont_do_predicates,
                                              dont_sync_sensor_writes, startup_delay)
             if not delayed_boot:
+                if self.use_ngtt:
+                    self.sync_worker = NGTTSyncWorker(self)
+                else:
+                    self.sync_worker = HTTPSyncWorker(self)
                 self.executor.start()
                 self.getter.start()
         else:
@@ -325,6 +325,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         if not self.delayed_boot:
             raise RuntimeError('Delayed boot was not given')
+        if self.use_ngtt:
+            self.sync_worker = NGTTSyncWorker(self)
+        else:
+            self.sync_worker = HTTPSyncWorker(self)
         Optional(self.executor).start()
         Optional(self.getter).start()
         Optional(self.arch_and_macros).start()
