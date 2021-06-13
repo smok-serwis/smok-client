@@ -157,10 +157,10 @@ class NGTTConnection(TerminableThread):
         rx, wx, ex = select.select(ccon,
                                    ccon if self.current_connection.wants_write else [], [],
                                    5)
-        if not rx:
-            return
         if wx:
             self.current_connection.try_send()
+        if not rx:
+            return
         frame = self.current_connection.recv_frame()
         if frame is None:
             return
