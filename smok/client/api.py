@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class RequestsAPI:
-    __slots__ = ('environment', 'base_url', 'cert')
+    __slots__ = 'environment', 'base_url', 'cert'
 
     def __init__(self, device):
         self.environment = device.environment

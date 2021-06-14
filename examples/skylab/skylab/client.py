@@ -17,6 +17,8 @@ from smok.pathpoint.pathpoint import Pathpoint
 from smok.pathpoint.typing import PathpointValueType
 from smok.predicate import BaseStatistic, Color
 
+logger = logging.getLogger(__name__)
+
 
 class PP(Pathpoint):
     """
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     sd.wait_until_synced()
     n_tn_run = int(sd.metadata.get('n_th.run', '0'))
     n_tn_run += 1
-    print('This is the %s-th run' % (n_tn_run,))
+    logger.warning('This is the %s-th run', n_tn_run)
     sd.metadata['n_th.run'] = n_tn_run
     sen = sd.get_sensor('val')
     sd.get_slaves()[0].linkstate = {'status': True}

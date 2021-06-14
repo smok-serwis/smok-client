@@ -1,7 +1,10 @@
+import logging
 import typing as tp
 
 from .base import BaseSyncWorker, SyncError
 from ..exceptions import ResponseError
+
+logger = logging.getLogger(__name__)
 
 
 class HTTPSyncWorker(BaseSyncWorker):
