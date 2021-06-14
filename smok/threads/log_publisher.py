@@ -1,14 +1,11 @@
 import queue
 import logging
-import sys
-import time
 import typing as tp
 
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread
 from satella.coding.decorators import retry
 
-from ..exceptions import ResponseError
 from ..sync_workers.base import SyncError
 
 MAX_SYNC_AT_ONCE = 50
@@ -22,9 +19,6 @@ class LogPublisherThread(TerminableThread):
         self.device = device
         self.queue = queue.Queue()
 
-    def prepare(self) -> None:
-        sys.stderr.write('log publisher done\n')
-
     def get_all_messages(self, starting_msg: dict) -> tp.List[dict]:
         msgs = [starting_msg]
         while self.queue.qsize() and len(msgs) < MAX_SYNC_AT_ONCE:
@@ -33,6 +27,7 @@ class LogPublisherThread(TerminableThread):
 
     @queue_get('queue', timeout=5)
     def loop(self, msg) -> None:
+        self.safe_sleep(1)  # wait for other records to become available
         while not self.device.allow_sync:
             while self.queue.qsize() > MAX_LOG_BUFFER_SIZE:
                 self.queue.get()
@@ -41,7 +36,6 @@ class LogPublisherThread(TerminableThread):
             return
         msgs = self.get_all_messages(msg)
         self.sync(msgs)
-        sys.stderr.write('successfully synced\n')
 
     @retry(3, exc_classes=SyncError)
     def sync(self, lst: tp.List[dict]):
@@ -55,7 +49,6 @@ class LogPublisherThread(TerminableThread):
         except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
-            logger.debug('Failed to upload logs', exc_info=e)
             raise
 
     def cleanup(self) -> None:

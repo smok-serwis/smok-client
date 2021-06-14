@@ -83,7 +83,6 @@ class OrderExecutorThread(TerminableThread):
                 try:
                     pathpoint = self.device.get_pathpoint(order.pathpoint)
                 except KeyError:
-                    logger.info('Got order for unavailable pathpoint %s', order.pathpoint)
                     continue
 
                 if isinstance(order, WriteOrder):

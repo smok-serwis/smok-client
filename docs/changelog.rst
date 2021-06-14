@@ -12,6 +12,7 @@ v0.16
 * Section does not need to be confirmed by the custom executor
 * orders now are str-able
 * log entries won't be logged if that would overfill the buffer
+* logs will wait for at least 1 second for more entries to become available to sync them
 
 v0.15.1
 ~~~~~~~
