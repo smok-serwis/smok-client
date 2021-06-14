@@ -16,11 +16,17 @@ class Order:
     """
     __slots__ = ('data', 'tid', 'sock', 'confirmed')
 
-    def __init__(self, data: tp.Dict, tid: int, sock: 'NGTTSocket'):
+    def __init__(self, data: tp.List[dict], tid: int, sock: 'NGTTSocket'):
         self.data = data
         self.tid = tid
         self.sock = sock
         self.confirmed = False
+
+    def __repr__(self) -> str:
+        return '<Order(%s, %s)>' % (repr(self.data), self.tid)
+
+    def __str__(self) -> str:
+        return repr(self)
 
     def acknowledge(self):
         """
@@ -39,5 +45,5 @@ class Order:
         Signal the server that the order has been rejected
         """
         if not self.confirmed:
-            logger.debug('Confirming order no %s', self.tid)
+            logger.debug('Nacking order no %s', self.tid)
             self.confirm_with(NGTTHeaderType.ORDER_REJECT)

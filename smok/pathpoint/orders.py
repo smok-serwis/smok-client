@@ -47,6 +47,12 @@ class SysctlOrder(Order, ReprableMixin):
         self.op_type = op_type
         self.op_args = op_args
 
+    def __str__(self) -> str:
+        return 'SysctlOrder(%s, %s)' % (repr(self.op_type), repr(self.op_args))
+
+    def __repr__(self) -> str:
+        return str(self)
+
     @classmethod
     def from_json(cls, dct: dict) -> 'SysctlOrder':
         return SysctlOrder(dct['op_type'], dct['op_args'])
@@ -63,6 +69,12 @@ class MessageOrder(Order, ReprableMixin):
     def __init__(self, uuid: str):
         self.uuid = uuid
         self.times_retry = 3
+
+    def __str__(self) -> str:
+        return 'MessageOrder(%s)' % (repr(self.uuid), )
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def fail(self) -> bool:
         self.times_retry -= 1
@@ -88,6 +100,12 @@ class WaitOrder(Order, ReprableMixin):
     @classmethod
     def from_json(cls, dct: dict) -> 'WaitOrder':
         return WaitOrder(dct['time'])
+
+    def __str__(self) -> str:
+        return 'WaitOrder(%s)' % (self.period, )
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class WriteOrder(Order, ReprableMixin):
@@ -115,6 +133,23 @@ class WriteOrder(Order, ReprableMixin):
         if self.stale_after is None:
             return True
         return self.stale_after > time.time()
+
+    def __str__(self) -> str:
+        pp = repr(self.pathpoint)
+        v = repr(self.value)
+        if self.advise != AdviseLevel.ADVISE:
+            if self.stale_after is not None:
+                return 'WriteOrder(%s, %s, %s, %s)' % (pp, v, self.advise, self.stale_after)
+            else:
+                return 'WriteOrder(%s, %s, %s)' % (pp, v, self.advise)
+        else:
+            if self.stale_after is not None:
+                return 'WriteOrder(%s, %s, stale_after=%s)' % (pp, v, self.stale_after)
+            else:
+                return 'WriteOrder(%s, %s)' % (pp, v)
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def fail(self) -> bool:
         """
@@ -144,6 +179,15 @@ class ReadOrder(Order, ReprableMixin):
         self.pathpoint = pathpoint
         self.advise = advise
         self.repeat_count = 3 if AdviseLevel.ADVISE else 20
+
+    def __str__(self) -> str:
+        if self.advise != AdviseLevel.ADVISE:
+            return 'ReadOrder(%s)' % (repr(self.pathpoint), )
+        else:
+            return 'ReadOrder(%s, %s)' % (repr(self.pathpoint), self.advise)
+
+    def __repr__(self) -> str:
+        return str(self)
 
     @classmethod
     def from_json(cls, dct: dict) -> 'ReadOrder':
