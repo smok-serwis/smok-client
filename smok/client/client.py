@@ -314,10 +314,12 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 self.executor.start()
                 self.getter.start()
                 self.log_publisher.start()
+                self.boot_completed = True
         else:
             self.sync_worker = None
             self.executor = None
             self.getter = None
+            self.boot_completed = False
 
     def continue_boot(self):
         """
@@ -337,6 +339,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Optional(self.getter).start()
         Optional(self.arch_and_macros).start()
         self.log_publisher.start()
+        self.boot_completed = True
 
     def log_sensor_write(self, sw: SensorWriteEvent):
         """
@@ -650,7 +653,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 os.unlink(self.temp_file_for_cert)
             Optional(self.executor).join()
             Optional(self.getter).join()
-            self.log_publisher.join()
+            if self.boot_completed:
+                self.log_publisher.join()
             Optional(self.arch_and_macros).join()
 
     @for_argument(returns=list)
