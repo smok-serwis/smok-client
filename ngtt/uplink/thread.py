@@ -163,6 +163,7 @@ class NGTTConnection(TerminableThread):
         if frame.packet_type == NGTTHeaderType.PING:
             self.current_connection.got_ping()
         elif frame.packet_type == NGTTHeaderType.ORDER:
+            logger.debug('Received order no %s', frame.tid)
             try:
                 data = minijson.loads(bytes(frame.data))
             except ValueError:

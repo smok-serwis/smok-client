@@ -39,8 +39,7 @@ class NGTTSyncWorker(BaseSyncWorker):
             logger.info('Acknowledged orders')
 
         sections[-1].future.add_done_callback(confirm)
-        for sec in sections:
-            self.device.executor.queue.put(sec)
+        self.device.executor.queue.put_many(sections)
 
     def sync_pathpoints(self, data: tp.List[dict]):
         """
