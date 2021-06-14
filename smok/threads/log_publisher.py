@@ -1,5 +1,6 @@
 import queue
 import logging
+import time
 import typing as tp
 
 from satella.coding import queue_get
@@ -12,6 +13,7 @@ from ..sync_workers.base import SyncError
 MAX_SYNC_AT_ONCE = 50
 MAX_LOG_BUFFER_SIZE = 20000
 logger = logging.getLogger(__name__)
+
 
 class LogPublisherThread(TerminableThread):
     def __init__(self, device: 'SMOKDevice'):
@@ -41,6 +43,8 @@ class LogPublisherThread(TerminableThread):
         try:
             self.device.sync_worker.sync_logs(lst)
             self.device.on_successful_sync()
+        except AttributeError:
+            self.safe_sleep(1)  # SMOKDevice not yet initialized
         except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
