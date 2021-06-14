@@ -18,8 +18,8 @@ class NGTTHeaderType(HashableIntEnum):
     DATA_STREAM_REJECT = 6  #: sent by the server
     SYNC_BAOB_REQUEST = 7  #: sent by the client
     SYNC_BAOB_RESPONSE = 8  #: sent by the server
-    ORDER_REJECT = 9        #: sent by the client, currently unused (by the client)
-    FETCH_ORDERS = 10       #: a request by the client to fetch orders
+    ORDER_REJECT = 9  #: sent by the client, currently unused (by the client)
+    FETCH_ORDERS = 10  #: a request by the client to fetch orders
 
 
 STRUCT_LHH = struct.Struct('>LHH')
@@ -40,6 +40,7 @@ class NGTTFrame:
     :param packet_type: type of the packet
     :param data: data. Any class that has a __bytes__ property will do.
     """
+
     def __init__(self, tid: int, packet_type: NGTTHeaderType, data):
         self.tid = tid
         self.packet_type = packet_type
@@ -86,10 +87,10 @@ class NGTTFrame:
         if len(buffer) < STRUCT_LHH.size:
             return None
         length, tid, h_type = STRUCT_LHH.unpack(buffer[:STRUCT_LHH.size])
-        if len(buffer) < length+STRUCT_LHH.size:
+        if len(buffer) < length + STRUCT_LHH.size:
             return None
-        return length+STRUCT_LHH.size, NGTTFrame(tid, NGTTHeaderType(h_type),
-                                                 buffer[STRUCT_LHH.size:STRUCT_LHH.size + length])
+        return length + STRUCT_LHH.size, NGTTFrame(tid, NGTTHeaderType(h_type),
+                                                   buffer[STRUCT_LHH.size:STRUCT_LHH.size + length])
 
 
 def env_to_hostname(env: int) -> str:

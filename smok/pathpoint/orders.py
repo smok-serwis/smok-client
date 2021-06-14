@@ -9,7 +9,6 @@ from satella.coding.concurrent import FutureCollection
 
 from .typing import PathpointValueType
 
-
 __all__ = ['AdviseLevel', 'Disposition', 'Order', 'ReadOrder', 'WriteOrder',
            'WaitOrder', 'MessageOrder', 'Section', 'sections_from_list',
            'SysctlOrder']
@@ -71,7 +70,7 @@ class MessageOrder(Order, ReprableMixin):
         self.times_retry = 3
 
     def __str__(self) -> str:
-        return 'MessageOrder(%s)' % (repr(self.uuid), )
+        return 'MessageOrder(%s)' % (repr(self.uuid),)
 
     def __repr__(self) -> str:
         return str(self)
@@ -102,7 +101,7 @@ class WaitOrder(Order, ReprableMixin):
         return WaitOrder(dct['time'])
 
     def __str__(self) -> str:
-        return 'WaitOrder(%s)' % (self.period, )
+        return 'WaitOrder(%s)' % (self.period,)
 
     def __repr__(self) -> str:
         return str(self)
@@ -184,7 +183,7 @@ class ReadOrder(Order, ReprableMixin):
         if self.advise != AdviseLevel.ADVISE:
             return 'ReadOrder(%s, %s)' % (repr(self.pathpoint), self.advise)
         else:
-            return 'ReadOrder(%s)' % (repr(self.pathpoint), )
+            return 'ReadOrder(%s)' % (repr(self.pathpoint),)
 
     def __repr__(self) -> str:
         return str(self)

@@ -62,7 +62,7 @@ class OperationFailedReason(enum.Enum):
     MALFORMED = 'malformed'  #: The device responded with a malformed protocol frame
     TIMEOUT = 'timeout'  #: The device did not respond within given time
     INVALID = 'invalid'  #: The device responded OK, but told us that this pathpoint is bogus
-    TYPE = 'type'       #: There was an error with the typing of the value
+    TYPE = 'type'  #: There was an error with the typing of the value
 
 
 class OperationFailedError(SMOKClientError):

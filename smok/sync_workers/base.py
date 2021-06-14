@@ -6,6 +6,7 @@ class SyncError(Exception):
     """
     An error has happened during the sync
     """
+
     def __init__(self, is_no_link: bool = True, is_clients_fault: bool = False):
         self._is_no_link = is_no_link
         self._is_clients_fault = is_clients_fault
@@ -24,6 +25,7 @@ class BaseSyncWorker(metaclass=ABCMeta):
     :ivar has_async_orders: (bool) whether this can asynchronously issue orders. If it can,
         you need to take care to inject received orders appropriately.
     """
+
     def __init__(self, device: 'SMOKDevice', has_async_orders: bool):
         self.device = device
         self.has_async_orders = has_async_orders

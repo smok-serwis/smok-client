@@ -60,7 +60,7 @@ class DisabledTime(OmniHashableMixin):
         :return: True if the time is inside
         """
         return self.start.to_tuple() <= (t.isoweekday(), t.hour, t.minute) \
-            <= self.stop.to_tuple()
+               <= self.stop.to_tuple()
 
 
 class BaseStatistic(metaclass=ABCMeta):

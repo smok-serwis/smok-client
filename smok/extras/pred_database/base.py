@@ -10,6 +10,7 @@ class BasePredicateDatabase(metaclass=ABCMeta):
     :meth:`~smok.extras.BasePredicateDatabase.get_all_predicates` by SMOKDevice during
     initialization.
     """
+
     @abstractmethod
     def get_all_predicates(self) -> tp.List[tp.Dict]:
         """

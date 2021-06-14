@@ -9,7 +9,6 @@ from satella.files import read_in_file
 from smok.basics import Environment
 from smok.exceptions import ResponseError
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,9 +23,12 @@ class RequestsAPI:
         if self.environment == Environment.PRODUCTION:
             self.cert = device.temp_file_for_cert, device.temp_file_for_key
         elif self.environment == Environment.STAGING:
-            self.cert = read_in_file(device.cert[0], 'utf-8').replace('\r\n', '\n').replace('\n', '\t')
+            self.cert = read_in_file(device.cert[0], 'utf-8').replace('\r\n', '\n').replace('\n',
+                                                                                            '\t')
         else:
-            self.cert = read_in_file('tests/dev.testing.crt', 'utf-8').replace('\r\n', '\n').replace('\n', '\t')
+            self.cert = read_in_file('tests/dev.testing.crt', 'utf-8').replace('\r\n',
+                                                                               '\n').replace('\n',
+                                                                                             '\t')
 
     def request(self, request_type: str, url: str,
                 direct_response: bool = False, **kwargs) -> tp.Union[dict, tp.Tuple[bytes, dict]]:

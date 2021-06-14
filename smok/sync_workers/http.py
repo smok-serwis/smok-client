@@ -29,7 +29,5 @@ class HTTPSyncWorker(BaseSyncWorker):
         super().__init__(device, False)
         self.api = device.api
 
-
-
     def close(self):
         pass

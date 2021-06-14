@@ -9,7 +9,8 @@ class StatisticRegistration:
     """
     __slots__ = ('matcher', 'stat_class', 'cancelled')
 
-    def __init__(self, matcher: tp.Callable[[str, tp.Dict], bool], stat_class: tp.Type[BaseStatistic]):
+    def __init__(self, matcher: tp.Callable[[str, tp.Dict], bool],
+                 stat_class: tp.Type[BaseStatistic]):
         self.matcher = matcher
         self.stat_class = stat_class
         self.cancelled = False
@@ -29,8 +30,7 @@ class StatisticRegistration:
 
 
 class CollectionOfStatistics:
-
-    __slots__ = ('registrations', )
+    __slots__ = ('registrations',)
 
     def __init__(self):
         self.registrations = []

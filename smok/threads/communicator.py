@@ -141,7 +141,8 @@ class CommunicatorThread(TerminableThread):
                     base_class = self.device.statistic_registration.try_match(stat_name, cfg)
                     if base_class is None:
                         base_class = UndefinedStatistic
-                    predicate = base_class(self.device, predicate_id, predicate_dict['verbose_name'],
+                    predicate = base_class(self.device, predicate_id,
+                                           predicate_dict['verbose_name'],
                                            silencing, cfg, stat_name)
                     self.device.predicates[predicate_id] = predicate
                 else:
@@ -292,7 +293,8 @@ class CommunicatorThread(TerminableThread):
                 self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
                     'file': self.device.baob_database.get_baob_value(key_to_upload),
                     'data': ujson.dumps(
-                        {'version': self.device.baob_database.get_baob_version(key_to_upload)}).encode(
+                        {'version': self.device.baob_database.get_baob_version(
+                            key_to_upload)}).encode(
                         'utf8')
                 })
                 logger.debug('Uploaded BAOB %s', key_to_upload)

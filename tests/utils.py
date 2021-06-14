@@ -18,4 +18,3 @@ class FakeCall:
         for url_to_check in self.url_to_response:
             if url.endswith(url_to_check):
                 return FakeResponse(self.url_to_response[url_to_check])
-

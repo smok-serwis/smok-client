@@ -8,7 +8,6 @@ from smok.pathpoint.orders import sections_from_list
 from smok.sync_workers.base import BaseSyncWorker, SyncError
 from ngtt.uplink import NGTTConnection
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +27,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         self.connection = NGTTConnection(device.temp_file_for_cert,
                                          device.temp_file_for_key,
                                          None if self.device.dont_do_orders else self.process_orders)
-        time.sleep(5)   # Give it some time to connect
+        time.sleep(5)  # Give it some time to connect
 
     def process_orders(self, orders: Order):
         logger.info('Received orders %s', orders)

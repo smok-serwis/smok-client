@@ -2,7 +2,6 @@ import logging
 import typing as tp
 from abc import ABCMeta, abstractmethod
 
-
 logger = logging.getLogger(__name__)
 
 

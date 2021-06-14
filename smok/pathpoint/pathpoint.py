@@ -92,7 +92,7 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
     def get_archive(self,
                     starting_at: int,
                     stopping_at: tp.Optional[int] = None) -> tp.Iterator[
-            tp.Tuple[int, ValueOrExcept]]:
+        tp.Tuple[int, ValueOrExcept]]:
         """
         Get archive readings.
 
@@ -130,8 +130,9 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
             timestamp, value = args
         if self.current_timestamp is not None:
             if self.current_timestamp >= timestamp:
-                warnings.warn('Given lower or equal timestamp (%s) than current one (%s), ignoring' % (
-                    timestamp, self.current_timestamp), UserWarning)
+                warnings.warn(
+                    'Given lower or equal timestamp (%s) than current one (%s), ignoring' % (
+                        timestamp, self.current_timestamp), UserWarning)
                 return
         self.device.pp_database.on_new_data(self.name, timestamp, value)
         if self.device.getter is not None:

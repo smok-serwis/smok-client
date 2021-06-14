@@ -3,7 +3,6 @@ import typing as tp
 
 from ngtt.protocol import NGTTHeaderType
 
-
 logger = logging.getLogger(__name__)
 
 
