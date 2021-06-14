@@ -1,4 +1,5 @@
 import queue
+import logging
 import typing as tp
 
 from satella.coding import queue_get
@@ -10,7 +11,7 @@ from ..sync_workers.base import SyncError
 
 MAX_SYNC_AT_ONCE = 50
 MAX_LOG_BUFFER_SIZE = 20000
-
+logger = logging.getLogger(__name__)
 
 class LogPublisherThread(TerminableThread):
     def __init__(self, device: 'SMOKDevice'):
@@ -43,6 +44,7 @@ class LogPublisherThread(TerminableThread):
         except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
+            logger.debug('Failed to upload logs', exc_info=e)
             raise
 
     def cleanup(self) -> None:
