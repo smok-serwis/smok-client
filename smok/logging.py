@@ -7,6 +7,7 @@ from satella.coding import Monitor
 from satella.coding.concurrent import SequentialIssuer
 from satella.instrumentation import Traceback, frame_from_traceback
 from satella.time import time_us
+from smok.threads.log_publisher import MAX_LOG_BUFFER_SIZE
 
 __all__ = ['SMOKLogHandler']
 
@@ -60,7 +61,8 @@ class SMOKLogHandler(Handler, Monitor):
         return dct
 
     def emit(self, record: LogRecord) -> None:
-        self.device.log_publisher.queue.put(self.record_to_json(record))
+        if self.device.log_publisher.queue.qsize() < MAX_LOG_BUFFER_SIZE:
+            self.device.log_publisher.queue.put(self.record_to_json(record))
 
     def close(self) -> None:
         pass

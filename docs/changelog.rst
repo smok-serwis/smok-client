@@ -11,6 +11,7 @@ v0.16
 * added NGTT module
 * Section does not need to be confirmed by the custom executor
 * orders now are str-able
+* log entries won't be logged if that would overfill the buffer
 
 v0.15.1
 ~~~~~~~

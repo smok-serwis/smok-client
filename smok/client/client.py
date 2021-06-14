@@ -307,8 +307,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             if not delayed_boot:
                 if self.use_ngtt:
                     self.sync_worker = NGTTSyncWorker(self)
+                    logger.debug('Using NGTT API to sync data and logs')
                 else:
                     self.sync_worker = HTTPSyncWorker(self)
+                    logger.debug('Using HTTP API to sync data and logs')
                 self.executor.start()
                 self.getter.start()
         else:
