@@ -96,7 +96,7 @@ class NGTTSocket(Closeable):
                 logger.error('Ran out of IDs while processing ping send')
                 raise ConnectionFailed('ran out of IDs on ping')
 
-            self.send_frame(self.ping_id, NGTTHeaderType.PING, b'')
+            self.send_frame(self.ping_id, NGTTHeaderType.PING)
 
     @RMonitor.synchronize_on_attribute('monitor')
     def got_ping(self):
