@@ -46,7 +46,7 @@ class NGTTFrame:
         self.data = bytes(data)
 
     def __repr__(self) -> str:
-        return f'NGTTFrame({self.tid}, {self.packet_type}, {self.data})'
+        return 'NGTTFrame(%s, %s, %s)' % (self.tid, self.packet_type, repr(self.data))
 
     def __str__(self) -> str:
         return repr(self)

@@ -163,7 +163,6 @@ class NGTTConnection(TerminableThread):
         if frame.packet_type == NGTTHeaderType.PING:
             self.current_connection.got_ping()
         elif frame.packet_type == NGTTHeaderType.ORDER:
-            logger.debug('Received order no %s', frame.tid)
             try:
                 data = frame.real_data
             except ValueError:
@@ -182,10 +181,8 @@ class NGTTConnection(TerminableThread):
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
-                    logger.debug('Successfully confirmed data frame %s', frame.tid)
                 elif frame.packet_type == NGTTHeaderType.DATA_STREAM_REJECT:
                     fut.set_exception(DataStreamSyncFailed())
-                    logger.debug('Received error for data frame %s', frame.tid)
         elif frame.packet_type == NGTTHeaderType.SYNC_BAOB_RESPONSE:
             if frame.tid in self.op_id_to_op:
                 fut = self.op_id_to_op.pop(frame.tid)

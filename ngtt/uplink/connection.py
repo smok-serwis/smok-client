@@ -3,7 +3,6 @@ import os
 import socket
 import ssl
 import tempfile
-import threading
 import time
 import typing as tp
 from ssl import SSLContext, PROTOCOL_TLS_CLIENT, SSLError, CERT_REQUIRED
@@ -12,7 +11,6 @@ from satella.coding import silence_excs, reraise_as, Closeable, RMonitor
 from satella.coding.concurrent import IDAllocator
 from satella.exceptions import Empty
 from satella.files import read_in_file
-from satella.instrumentation import Traceback
 
 from smok.client import get_dev_ca_cert, get_root_cert
 from smok.client.certificate import get_device_info
@@ -41,18 +39,14 @@ class NGTTSocket(Closeable):
         self.w_buffer = bytearray()
         self.ping_id = None
         self.last_read = time.monotonic()
-        try:
-            with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
-                chain_file.write(get_dev_ca_cert())
-                chain_file.write(b'\n')
-                chain_file.write(get_root_cert())
-                chain_file.close()
-                self.chain_file_name = chain_file.name
-        except Exception as e:
-            logger.error('Found exception %s', e, exc_info=e)
-            raise
+        with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
+            chain_file.write(get_dev_ca_cert())
+            chain_file.write(b'\n')
+            chain_file.write(get_root_cert())
+            chain_file.close()
+            self.chain_file_name = chain_file.name
 
-        self.id_assigner = IDAllocator(start_at=1, top_limit=0x10000)
+        self.id_assigner = IDAllocator(start_at=1, top_limit=0x8000)
         super().__init__()
 
     @RMonitor.synchronize_on_attribute('monitor')
@@ -183,7 +177,6 @@ class NGTTSocket(Closeable):
             ssl_sock.close()
             raise ConnectionFailed(True) from e
         except (socket.error, SSLError) as e:
-            logger.error(Traceback().pretty_print())
             ssl_sock.close()
             raise ConnectionFailed(True) from e
         self.socket = ssl_sock

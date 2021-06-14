@@ -33,7 +33,6 @@ class Order:
         Signal to the server that the order has been processed
         """
         if not self.confirmed:
-            logger.debug('Confirming order no %s', self.tid)
             self.confirm_with(NGTTHeaderType.ORDER_CONFIRM)
 
     def confirm_with(self, c_type: NGTTHeaderType):
@@ -45,5 +44,4 @@ class Order:
         Signal the server that the order has been rejected
         """
         if not self.confirmed:
-            logger.debug('Nacking order no %s', self.tid)
             self.confirm_with(NGTTHeaderType.ORDER_REJECT)
