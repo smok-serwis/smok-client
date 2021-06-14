@@ -2,6 +2,7 @@ import logging
 import json
 import typing as tp
 
+import minijson
 import requests
 from satella.files import read_in_file
 
@@ -34,17 +35,24 @@ class RequestsAPI:
         :param url: URL to contact
         :param direct_response: if True then return a tuple of (
             response as is, headers), else it's JSON
+        :param minijson: send provided dictionary as a MiniJSON
 
         :raises ResponseError: something went wrong
         """
+        headers = kwargs.pop('headers', {})
+        if 'minijson' in kwargs:
+            mini = kwargs.pop('minijson')
+            data = minijson.dumps(mini)
+            kwargs['data'] = data
+            headers['Content-Type'] = 'application/minijson'
+
         op = getattr(requests, request_type)
         try:
             if self.environment == Environment.PRODUCTION:
-                resp = op(self.base_url + url, cert=self.cert, **kwargs)
+                resp = op(self.base_url + url, cert=self.cert, headers=headers, **kwargs)
             else:
-                resp = op(self.base_url + url, headers={
-                    'X-SSL-Client-Certificate': self.cert
-                }, **kwargs)
+                headers['X-SSL-Client-Certificate'] = self.cert
+                resp = op(self.base_url + url, headers=headers, **kwargs)
         except requests.RequestException as e:
             logger.error('Requests error %s', e, exc_info=e)
             raise ResponseError(599, 'Requests error: %s' % (str(e),))

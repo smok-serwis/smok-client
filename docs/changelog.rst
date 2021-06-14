@@ -5,6 +5,8 @@ v0.16
 ~~~~~
 
 * new feature: improved compression of data being sent
+    * logs and pathpoint data will be compressed using MiniJSON
+    * also used much shorter forms
 * new feature: pathpoint and log upload via NGTT
 * added NGTT module
 * Section does not need to be confirmed by the custom executor
