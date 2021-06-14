@@ -1,5 +1,6 @@
 import queue
 import logging
+import sys
 import time
 import typing as tp
 
@@ -21,6 +22,9 @@ class LogPublisherThread(TerminableThread):
         self.device = device
         self.queue = queue.Queue()
 
+    def prepare(self) -> None:
+        sys.stderr.write('log publisher done\n')
+
     def get_all_messages(self, starting_msg: dict) -> tp.List[dict]:
         msgs = [starting_msg]
         while self.queue.qsize() and len(msgs) < MAX_SYNC_AT_ONCE:
@@ -37,6 +41,7 @@ class LogPublisherThread(TerminableThread):
             return
         msgs = self.get_all_messages(msg)
         self.sync(msgs)
+        sys.stderr.write('successfully synced\n')
 
     @retry(3, exc_classes=SyncError)
     def sync(self, lst: tp.List[dict]):
