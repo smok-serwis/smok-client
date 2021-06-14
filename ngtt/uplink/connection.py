@@ -132,7 +132,7 @@ class NGTTSocket(Closeable):
             return
         else:
             length, frame = result
-            del self.buffer[length]
+            del self.buffer[:length]
             return frame
         return None
 

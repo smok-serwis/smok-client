@@ -57,6 +57,7 @@ class NGTTFrame:
         Unserialize the data
 
         :return: JSON unserialized data
+        :raises ValueError: invalid MiniJSON
         """
         return minijson.loads(self.data)
 
