@@ -47,6 +47,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         """
         try:
             self.connection.sync_pathpoints(data).result()
+            logger.info('Successfully synchronized data')
         except DataStreamSyncFailed:
             raise SyncError(False, True)
         except ConnectionFailed as e:
