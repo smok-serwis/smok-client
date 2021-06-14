@@ -294,6 +294,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.arch_and_macros = None
         self.dont_do_baobs = dont_do_baobs
         self.dont_do_orders = dont_obtain_orders
+        self.executor = None
+        self.getter = None
         if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
                 not dont_do_baobs:
             self.executor = OrderExecutorThread(self, self._order_queue, self.pp_database,
@@ -304,21 +306,21 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                                              dont_do_pathpoints,
                                              dont_do_predicates,
                                              dont_sync_sensor_writes, startup_delay)
-            if not delayed_boot:
-                if self.use_ngtt:
-                    self.sync_worker = NGTTSyncWorker(self)
-                    logger.debug('Using NGTT API to sync data and logs')
-                else:
-                    self.sync_worker = HTTPSyncWorker(self)
-                    logger.debug('Using HTTP API to sync data and logs')
+        if not delayed_boot:
+            if self.use_ngtt:
+                self.sync_worker = NGTTSyncWorker(self)
+                logger.debug('Using NGTT API to sync data and logs')
+            else:
+                self.sync_worker = HTTPSyncWorker(self)
+                logger.debug('Using HTTP API to sync data and logs')
+            if not dont_obtain_orders or not dont_do_predicates or not dont_do_pathpoints or \
+                    not dont_do_baobs:
                 self.executor.start()
                 self.getter.start()
-                self.log_publisher.start()
-                self.boot_completed = True
+            self.log_publisher.start()
+            self.boot_completed = True
         else:
             self.sync_worker = None
-            self.executor = None
-            self.getter = None
             self.boot_completed = False
 
     def continue_boot(self):
