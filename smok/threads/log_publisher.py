@@ -47,8 +47,6 @@ class LogPublisherThread(TerminableThread):
             except Exception as e:
                 logger.error('exception %s', e, exc_info=e)
                 raise
-        except AttributeError:
-            self.safe_sleep(1)  # SMOKDevice not yet initialized
         except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()

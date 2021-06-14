@@ -282,7 +282,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.url = 'http://http-api'
 
         self.api = RequestsAPI(self)
-        self.log_publisher = LogPublisherThread(self).start()
+        self.log_publisher = LogPublisherThread(self)
 
         self._order_queue = PeekableQueue()
         if not (dont_do_archives and dont_do_macros):
@@ -313,7 +313,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                     logger.debug('Using HTTP API to sync data and logs')
                 self.executor.start()
                 self.getter.start()
+                self.log_publisher.start()
         else:
+            self.sync_worker = None
             self.executor = None
             self.getter = None
 
@@ -334,6 +336,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         Optional(self.executor).start()
         Optional(self.getter).start()
         Optional(self.arch_and_macros).start()
+        self.log_publisher.start()
 
     def log_sensor_write(self, sw: SensorWriteEvent):
         """
