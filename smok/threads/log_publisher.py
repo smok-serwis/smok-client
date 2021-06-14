@@ -41,8 +41,12 @@ class LogPublisherThread(TerminableThread):
     @retry(3, exc_classes=SyncError)
     def sync(self, lst: tp.List[dict]):
         try:
-            self.device.sync_worker.sync_logs(lst)
-            self.device.on_successful_sync()
+            try:
+                self.device.sync_worker.sync_logs(lst)
+                self.device.on_successful_sync()
+            except Exception as e:
+                logger.error('exception %s', e, exc_info=e)
+                raise
         except AttributeError:
             self.safe_sleep(1)  # SMOKDevice not yet initialized
         except SyncError as e:
