@@ -182,9 +182,9 @@ class ReadOrder(Order, ReprableMixin):
 
     def __str__(self) -> str:
         if self.advise != AdviseLevel.ADVISE:
-            return 'ReadOrder(%s)' % (repr(self.pathpoint), )
-        else:
             return 'ReadOrder(%s, %s)' % (repr(self.pathpoint), self.advise)
+        else:
+            return 'ReadOrder(%s)' % (repr(self.pathpoint), )
 
     def __repr__(self) -> str:
         return str(self)

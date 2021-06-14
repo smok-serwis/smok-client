@@ -8,6 +8,7 @@ v0.16
 * new feature: pathpoint and log upload via NGTT
 * added NGTT module
 * Section does not need to be confirmed by the custom executor
+* orders now are str-able
 
 v0.15.1
 ~~~~~~~
