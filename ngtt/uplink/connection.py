@@ -55,7 +55,7 @@ class NGTTSocket(Closeable):
         Schedule a frame to be sent.
 
         This will be actually send in a background thread. May have a delay of
-        up to 5 seconds, which is acceptable.
+        up to 1 second, which is acceptable.
 
         :param tid: transaction ID
         :param header: packet type
