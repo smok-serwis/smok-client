@@ -172,8 +172,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         If this is not overridden, standard executor logic will be applied.
 
-        Note that if you decide to override that you got to call
-        :meth:`~smok.pathpoint.Section.mark_as_done` manually.
+        This will not provide you with cancelled sections. You also do not need to mark
+        sections as complete, as this is done by the executor thread.
 
         Called by the order executor thread. If this is defined, then
         :meth:`~smok.client.SMOKDevice.sync_sections` is necessary as well, so this should just

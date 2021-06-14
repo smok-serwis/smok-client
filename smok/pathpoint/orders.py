@@ -5,6 +5,7 @@ import typing as tp
 from concurrent.futures import Future
 
 from satella.coding.structures import ReprableMixin
+from satella.coding.concurrent import FutureCollection
 
 from .typing import PathpointValueType
 
@@ -206,14 +207,15 @@ class Section(ReprableMixin):
         If this future is cancelled, and section did not start executing, it will be.
     """
     _REPR_FIELDS = ('orders', 'disposition')
-    __slots__ = ('orders', 'disposition', 'future')
+    __slots__ = 'orders', 'disposition', 'future', 'cancelled'
 
     def __init__(self, orders: tp.List[Order] = None,
                  disposition: Disposition = Disposition.JOINABLE):
 
-        self.future = Future()
+        self.future = FutureCollection([Future()])
         self.orders = orders or []
         self.disposition = disposition
+        self.cancelled = False
 
     def __str__(self) -> str:
         if self.disposition == Disposition.JOINABLE:
@@ -230,8 +232,13 @@ class Section(ReprableMixin):
         """
         self.future.set_result(None)
 
-    def cancel(self) -> bool:
-        return self.future.cancel()
+    def cancel(self) -> None:
+        """
+        Cancel the order
+        """
+        # we still need to execute the callbacks, as they might be holding an AMQP message
+        # somewhere...
+        self.cancelled = True
 
     def result(self, timeout: tp.Optional[float] = None):
         self.future.result(timeout)
@@ -243,16 +250,27 @@ class Section(ReprableMixin):
     def from_json(cls, dct: dict):
         return Section(orders_from_list(dct['orders']), Disposition(dct.get('disposition', 0)))
 
-    def __iadd__(self, other: tp.Union[Order, 'Section']) -> 'Section':
+    def __iadd__(self, other: tp.Union[Order, 'Section', tp.Sequence['Section']]) -> 'Section':
         if isinstance(other, Order):
             self.orders.append(other)
+        elif isinstance(other, tp.Sequence):
+            self.orders.extend(other)
         else:
             self.orders.extend(other.orders)
-            self.future = other.future
+            self.future += other.future
         return self
 
     def is_joinable(self) -> bool:
         return self.disposition == Disposition.JOINABLE
+
+    def mark_as_being_executed(self) -> bool:
+        """
+        Mark this section as executed right now
+
+        :return: whether is should be executed (False if cancelled)
+        """
+        self.future.set_running_or_notify_cancel()
+        return not self.cancelled
 
     def max_wait(self) -> tp.Optional[float]:
         wait = None

@@ -149,22 +149,20 @@ class OrderExecutorThread(TerminableThread):
 
         orders = section.orders
 
-        if self.device.__class__.execute_section is SMOKDevice.execute_section:
-            if not section.future.set_running_or_notify_cancel():
-                return  # Section cancelled
+        if section.mark_as_being_executed():
+            if self.device.__class__.execute_section is SMOKDevice.execute_section:
+                with measure() as measurement:
+                    while orders and not self.terminating:
+                        orders = self.process_orders(orders)
 
-            with measure() as measurement:
-                while orders and not self.terminating:
-                    orders = self.process_orders(orders)
+                time_to_wait = section.max_wait()
+                if time_to_wait is not None:
+                    if measurement() < time_to_wait:
+                        self.safe_sleep(time_to_wait - measurement())
 
-            time_to_wait = section.max_wait()
-            if time_to_wait is not None:
-                if measurement() < time_to_wait:
-                    self.safe_sleep(time_to_wait - measurement())
-
-            section.mark_as_done()
-        else:
-            self.device.execute_section(section)
+            else:
+                self.device.execute_section(section)
+        section.mark_as_done()
 
     @queue_get('queue', 5)
     def loop(self, section: Section):
