@@ -144,6 +144,7 @@ class NGTTConnection(TerminableThread):
 
         self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
         self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
+        logger.debug('Sending sync frame %s', tid)
         self.op_id_to_op[tid] = fut
         return fut
 
@@ -172,7 +173,9 @@ class NGTTConnection(TerminableThread):
             self.on_new_order(order)
         elif frame.packet_type in (
                 NGTTHeaderType.DATA_STREAM_REJECT, NGTTHeaderType.DATA_STREAM_CONFIRM):
+            logger.debug('Got confirmation for data stream %s', frame.tid)
             if frame.tid in self.op_id_to_op:
+                logger.debug('This was a known confirmation')
                 # Assume it's a data stream running
                 fut = self.op_id_to_op.pop(frame.tid)
 
@@ -183,6 +186,9 @@ class NGTTConnection(TerminableThread):
                     fut.set_result(None)
                 elif frame.packet_type == NGTTHeaderType.DATA_STREAM_REJECT:
                     fut.set_exception(DataStreamSyncFailed())
+            else:
+                logger.debug('This was an unknown confirmation')
+
         elif frame.packet_type == NGTTHeaderType.SYNC_BAOB_RESPONSE:
             if frame.tid in self.op_id_to_op:
                 fut = self.op_id_to_op.pop(frame.tid)
