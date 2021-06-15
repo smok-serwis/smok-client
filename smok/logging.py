@@ -32,11 +32,16 @@ class SMOKLogHandler(Handler, Monitor):
     def record_to_json(self, record: LogRecord):
         ts = self.timestamper.no_less_than(time_us())
 
-        # noinspection PyBroadException
         try:
             msg = self.format(record)
         except (TypeError, ValueError):
-            msg = record.message + ' ' + ','.join(map(repr, record.args))
+            try:
+                msg = record.message + ' ' + ','.join(map(repr, record.args))
+            except AttributeError: # record nas no attribute .message
+                try:
+                    msg = str(record)
+                except TypeError:
+                    msg = '<empty>'
 
         if len(msg) > 1000:
             msg_content = base64.b64encode(
