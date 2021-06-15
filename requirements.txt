@@ -1,4 +1,4 @@
-satella>=2.16.5
+satella>=2.17.7
 requests
 pyasn1
 cryptography
