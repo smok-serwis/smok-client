@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.16.1
+~~~~~~~
+
+* removed redundant logging
+
 v0.16
 ~~~~~
 

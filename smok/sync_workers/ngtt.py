@@ -30,12 +30,10 @@ class NGTTSyncWorker(BaseSyncWorker):
         time.sleep(5)  # Give it some time to connect
 
     def process_orders(self, orders: Order):
-        logger.info('Received orders %s', orders)
         sections = sections_from_list(orders.data)
 
         def confirm(fut):
             orders.acknowledge()
-            logger.info('Acknowledged orders')
 
         sections[-1].future.add_done_callback(confirm)
         self.device.executor.queue.put_many(sections)
@@ -46,7 +44,6 @@ class NGTTSyncWorker(BaseSyncWorker):
         """
         try:
             self.connection.sync_pathpoints(data).result()
-            logger.info('Successfully synchronized data')
         except DataStreamSyncFailed:
             raise SyncError(False, True)
         except ConnectionFailed as e:
