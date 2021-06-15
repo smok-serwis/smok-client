@@ -5,6 +5,7 @@ v0.16.1
 ~~~~~~~
 
 * removed redundant logging
+* logging is mow more bulletproof
 
 v0.16
 ~~~~~
