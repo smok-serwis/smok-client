@@ -235,11 +235,13 @@ class CommunicatorThread(TerminableThread):
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
+            logger.info('Got nothing to sync')
             return
         try:
             data = sync.to_json()
             if not data:
                 sync.acknowledge()
+                logger.info('Acknowledging nothing')
                 return
             self.device.sync_worker.sync_pathpoints(redo_data(data))
             logger.info('Synced data correctly')
