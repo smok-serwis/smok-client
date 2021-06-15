@@ -242,9 +242,11 @@ class CommunicatorThread(TerminableThread):
                 sync.acknowledge()
                 return
             self.device.sync_worker.sync_pathpoints(redo_data(data))
+            logger.info('Synced data correctly')
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:
+            logger.info('Failed to sync data')
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
