@@ -75,6 +75,8 @@ class NGTTSocket(Closeable):
         """
         if self.w_buffer:
             data_sent = self.socket.send(self.w_buffer)
+            logger.info('Just trying to send %s bytes, got %s bytes sent', len(self.w_buffer),
+                        data_sent)
             del self.w_buffer[:data_sent]
 
     @RMonitor.synchronize_on_attribute('monitor')
