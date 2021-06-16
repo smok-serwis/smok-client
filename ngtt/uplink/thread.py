@@ -209,7 +209,7 @@ class NGTTConnection(TerminableThread):
 
         try:
             self.inner_loop()
-        except ConnectionFailed as e:
+        except ConnectionFailed:
             self.cleanup()
 
     def cleanup(self):
