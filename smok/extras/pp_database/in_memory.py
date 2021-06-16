@@ -13,7 +13,7 @@ class InMemoryDataToSynchronize(BaseDataToSynchronize):
     def negative_acknowledge(self) -> None:
         pass
 
-    __slots__ = ('in_memory', 'data')
+    __slots__ = 'in_memory', 'data'
 
     def __init__(self, in_memory: 'InMemoryPathpointDatabase', data: tp.List):
         self.in_memory = in_memory

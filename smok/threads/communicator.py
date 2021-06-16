@@ -229,9 +229,7 @@ class CommunicatorThread(TerminableThread):
                 logger.warning('Got HTTP %s on sync sensor writes, acking', e.status_code)
                 sync.ack()
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, SyncError)
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
@@ -248,13 +246,11 @@ class CommunicatorThread(TerminableThread):
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:
-            logger.info('Failed to sync data')
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
                 logger.debug('Failed to sync data', exc_info=e)
                 sync.negative_acknowledge()
-                raise
             else:
                 logger.warning('Got HTTP %s while syncing pathpoint data. '
                                'Assuming is it damaged and marking as synced', e.status_code)

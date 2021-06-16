@@ -6,6 +6,9 @@ v0.16.1
 
 * removed redundant logging
 * logging is mow more bulletproof
+* bugfixes:
+    * syncing data via NGTT can survive a connection reset
+    * failing to sync data will not kill CommunicatorThread anymore
 
 v0.16
 ~~~~~

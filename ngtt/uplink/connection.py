@@ -142,6 +142,7 @@ class NGTTSocket(Closeable):
             except OSError as e:
                 logger.error('Failure to remove certificate chain file %s', self.chain_file_name,
                              exc_info=e)
+
             for future in self.futures.values():
                 future.set_exception(ConnectionFailed(False, 'closing the link'))
 
