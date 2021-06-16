@@ -159,11 +159,13 @@ class NGTTConnection(TerminableThread):
             self.on_new_order(order)
         elif frame.packet_type in (
                 NGTTHeaderType.DATA_STREAM_REJECT, NGTTHeaderType.DATA_STREAM_CONFIRM):
-            logger.debug('Got confirmation for data stream %s', frame.tid)
-            if frame.tid in self.current_connection.futures:
+            tid = frame.tid
+            logger.debug('Got confirmation for data stream %s', tid)
+            if tid in self.current_connection.futures:
+                self.current_connection.id_assigner.mark_as_free(tid)
                 logger.debug('This was a known confirmation')
                 # Assume it's a data stream running
-                fut = self.current_connection.futures.pop(frame.tid, None)
+                fut = self.current_connection.futures.pop(tid, None)
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
