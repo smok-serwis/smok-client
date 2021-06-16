@@ -262,14 +262,12 @@ class CommunicatorThread(TerminableThread):
 
             for key_to_delete in data['should_delete']:
                 self.device.baob_database.delete_baob(key_to_delete)
-                logger.debug('Deleted BAOB %s', key_to_delete)
 
             for key_to_download in data['should_download']:
                 resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
                                                     direct_response=True)
                 self.device.baob_database.set_baob_value(key_to_download, resp,
                                                          int(headers['X-SMOK-BAOB-Version']))
-                logger.debug('Downloaded BAOB %s', key_to_download)
                 if self.last_baob_synced:
                     self.device.on_baob_updated(key_to_download)
 
@@ -281,7 +279,6 @@ class CommunicatorThread(TerminableThread):
                             key_to_upload)}).encode(
                         'utf8')
                 })
-                logger.debug('Uploaded BAOB %s', key_to_upload)
             self.last_baob_synced = time.monotonic()
             self.device.on_successful_sync()
         except ResponseError as e:
