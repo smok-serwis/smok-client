@@ -92,9 +92,7 @@ class CommunicatorThread(TerminableThread):
             if kwargs != new_kwargs:
                 self.device.pred_database.update_predicate(new_kwargs)
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def sync_events(self) -> None:
         evt_to_sync = self.device.evt_database.get_events_to_sync()
         if evt_to_sync is None:
@@ -112,9 +110,7 @@ class CommunicatorThread(TerminableThread):
             evt_to_sync.negative_acknowledge()
             raise
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.ERROR, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def sync_predicates(self) -> None:
         try:
             resp = self.device.api.get('/v1/device/predicates')
@@ -176,9 +172,7 @@ class CommunicatorThread(TerminableThread):
         lst = [predicate.to_kwargs() for predicate in self.device.predicates.values()]
         self.device.pred_database.set_new_predicates(lst)
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def sync_sensors(self) -> None:
         try:
             resp = self.device.api.get('/v1/device/sensors')
@@ -192,9 +186,7 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def fetch_orders(self) -> None:
         try:
             resp = self.device.api.post('/v1/device/orders')
@@ -207,9 +199,7 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def sync_sensor_writes(self) -> None:
         sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
@@ -256,9 +246,7 @@ class CommunicatorThread(TerminableThread):
         self._sync_baob()
         self.device.baobs_loaded = True
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def _sync_baob(self) -> None:
         try:
             keys = self.device.baob_database.get_all_keys()
@@ -301,9 +289,7 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             raise
 
-    @silence_excs(ResponseError)
-    @log_exceptions(logger, logging.DEBUG, exc_types=ResponseError)
-    @retry(3, ResponseError, swallow_exception=False)
+    @retry(3, ResponseError)
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
@@ -382,7 +368,7 @@ class CommunicatorThread(TerminableThread):
 
             # Wait for variables to refresh, do we need to upload any?
             time_to_wait = COMMUNICATOR_INTERVAL - measurement()
-            while time_to_wait > 0.1:  # for float roundings
+            while time_to_wait > 0.1 and not self.terminating:  # for float roundings
                 try:
                     ttw = min(time_to_wait, 5)
                     self.data_to_update.wait(timeout=ttw)
