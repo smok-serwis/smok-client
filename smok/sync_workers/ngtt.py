@@ -2,14 +2,11 @@ import logging
 import time
 import typing as tp
 
-from satella.coding import silence_excs
-
 from ngtt.exceptions import ConnectionFailed, DataStreamSyncFailed
 from ngtt.orders import Order
 from smok.pathpoint.orders import sections_from_list
 from smok.sync_workers.base import BaseSyncWorker, SyncError
 from ngtt.uplink import NGTTConnection
-from concurrent.futures import TimeoutError as FutureTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +44,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         """
         try:
             fut = self.connection.sync_pathpoints(data)
-            while not fut.done():
-                with silence_excs(FutureTimeoutError):
-                    fut.result(10)
-                logger.info('Still waiting for that sync')
+            fut.result()
         except DataStreamSyncFailed:
             raise SyncError(False, True)
         except ConnectionFailed as e:

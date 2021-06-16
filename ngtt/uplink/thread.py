@@ -130,7 +130,6 @@ class NGTTConnection(TerminableThread):
             raise ConnectionFailed(False, 'Ran out of IDs to assign')
 
         self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
-        logger.debug('Sending sync frame %s', tid)
         self.current_connection.futures[tid] = fut
         return fut
 
@@ -160,10 +159,8 @@ class NGTTConnection(TerminableThread):
         elif frame.packet_type in (
                 NGTTHeaderType.DATA_STREAM_REJECT, NGTTHeaderType.DATA_STREAM_CONFIRM):
             tid = frame.tid
-            logger.debug('Got confirmation for data stream %s', tid)
             if tid in self.current_connection.futures:
                 self.current_connection.id_assigner.mark_as_free(tid)
-                logger.debug('This was a known confirmation')
                 # Assume it's a data stream running
                 fut = self.current_connection.futures.pop(tid, None)
 
