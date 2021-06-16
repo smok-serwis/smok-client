@@ -104,8 +104,8 @@ class NGTTConnection(TerminableThread):
                 eb.failed()
                 eb.sleep()
 
-        if self.terminating:
-            return
+            if self.terminating:
+                return
 
     @must_be_connected_else_raise
     @for_argument(None, minijson.dumps)
@@ -183,6 +183,7 @@ class NGTTConnection(TerminableThread):
         try:
             self.inner_loop()
         except ConnectionFailed:
+            logger.debug('Connection failed')
             self.cleanup()
 
     def cleanup(self):

@@ -9,6 +9,7 @@ from ssl import SSLContext, PROTOCOL_TLS_CLIENT, SSLError, CERT_REQUIRED
 
 from satella.coding import silence_excs, reraise_as, Closeable, RMonitor
 from satella.coding.concurrent import IDAllocator
+from satella.coding.optionals import Optional
 from satella.exceptions import Empty
 from satella.files import read_in_file
 
@@ -149,11 +150,10 @@ class NGTTSocket(Closeable):
         """
         Disconnect from the remote host
         """
-        if self.socket is not None:
-            with silence_excs(OSError):
-                self.socket.close()
-            self.socket = None
-            self.connected = False
+        with silence_excs(OSError):
+            Optional(self.socket).close()
+        self.socket = None
+        self.connected = False
 
     @RMonitor.synchronize_on_attribute('monitor')
     def connect(self):
@@ -190,3 +190,4 @@ class NGTTSocket(Closeable):
         self.w_buffer = bytearray()
         self.connected = True
         self.ping_id = None
+        logger.debug('Successfully reconnected')

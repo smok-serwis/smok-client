@@ -4,6 +4,7 @@ Changelog
 v0.16.2
 ~~~~~~~
 
+* fixed reconnecting
 
 v0.16.1
 ~~~~~~~
