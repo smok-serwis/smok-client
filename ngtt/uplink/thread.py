@@ -213,6 +213,9 @@ class NGTTConnection(TerminableThread):
             self.cleanup()
 
     def cleanup(self):
+        for fut in self.op_id_to_op.values():
+            fut.set_exception(ConnectionFailed())
+        self.op_id_to_op = {}
         Optional(self.current_connection).close()
         self.current_connection = None
 
