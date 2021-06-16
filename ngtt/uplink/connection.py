@@ -83,14 +83,14 @@ class NGTTSocket(Closeable):
     def try_ping(self):
         if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
-            raise ConnectionFailed('timed out due to ping')
+            raise ConnectionFailed(False, 'timed out due to ping')
 
         if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
             try:
                 self.ping_id = self.id_assigner.allocate_int()
             except Empty:
                 logger.error('Ran out of IDs while processing ping send')
-                raise ConnectionFailed('ran out of IDs on ping')
+                raise ConnectionFailed(False, 'ran out of IDs on ping')
 
             self.send_frame(self.ping_id, NGTTHeaderType.PING)
 
@@ -119,7 +119,7 @@ class NGTTSocket(Closeable):
         """
         data = self.socket.recv(512)
         if not data:
-            raise ConnectionFailed('gracefully closed')
+            raise ConnectionFailed(False, 'gracefully closed')
         self.last_read = time.monotonic()
         self.buffer.extend(data)
 

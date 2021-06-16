@@ -115,7 +115,7 @@ class NGTTConnection(TerminableThread):
                 id_ = self.current_connection.id_assigner.allocate_int()
             except Empty as e:
                 logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
-                raise ConnectionFailed('Ran out of IDs to assign')
+                raise ConnectionFailed(False, 'Ran out of IDs to assign')
 
             self.current_connection.send_frame(id_, h_type, data)
             self.op_id_to_op[id_] = fut
@@ -140,7 +140,7 @@ class NGTTConnection(TerminableThread):
             tid = self.current_connection.id_assigner.allocate_int()
         except Empty as e:
             logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
-            raise ConnectionFailed('Ran out of IDs to assign')
+            raise ConnectionFailed(False, 'Ran out of IDs to assign')
 
         self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
         self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
@@ -168,7 +168,7 @@ class NGTTConnection(TerminableThread):
                 data = frame.real_data
             except ValueError:
                 logger.error('Received invalid JSON over the wire')
-                raise ConnectionFailed('Got invalid JSON')
+                raise ConnectionFailed(False, 'Got invalid JSON')
             order = Order(data, frame.tid, self.current_connection)
             self.on_new_order(order)
         elif frame.packet_type in (
