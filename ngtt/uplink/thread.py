@@ -58,8 +58,6 @@ class NGTTConnection(TerminableThread):
         self.stopped = False
         self.key_file = key_file
         self.current_connection = None
-        self.currently_running_ops = []  # type: tp.List[tp.Tuple[NGTTHeaderType, bytes, Future]]
-        self.op_id_to_op = {}  # type: tp.Dict[int, Future]
         self.start()
 
     def stop(self, wait_for_completion: bool = True):
@@ -109,17 +107,6 @@ class NGTTConnection(TerminableThread):
         if self.terminating:
             return
 
-        self.op_id_to_op = {}
-        for h_type, data, fut in self.currently_running_ops:
-            try:
-                id_ = self.current_connection.id_assigner.allocate_int()
-            except Empty as e:
-                logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
-                raise ConnectionFailed(False, 'Ran out of IDs to assign')
-
-            self.current_connection.send_frame(id_, h_type, data)
-            self.op_id_to_op[id_] = fut
-
     @must_be_connected_else_raise
     @for_argument(None, minijson.dumps)
     def sync_pathpoints(self, data) -> Future:
@@ -142,10 +129,9 @@ class NGTTConnection(TerminableThread):
             logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
             raise ConnectionFailed(False, 'Ran out of IDs to assign')
 
-        self.currently_running_ops.append((NGTTHeaderType.DATA_STREAM, data, fut))
         self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
         logger.debug('Sending sync frame %s', tid)
-        self.op_id_to_op[tid] = fut
+        self.current_connection.futures[tid] = fut
         return fut
 
     def inner_loop(self):
@@ -174,13 +160,10 @@ class NGTTConnection(TerminableThread):
         elif frame.packet_type in (
                 NGTTHeaderType.DATA_STREAM_REJECT, NGTTHeaderType.DATA_STREAM_CONFIRM):
             logger.debug('Got confirmation for data stream %s', frame.tid)
-            if frame.tid in self.op_id_to_op:
+            if frame.tid in self.current_connection.futures:
                 logger.debug('This was a known confirmation')
                 # Assume it's a data stream running
-                fut = self.op_id_to_op.pop(frame.tid)
-
-                index = index_of(x[2] == fut, self.currently_running_ops)
-                del self.currently_running_ops[index]
+                fut = self.current_connection.futures.pop(frame.tid, None)
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
@@ -188,15 +171,6 @@ class NGTTConnection(TerminableThread):
                     fut.set_exception(DataStreamSyncFailed())
             else:
                 logger.debug('This was an unknown confirmation')
-
-        elif frame.packet_type == NGTTHeaderType.SYNC_BAOB_RESPONSE:
-            if frame.tid in self.op_id_to_op:
-                fut = self.op_id_to_op.pop(frame.tid)
-
-                index = index_of(x[2] == fut, self.currently_running_ops)
-                del self.currently_running_ops[index]
-
-                fut.set_result(frame.real_data)
 
     def loop(self) -> None:
         try:
@@ -213,9 +187,6 @@ class NGTTConnection(TerminableThread):
             self.cleanup()
 
     def cleanup(self):
-        for fut in self.op_id_to_op.values():
-            fut.set_exception(ConnectionFailed())
-        self.op_id_to_op = {}
         Optional(self.current_connection).close()
         self.current_connection = None
 

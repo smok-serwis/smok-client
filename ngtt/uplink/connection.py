@@ -38,6 +38,7 @@ class NGTTSocket(Closeable):
         self.buffer = bytearray()
         self.w_buffer = bytearray()
         self.ping_id = None
+        self.futures = {}
         self.last_read = time.monotonic()
         with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
             chain_file.write(get_dev_ca_cert())
@@ -141,6 +142,8 @@ class NGTTSocket(Closeable):
             except OSError as e:
                 logger.error('Failure to remove certificate chain file %s', self.chain_file_name,
                              exc_info=e)
+            for future in self.futures.values():
+                future.set_exception(ConnectionFailed(False, 'closing the link'))
 
     @RMonitor.synchronize_on_attribute('monitor')
     def disconnect(self):
