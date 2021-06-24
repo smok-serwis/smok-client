@@ -34,7 +34,7 @@ class SMOKLogHandler(Handler, Monitor):
         self.timestamper = SequentialIssuer(time_us())
 
         mpm = MemoryPressureManager()
-        self.mem_callback = mpm.register_on_entered_severity(1)(self.prune_the_queue)
+        self.mem_callback = mpm.register_on_entered_severity(2)(self.prune_the_queue)
 
     def __del__(self):
         self.mem_callback.cancel()
