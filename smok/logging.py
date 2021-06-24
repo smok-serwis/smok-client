@@ -1,3 +1,4 @@
+import logging
 import base64
 import gzip
 from logging import LogRecord, Handler
@@ -6,10 +7,13 @@ import ujson
 from satella.coding import Monitor
 from satella.coding.concurrent import SequentialIssuer
 from satella.instrumentation import Traceback, frame_from_traceback
+from satella.instrumentation.memory import MemoryPressureManager
 from satella.time import time_us
 from smok.threads.log_publisher import MAX_LOG_BUFFER_SIZE
 
 __all__ = ['SMOKLogHandler']
+
+logger = logging.getLogger(__name__)
 
 
 class SMOKLogHandler(Handler, Monitor):
@@ -28,6 +32,17 @@ class SMOKLogHandler(Handler, Monitor):
         self.device = device
         # So timestamps inserted will be monotonically increasing
         self.timestamper = SequentialIssuer(time_us())
+
+        mpm = MemoryPressureManager()
+        self.mem_callback = mpm.register_on_entered_severity(1)(self.prune_the_queue)
+
+    def __del__(self):
+        self.mem_callback.cancel()
+
+    def prune_the_queue(self):
+        while self.device.log_publisher.queue.qsize():
+            self.device.log_publisher.queue.get()
+        logger.error('Pruned the log queue thanks to low memory condition')
 
     def record_to_json(self, record: LogRecord):
         ts = self.timestamper.no_less_than(time_us())

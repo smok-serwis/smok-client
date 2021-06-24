@@ -5,6 +5,7 @@ v0.16.2
 ~~~~~~~
 
 * fixed reconnecting
+* SMOKLogHandler will prune the log queue if on a low memory condition
 
 v0.16.1
 ~~~~~~~
