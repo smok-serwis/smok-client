@@ -16,8 +16,6 @@ class NGTTHeaderType(HashableIntEnum):
     DATA_STREAM = 4  #: sent by the client
     DATA_STREAM_CONFIRM = 5  #: sent by the server
     DATA_STREAM_REJECT = 6  #: sent by the server
-    SYNC_BAOB_REQUEST = 7  #: sent by the client
-    SYNC_BAOB_RESPONSE = 8  #: sent by the server
     ORDER_REJECT = 9  #: sent by the client, currently unused (by the client)
     FETCH_ORDERS = 10  #: a request by the client to fetch orders
 
