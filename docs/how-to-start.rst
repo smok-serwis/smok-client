@@ -131,6 +131,12 @@ but also a new one:
 
     sd.close()      # this may block for like 10 seconds
 
+Logging
+-------
+
+You might want to set the logging level for :code:`ngtt` to :code:`ERROR`, since it will spam with
+different messages up to :code:`WARNING` in severity for it's normal operation.
+
 Threads
 -------
 

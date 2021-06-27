@@ -126,7 +126,7 @@ class NGTTConnection(TerminableThread):
         try:
             tid = self.current_connection.id_assigner.allocate_int()
         except Empty as e:
-            logger.critical('Ran out of IDs with a NGTT connection', exc_info=e)
+            logger.error('Ran out of IDs with a NGTT connection', exc_info=e)
             raise ConnectionFailed(False, 'Ran out of IDs to assign')
 
         self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
@@ -174,7 +174,8 @@ class NGTTConnection(TerminableThread):
     def loop(self) -> None:
         try:
             self.connect()
-        except ConnectionFailed:
+        except ConnectionFailed as e:
+            logger.warning('Failure during connect', exc_info=e)
             return
 
         if self.terminating:
@@ -182,8 +183,8 @@ class NGTTConnection(TerminableThread):
 
         try:
             self.inner_loop()
-        except ConnectionFailed:
-            logger.debug('Connection failed')
+        except ConnectionFailed as e:
+            logger.warning('Connection failed', exc_info=e)
             self.cleanup()
 
     def cleanup(self):

@@ -4,7 +4,7 @@ Changelog
 v0.16.3
 ~~~~~~~
 
-* _TBA_
+* improved logging for NGTT
 
 v0.16.2
 ~~~~~~~
