@@ -6,6 +6,7 @@ v0.16.3
 
 * improved logging for NGTT
 * improved behaviour of the logging subsystem on low memory conditions
+* improved behaviour of connection resetting
 
 v0.16.2
 ~~~~~~~

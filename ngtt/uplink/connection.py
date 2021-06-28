@@ -126,12 +126,11 @@ class NGTTSocket(Closeable):
 
         result = NGTTFrame.from_buffer(self.buffer)
         if result is None:
-            return
-        else:
-            length, frame = result
-            del self.buffer[:length]
-            return frame
-        return None
+            return None
+
+        length, frame = result
+        del self.buffer[:length]
+        return frame
 
     @RMonitor.synchronize_on_attribute('monitor')
     def close(self):

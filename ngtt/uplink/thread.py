@@ -2,7 +2,7 @@ import logging
 from concurrent.futures import Future
 
 import minijson
-from satella.coding import wraps, for_argument, silence_excs
+from satella.coding import wraps, for_argument, silence_excs, rethrow_as
 from satella.coding.optionals import Optional
 from satella.coding.predicates import x
 from satella.coding.sequences import index_of
@@ -140,7 +140,8 @@ class NGTTConnection(TerminableThread):
                                    ccon if self.current_connection.wants_write else [], [],
                                    1)
         if wx:
-            self.current_connection.try_send()
+            with rethrow_as(ConnectionResetError, ConnectionFailed):
+                self.current_connection.try_send()
         if not rx:
             return
         frame = self.current_connection.recv_frame()
