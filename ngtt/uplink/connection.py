@@ -81,23 +81,24 @@ class NGTTSocket(Closeable):
 
     @RMonitor.synchronize_on_attribute('monitor')
     def try_ping(self):
-        if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
+        delta = time.monotonic() - self.last_read
+        if delta > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
             raise ConnectionFailed(False, 'timed out due to ping')
-
-        if time.monotonic() - self.last_read > PING_INTERVAL_TIME and self.ping_id is None:
+        elif delta > PING_INTERVAL_TIME and self.ping_id is None:
             try:
                 self.ping_id = self.id_assigner.allocate_int()
             except Empty:
                 logger.error('Ran out of IDs while processing ping send')
                 raise ConnectionFailed(False, 'ran out of IDs on ping')
-
+            logger.debug('Sending PING')
             self.send_frame(self.ping_id, NGTTHeaderType.PING)
 
     @RMonitor.synchronize_on_attribute('monitor')
     def got_ping(self):
         if self.ping_id is not None:
             self.id_assigner.mark_as_free(self.ping_id)
+            logger.debug('Received PING')
             self.last_read = time.monotonic()
             self.ping_id = None
 
