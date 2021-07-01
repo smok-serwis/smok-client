@@ -16,13 +16,6 @@ before_script:
 jobs:
   include:
     - stage: test
-      python: "3.5"
-      script:
-        - pytest -n 8 --cov=smok --cov=ngtt
-      after_script:
-        - coverage xml
-        - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
-    - stage: test
       python: "3.6"
       script:
         - pytest -n 8 --cov=smok --cov=ngtt
@@ -50,10 +43,6 @@ jobs:
       after_script:
         - coverage xml
         - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
-    - stage: test
-      python: "pypy3.5"
-      script:
-        - pytest -n 8
     - stage: deploy
       python: "3.8"
       script:
