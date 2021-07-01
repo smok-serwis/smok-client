@@ -3,7 +3,7 @@ import minijson
 import struct
 import typing as tp
 
-from satella.coding.structures import HashableIntEnum
+from satella.coding.structures import HashableIntEnum, ReprableMixin
 
 from .exceptions import InvalidFrame
 
@@ -23,7 +23,7 @@ class NGTTHeaderType(HashableIntEnum):
 STRUCT_LHH = struct.Struct('>LHH')
 
 
-class NGTTFrame:
+class NGTTFrame(ReprableMixin):
     """
     A basic NGTT protocol frame. It's big endian. It starts with a header of:
 
@@ -38,14 +38,12 @@ class NGTTFrame:
     :param packet_type: type of the packet
     :param data: data. Any class that has a __bytes__ property will do.
     """
+    _REPR_FIELDS = 'tid', 'packet_type', 'data'
 
-    def __init__(self, tid: int, packet_type: NGTTHeaderType, data):
+    def __init__(self, tid: int, packet_type: NGTTHeaderType, data=b''):
         self.tid = tid
         self.packet_type = packet_type
         self.data = bytes(data)
-
-    def __repr__(self) -> str:
-        return 'NGTTFrame(%s, %s, %s)' % (self.tid, self.packet_type, repr(self.data))
 
     def __str__(self) -> str:
         return repr(self)
@@ -85,6 +83,8 @@ class NGTTFrame:
         if len(buffer) < STRUCT_LHH.size:
             return None
         length, tid, h_type = STRUCT_LHH.unpack(buffer[:STRUCT_LHH.size])
+        if not length:
+            return STRUCT_LHH.size, NGTTFrame(tid, NGTTHeaderType(h_type))
         if len(buffer) < length + STRUCT_LHH.size:
             return None
         return length + STRUCT_LHH.size, NGTTFrame(tid, NGTTHeaderType(h_type),
