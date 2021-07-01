@@ -20,6 +20,7 @@ from ..protocol import NGTTHeaderType, STRUCT_LHH, env_to_hostname, NGTTFrame
 
 PING_INTERVAL_TIME = 30
 INTERVAL_TIME_NO_RESPONSE_KILL = 70
+INTERVAL_TIME_NO_RESPONSE_READ_KILL = 120
 logger = logging.getLogger(__name__)
 
 
@@ -90,7 +91,7 @@ class NGTTSocket(Closeable):
     def try_ping(self):
         delta = time.monotonic() - self.last_write
 
-        if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
+        if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_READ_KILL \
                 and self.ping_id is not None:
             raise ConnectionFailed(False, 'timed out due to ping (read-side)')
         elif delta > INTERVAL_TIME_NO_RESPONSE_KILL \
@@ -99,9 +100,9 @@ class NGTTSocket(Closeable):
         elif delta > PING_INTERVAL_TIME and self.ping_id is None:
             try:
                 self.ping_id = self.id_assigner.allocate_int()
-            except Empty:
+            except Empty as e:
                 logger.error('Ran out of IDs while processing ping send')
-                raise ConnectionFailed(False, 'ran out of IDs on ping')
+                raise ConnectionFailed(False, 'ran out of IDs on ping') from e
             logger.debug('Sending PING')
             self.send_frame(self.ping_id, NGTTHeaderType.PING)
 
