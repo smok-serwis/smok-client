@@ -9,6 +9,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/657b03d115f6e001633c/test_coverage)](https://codeclimate.com/github/smok-serwis/smok-client/test_coverage)
 [![Wheel](https://img.shields.io/pypi/wheel/smok.svg)](https://pypi.org/project/smok/)
 [![Build Status](https://travis-ci.com/smok-serwis/smok-client.svg)](https://travis-ci.com/smok-serwis/smok-client)
+[![License](https://img.shields.io/pypi/l/smok)](https://github.com/smok-serwis/smok-client)
 
 `smok` is a definitive library to write programs that behave as SMOK devices.
 It is principally a consumer of [the SMOK API](https://api.smok.co/).
