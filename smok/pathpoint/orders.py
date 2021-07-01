@@ -28,29 +28,20 @@ class Order:
     """Base class for all orders"""
     __slots__ = ()
 
-    def __repr__(self) -> str:
-        return str(type(self))
-
-    def __str__(self) -> str:
-        return str(type(self))
-
 
 class SysctlOrder(Order, ReprableMixin):
     """
     A sysctl order. These are completely user-defined.
     """
-    _REPR_FIELDS = ('op_type', 'op_args')
-    __slots__ = ('op_type', 'op_args')
+    _REPR_FIELDS = 'op_type', 'op_args'
+    __slots__ = 'op_type', 'op_args'
 
     def __init__(self, op_type: str, op_args: str):
         self.op_type = op_type
         self.op_args = op_args
 
     def __str__(self) -> str:
-        return 'SysctlOrder(%s, %s)' % (repr(self.op_type), repr(self.op_args))
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
     @classmethod
     def from_json(cls, dct: dict) -> 'SysctlOrder':
@@ -62,18 +53,15 @@ class MessageOrder(Order, ReprableMixin):
     A message order. Best executed with
     :meth:`smok.client.SMOKDevice._execute_message_order`
     """
-    _REPR_FIELDS = ('uuid', 'times_retry')
-    __slots__ = ('uuid', 'times_retry')
+    _REPR_FIELDS = 'uuid', 'times_retry'
+    __slots__ = 'uuid', 'times_retry'
 
     def __init__(self, uuid: str):
         self.uuid = uuid
         self.times_retry = 3
 
     def __str__(self) -> str:
-        return 'MessageOrder(%s)' % (repr(self.uuid),)
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
     def fail(self) -> bool:
         self.times_retry -= 1
@@ -101,10 +89,7 @@ class WaitOrder(Order, ReprableMixin):
         return WaitOrder(dct['time'])
 
     def __str__(self) -> str:
-        return 'WaitOrder(%s)' % (self.period,)
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
 
 class WriteOrder(Order, ReprableMixin):
@@ -117,8 +102,8 @@ class WriteOrder(Order, ReprableMixin):
     :param stale_after: optional timestamp in seconds, after which this write
         will be discarded
     """
-    _REPR_FIELDS = ('pathpoint', 'value', 'advise', 'stale_after')
-    __slots__ = ('pathpoint', 'value', 'advise', 'stale_after', 'repeat_count')
+    _REPR_FIELDS = 'pathpoint', 'value', 'advise', 'stale_after'
+    __slots__ = 'pathpoint', 'value', 'advise', 'stale_after', 'repeat_count'
 
     def __init__(self, pathpoint: str, value: PathpointValueType, advise: AdviseLevel,
                  stale_after: tp.Optional[float] = None):
@@ -134,21 +119,7 @@ class WriteOrder(Order, ReprableMixin):
         return self.stale_after > time.time()
 
     def __str__(self) -> str:
-        pp = repr(self.pathpoint)
-        v = repr(self.value)
-        if self.advise != AdviseLevel.ADVISE:
-            if self.stale_after is not None:
-                return 'WriteOrder(%s, %s, %s, %s)' % (pp, v, self.advise, self.stale_after)
-            else:
-                return 'WriteOrder(%s, %s, %s)' % (pp, v, self.advise)
-        else:
-            if self.stale_after is not None:
-                return 'WriteOrder(%s, %s, stale_after=%s)' % (pp, v, self.stale_after)
-            else:
-                return 'WriteOrder(%s, %s)' % (pp, v)
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
     def fail(self) -> bool:
         """
@@ -172,7 +143,7 @@ class ReadOrder(Order, ReprableMixin):
     :param pathpoint: pathpoint to read
     :param advise: advise level
     """
-    _REPR_FIELDS = ('pathpoint', 'advise')
+    _REPR_FIELDS = 'pathpoint', 'advise'
 
     def __init__(self, pathpoint: str, advise: AdviseLevel):
         self.pathpoint = pathpoint
@@ -180,13 +151,7 @@ class ReadOrder(Order, ReprableMixin):
         self.repeat_count = 3 if AdviseLevel.ADVISE else 20
 
     def __str__(self) -> str:
-        if self.advise != AdviseLevel.ADVISE:
-            return 'ReadOrder(%s, %s)' % (repr(self.pathpoint), self.advise)
-        else:
-            return 'ReadOrder(%s)' % (repr(self.pathpoint),)
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
     @classmethod
     def from_json(cls, dct: dict) -> 'ReadOrder':
@@ -249,7 +214,7 @@ class Section(ReprableMixin):
     :ivar future: a future that completes upon this section being finished.
         If this future is cancelled, and section did not start executing, it will be.
     """
-    _REPR_FIELDS = ('orders', 'disposition')
+    _REPR_FIELDS = 'orders', 'disposition'
     __slots__ = 'orders', 'disposition', 'future', 'cancelled'
 
     def __init__(self, orders: tp.List[Order] = None,
@@ -261,13 +226,7 @@ class Section(ReprableMixin):
         self.cancelled = False
 
     def __str__(self) -> str:
-        if self.disposition == Disposition.JOINABLE:
-            return f'<Section({repr(self.orders)})>'
-        else:
-            return f'<Section({repr(self.orders)}, Disposition.CANNOT_JOIN)>'
-
-    def __repr__(self) -> str:
-        return str(self)
+        return repr(self)
 
     def mark_as_done(self) -> None:
         """
