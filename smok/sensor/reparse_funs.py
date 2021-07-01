@@ -138,7 +138,7 @@ def ecre_eval(expression: str, my_locals=None, args: tp.Union[tp.Any, tp.Tuple[t
         my_locals['v0'] = args
     else:
         for index, value in enumerate(args):
-            my_locals[f'v{index}'] = value
+            my_locals['v%s' % (index, )] = value
 
     my_locals.update({'d': d, 'D': D, 'ked': ked, 'pt1000': pt1000, 'huba505': huba505,
                       'negz': lambda x: 0 if x < 0 else x,
