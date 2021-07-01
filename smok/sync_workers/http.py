@@ -11,13 +11,13 @@ class HTTPSyncWorker(BaseSyncWorker):
 
     def sync_pathpoints(self, data: tp.List[dict]):
         try:
-            self.api.post('/v1/device/pathpoints', minijson=data, timeout=40)
+            self.api.post('/v1/device/pathpoints', json=data, timeout=40)
         except ResponseError as e:
             raise SyncError(e.is_no_link(), e.status_code // 100 == 4)
 
     def sync_logs(self, data: tp.List[dict]):
         try:
-            self.api.put('/v1/device/device_logs', minijson=data, timeout=20)
+            self.api.put('/v1/device/device_logs', json=data, timeout=20)
         except ResponseError as e:
             raise SyncError(e.is_no_link(), e.status_code // 100 == 4)
 

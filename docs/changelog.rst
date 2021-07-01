@@ -8,6 +8,7 @@ v0.16.3
 * improved behaviour of the logging subsystem on low memory conditions
 * improved behaviour of connection resetting
 * fixed a bug that wouldn't allow smok to run on Python 3.5
+* HTTP API will use minijson everywhere
 
 v0.16.2
 ~~~~~~~

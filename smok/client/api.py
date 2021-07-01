@@ -42,10 +42,8 @@ class RequestsAPI:
         :raises ResponseError: something went wrong
         """
         headers = kwargs.pop('headers', {})
-        if 'minijson' in kwargs:
-            mini = kwargs.pop('minijson')
-            data = minijson.dumps(mini)
-            kwargs['data'] = data
+        if 'json' in kwargs:
+            kwargs['data'] = minijson.dumps(kwargs.pop('json'))
             headers['Content-Type'] = 'application/minijson'
 
         op = getattr(requests, request_type)
