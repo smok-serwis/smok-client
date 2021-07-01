@@ -49,10 +49,10 @@ class Pathpoint(ReprableMixin, OmniHashableMixin):
     :ivar current_value: last readed value or an exception instance
     :ivar device: a weak reference to the device
     """
-    _HASH_FIELDS_TO_USE = ('name',)
-    _REPR_FIELDS = ('name', 'storage_level')
-    __slots__ = ('name', 'storage_level', 'current_value', 'current_timestamp', 'device',
-                 'callable_on_change', 'read_no_often_than', 'last_read')
+    _HASH_FIELDS_TO_USE = 'name',
+    _REPR_FIELDS = 'name', 'storage_level'
+    __slots__ = 'name', 'storage_level', 'current_value', 'current_timestamp', 'device', \
+                'callable_on_change', 'read_no_often_than', 'last_read'
 
     def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND,

@@ -29,7 +29,7 @@ class ReparsePathpoint(Pathpoint):
 
     Good news is that you don't need to override it, nor provide your own implementations.
     """
-    __slots__ = ('expr', 'slave_pathpoints')
+    __slots__ = 'expr', 'slave_pathpoints'
 
     def __init__(self, device: tp.Optional['SMOKDevice'], name: str,
                  storage_level: StorageLevel = StorageLevel.TREND):
@@ -103,22 +103,24 @@ class ReparsePathpoint(Pathpoint):
         """
         return Section()
 
-    def read(self, advise_level=AdviseLevel.ADVISE):
+    def read(self, advise_level=AdviseLevel.ADVISE) -> Section:
         """
         Reading a reparse pathpoint results in all of it's constituents being read.
+
+        :return: a Section, whose execution will result in this pathpoint being re-read
         """
         sec = Section()
         for slave in self.slave_pathpoints:
             sec += slave.read(advise_level)
         return sec
 
-    def on_read(self, advise):
+    def on_read(self, advise) -> tp.NoReturn:
         """
         It is an ImpossibleError to call this
         """
         raise ImpossibleError('should never be called!')
 
-    def on_write(self, value, advise):
+    def on_write(self, value, advise) -> tp.NoReturn:
         """
         It is an ImpossibleError to call this
         """

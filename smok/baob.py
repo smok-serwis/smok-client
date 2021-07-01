@@ -11,7 +11,7 @@ class BAOB:
     To create a new BAOB, just get a BAOB from device with given name and assign any value to it.
     """
 
-    __slots__ = ('device', 'key')
+    __slots__ = 'device', 'key'
 
     def __init__(self, device: 'SMOKDevice', key: str):
         self.device = device
