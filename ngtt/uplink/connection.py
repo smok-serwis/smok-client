@@ -24,6 +24,11 @@ logger = logging.getLogger(__name__)
 
 
 class NGTTSocket(Closeable):
+    """
+    The agreement is that after last write you have 60 seconds to write something.
+
+    We keep last_read as our-side keepalive
+    """
     @property
     def wants_write(self) -> bool:
         return bool(self.w_buffer)
@@ -41,6 +46,7 @@ class NGTTSocket(Closeable):
         self.ping_id = None
         self.futures = {}
         self.last_read = time.monotonic()
+        self.last_write = time.monotonic()
         with tempfile.NamedTemporaryFile('wb', delete=False) as chain_file:
             chain_file.write(get_dev_ca_cert())
             chain_file.write(b'\n')
@@ -77,14 +83,19 @@ class NGTTSocket(Closeable):
         """
         if self.w_buffer:
             data_sent = self.socket.send(self.w_buffer)
+            self.last_write = time.monotonic()
             del self.w_buffer[:data_sent]
 
     @RMonitor.synchronize_on_attribute('monitor')
     def try_ping(self):
-        delta = time.monotonic() - self.last_read
-        if delta > INTERVAL_TIME_NO_RESPONSE_KILL \
+        delta = time.monotonic() - self.last_write
+
+        if time.monotonic() - self.last_read > INTERVAL_TIME_NO_RESPONSE_KILL \
                 and self.ping_id is not None:
-            raise ConnectionFailed(False, 'timed out due to ping')
+            raise ConnectionFailed(False, 'timed out due to ping (read-side)')
+        elif delta > INTERVAL_TIME_NO_RESPONSE_KILL \
+                and self.ping_id is not None:
+            raise ConnectionFailed(False, 'timed out due to ping (write-side)')
         elif delta > PING_INTERVAL_TIME and self.ping_id is None:
             try:
                 self.ping_id = self.id_assigner.allocate_int()
@@ -186,6 +197,7 @@ class NGTTSocket(Closeable):
         self.socket = ssl_sock
         self.socket.setblocking(False)
         self.last_read = time.monotonic()
+        self.last_write = time.monotonic()
         self.buffer = bytearray()
         self.w_buffer = bytearray()
         self.connected = True
