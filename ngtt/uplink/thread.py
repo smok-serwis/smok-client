@@ -163,7 +163,7 @@ class NGTTConnection(TerminableThread):
             if tid in self.current_connection.futures:
                 self.current_connection.id_assigner.mark_as_free(tid)
                 # Assume it's a data stream running
-                fut = self.current_connection.futures.pop(tid, None)
+                fut = self.current_connection.futures.pop(tid)
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
