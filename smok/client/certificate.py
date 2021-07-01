@@ -69,8 +69,8 @@ DevRootCertificateStore()
 def check_if_trusted(cert_data: bytes) -> bool:
     try:
         cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_data)
-    except crypto.Error:
-        raise InvalidCredentials('problem loading certificate - certificate is invalid')
+    except crypto.Error as e:
+        raise InvalidCredentials('problem loading certificate - certificate is invalid') from e
     store_ctx = crypto.X509StoreContext(DevRootCertificateStore().store, cert)
     try:
         store_ctx.verify_certificate()
@@ -82,8 +82,8 @@ def check_if_trusted(cert_data: bytes) -> bool:
 def get_device_info(cert_data: bytes) -> tp.Tuple[str, Environment]:
     try:
         cert = x509.load_pem_x509_certificate(cert_data, default_backend())
-    except ValueError:
-        raise InvalidCredentials('Error unserializing certificate')
+    except ValueError as e:
+        raise InvalidCredentials('Error unserializing certificate') from e
 
     try:
         device_asn1 = cert.extensions.get_extension_for_oid(DEVICE_ID).value.value
@@ -103,9 +103,9 @@ def get_device_info(cert_data: bytes) -> tp.Tuple[str, Environment]:
     try:
         environment = int(decode(environment_asn1)[0])
     except (PyAsn1Error, IndexError, TypeError) as e:
-        raise InvalidCredentials('error during decoding environment: %s' % (e,))
+        raise InvalidCredentials('error during decoding environment: %s' % (e,)) from e
     except ValueError as e:
-        raise InvalidCredentials('unrecognized environment: %s' % (e,))
+        raise InvalidCredentials('unrecognized environment: %s' % (e,)) from e
 
     with reraise_as(ValueError, InvalidCredentials):
         return device_id, Environment(environment)

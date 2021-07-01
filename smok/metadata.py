@@ -90,7 +90,7 @@ class PlainMetadata(CacheDict):
                 return value
             except ResponseError as e:
                 if e.status_code == 404:
-                    raise KeyError('key not found')
+                    raise KeyError('key not found') from e
                 return self.db.get_plain(item)
 
     def get(self, key: str, default=None) -> str:

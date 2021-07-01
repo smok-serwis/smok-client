@@ -55,7 +55,7 @@ class RequestsAPI:
                 resp = op(self.base_url + url, headers=headers, **kwargs)
         except requests.RequestException as e:
             logger.error('Requests error %s', e, exc_info=e)
-            raise ResponseError(599, 'Requests error: %s' % (str(e),))
+            raise ResponseError(599, 'Requests error: %s' % (str(e),)) from e
 
         if resp is None and self.environment == Environment.LOCAL_DEVELOPMENT:
             # special case for CI
@@ -80,8 +80,8 @@ class RequestsAPI:
         else:
             try:
                 return resp.json()
-            except json.decoder.JSONDecodeError:
-                raise ResponseError(resp.status_code, resp.content)
+            except json.decoder.JSONDecodeError as e:
+                raise ResponseError(resp.status_code, resp.content) from e
 
     def get(self, url: str, **kwargs):
         return self.request('get', url, **kwargs)

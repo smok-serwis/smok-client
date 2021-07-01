@@ -20,7 +20,7 @@ class NGTTSyncWorker(BaseSyncWorker):
         try:
             self.connection.stream_logs(data)
         except ConnectionFailed as e:
-            raise SyncError(e.is_due_to_no_internet)
+            raise SyncError(e.is_due_to_no_internet) from e
 
     def __init__(self, device: 'SMOKDevice'):
         super().__init__(device, True)
@@ -45,10 +45,10 @@ class NGTTSyncWorker(BaseSyncWorker):
         try:
             fut = self.connection.sync_pathpoints(data)
             fut.result()
-        except DataStreamSyncFailed:
-            raise SyncError(False, True)
+        except DataStreamSyncFailed as e:
+            raise SyncError(False, True) from e
         except ConnectionFailed as e:
-            raise SyncError(e.is_due_to_no_internet)
+            raise SyncError(e.is_due_to_no_internet) from e
 
     def close(self):
         self.connection.close()

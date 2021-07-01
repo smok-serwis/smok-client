@@ -13,13 +13,13 @@ class HTTPSyncWorker(BaseSyncWorker):
         try:
             self.api.post('/v1/device/pathpoints', json=data, timeout=40)
         except ResponseError as e:
-            raise SyncError(e.is_no_link(), e.status_code // 100 == 4)
+            raise SyncError(e.is_no_link(), e.status_code // 100 == 4) from e
 
     def sync_logs(self, data: tp.List[dict]):
         try:
             self.api.put('/v1/device/device_logs', json=data, timeout=20)
         except ResponseError as e:
-            raise SyncError(e.is_no_link(), e.status_code // 100 == 4)
+            raise SyncError(e.is_no_link(), e.status_code // 100 == 4) from e
 
     def __init__(self, device: 'SMOKDevice'):
         super().__init__(device, False)
