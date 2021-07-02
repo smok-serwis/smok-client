@@ -54,7 +54,7 @@ class RequestsAPI:
                 headers['X-SSL-Client-Certificate'] = self.cert
                 resp = op(self.base_url + url, headers=headers, **kwargs)
         except requests.RequestException as e:
-            logger.error('Requests error %s', e, exc_info=e)
+            logger.error('Requests error %s', e)
             raise ResponseError(599, 'Requests error: %s' % (str(e),)) from e
 
         if resp is None and self.environment == Environment.LOCAL_DEVELOPMENT:
