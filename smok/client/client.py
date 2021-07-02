@@ -12,7 +12,7 @@ import weakref
 from abc import ABCMeta
 
 import pytz
-from satella.coding import Closeable, for_argument
+from satella.coding import Closeable, for_argument, wraps
 from satella.coding.concurrent import PeekableQueue, Condition
 from satella.coding.optionals import Optional
 from satella.coding.structures import DirtyDict
@@ -50,6 +50,15 @@ from ..threads import OrderExecutorThread, CommunicatorThread, ArchivingAndMacro
 from ..threads.communicator import PREDICATE_SYNC_INTERVAL
 
 logger = logging.getLogger(__name__)
+
+
+def must_be_open(fun):
+    @wraps(fun)
+    def inner(self, *args, **kwargs):
+        if self.closed:
+            raise RuntimeError('SMOK device already closed!')
+        return fun(self, *args, **kwargs)
+    return inner
 
 
 class SMOKDevice(Closeable, metaclass=ABCMeta):
@@ -341,14 +350,17 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.log_publisher.start()
         self.boot_completed = True
 
+    @must_be_open
     def log_sensor_write(self, sw: SensorWriteEvent):
         """
         Log that a sensor has been written and enqueue it for cloud upload
 
         :param sw: sensor write event to upload
+        :raises RuntimeError: device already closed
         """
         self.sensor_write_database.add_sw(sw)
 
+    @must_be_open
     def reset_predicates(self):
         """
         Clear all loaded predicates and force a renew of loading.
@@ -357,25 +369,30 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         remain registered.
 
         .. warning:: Currently requires Internet access to restore predicates
+        :raises RuntimeError: device already closed
         """
         self.predicates = {}
         self.getter.last_predicates_synced = time.monotonic() - PREDICATE_SYNC_INTERVAL
 
+    @must_be_open
     def get_baob(self, key: str) -> BAOB:
         """
         Retrieve given BAOB
 
         :raises UnavailableError: client was launched in a mode with BAOBs disabled
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_baobs:
             raise UnavailableError('Support for BAOBs was disabled')
         return BAOB(self, key)
 
+    @must_be_open
     def get_all_baobs(self) -> tp.Iterator[BAOB]:
         """
         Stream all BAOBs
 
         :raises UnavailableError: client was launched in a mode with BAOBs disabled
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_baobs:
             raise UnavailableError('Support for BAOBs was disabled')
@@ -414,18 +431,21 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             self.get_device_info()
         return pytz.timezone(self._timezone)
 
+    @must_be_open
     def close_event(self, event: Event, timestamp: tp.Optional[int] = None) -> None:
         """
             Close the provided event
 
         :param event: event to close
         :param timestamp: timestamp of close. Defaults to now
+        :raises RuntimeError: device already closed
         """
         assert not event.is_closed()
         if event.ended_on is None:
             event.ended_on = timestamp or time_as_int()
         self.evt_database.close_event(event)
 
+    @must_be_open
     def get_open_event(self, event_id: str) -> Event:
         """
         Return a particular opened event
@@ -435,6 +455,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :raises KeyError: event not found, or already closed
         :rtype: Event
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
@@ -443,6 +464,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 return event
         raise KeyError()
 
+    @must_be_open
     def get_all_sensors(self) -> tp.Iterator[Sensor]:
         """
         Stream all sensors
@@ -450,6 +472,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         .. note:: This will block until sensors are synced from the server
 
         :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
@@ -469,6 +492,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param baob_name: name of the BAOB that was just downloaded from the server
         """
 
+    @must_be_open
     def get_sensor(self, tag_set: tp.Union[tp.Set[str], str]) -> Sensor:
         """
         Return a sensor
@@ -479,6 +503,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: sensor
         :raises KeyError: sensor does not exist
         :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
@@ -491,26 +516,31 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 tag_set = fqtsify(tag_set)
             return self.sensor_database.get_sensor(tag_set)
 
+    @must_be_open
     def get_all_events(self) -> tp.Iterator[Event]:
         """
         Return all events kept in device's database
 
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         return self.evt_database.get_all_events()
 
+    @must_be_open
     def get_all_open_events(self) -> tp.Iterator[Event]:
         """
         Get all open events
 
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         return self.evt_database.get_open_events()
 
+    @must_be_open
     def open_event(self, started_on: int, ended_on: tp.Optional[int],
                    color: Color, is_point: bool, token: str, group: str, message: str,
                    metadata: tp.Optional[tp.Dict[str, str]] = None) -> Event:
@@ -528,6 +558,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param metadata: extra metadata. This must be dict'able
         :return: the Event object
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
@@ -550,6 +581,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         for sec in secs:
             self._order_queue.put(sec)
 
+    @must_be_open
     def get_pathpoint(self, path: str,
                       storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         """
@@ -560,6 +592,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :return: a pathpoint having provided name
         :raises KeyError: pathpoint not available
         :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
@@ -571,6 +604,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.register_pathpoint(pp)
         return pp
 
+    @must_be_open
     def register_statistic(self, stat: tp.Type[BaseStatistic],
                            predicate: tp.Callable[[str, dict], bool]) -> StatisticRegistration:
         """
@@ -584,6 +618,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
             The callable should return whether to apply stat to this predicate
         :return: a Registration object. Can be later cancelled.
         :raise UnavailableError: SMOKDevice was launched in a no-predicate mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
@@ -592,6 +627,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         self.statistic_registration.add(reg)
         return reg
 
+    @must_be_open
     def register_pathpoint(self, pp: Pathpoint) -> None:
         """
         Register a pathpoint for usage with this SMOKDevice.
@@ -602,6 +638,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :param pp: pathpoint to register
         :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
+        :raises RuntimeError: device already closed
         """
         if self.dont_do_pathpoints:
             raise UnavailableError('SMOKDevice was launched without pathpoints')
@@ -657,6 +694,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                 self.log_publisher.join()
             Optional(self.arch_and_macros).join()
 
+    @must_be_open
     @for_argument(returns=list)
     def get_slaves(self) -> tp.List[SlaveDevice]:
         """
@@ -664,11 +702,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :return: a list of slave devices
         :raises ResponseError: server responded (or not) with an invalid message
+        :raises RuntimeError: device already closed
         """
         slaves = self.get_device_info().slaves
         for slave in slaves:
             yield SlaveDevice(self, slave)
 
+    @must_be_open
     def get_device_info(self) -> DeviceInfo:
         """
         Obtain information about the device.
@@ -678,7 +718,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         :return: current device information
         :raises ResponseError: server responded (or not) with an invalid message
-        :raises RuntimeError: :attr:`~smok.client.SMOKDevice.allow_sync` was set to False
+        :raises RuntimeError: :attr:`~smok.client.SMOKDevice.allow_sync` was set to False or
+            device already closed
         """
         if not self.allow_sync:
             raise RuntimeError('allow_sync is False, cannot fetch the information')
@@ -717,11 +758,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :meth:`~smok.client.SMOKDevice.get_device_info`
         """
 
+    @must_be_open
     def get_local_time(self) -> datetime.datetime:
         """
         Return current local time on target culture context
 
         :return: a datetime object having the local time for this device
+        :raises RuntimeError: device already closed
         """
         # What is the time on target device?
         tz = self.timezone

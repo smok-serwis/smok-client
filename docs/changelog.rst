@@ -10,6 +10,7 @@ v0.16.3
 * fixed a bug that wouldn't allow smok to run on Python 3.5
 * HTTP API will use minijson everywhere
 * logs won't be synced via NGTT anymore - they are dropped too often
+* SMOKDevice will raise RuntimeErrors on most calls if called after close
 
 v0.16.2
 ~~~~~~~
