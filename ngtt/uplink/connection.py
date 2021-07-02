@@ -118,7 +118,7 @@ class NGTTSocket(Closeable):
         return self.socket.fileno()
 
     @RMonitor.synchronize_on_attribute('monitor')
-    @reraise_as((BrokenPipeError, ssl.SSLError), ConnectionFailed)
+    @reraise_as((BrokenPipeError, ssl.SSLError, ConnectionResetError), ConnectionFailed)
     @silence_excs(ssl.SSLWantReadError)
     def recv_frame(self) -> tp.Optional[NGTTFrame]:
         """
