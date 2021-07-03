@@ -212,7 +212,7 @@ class CommunicatorThread(TerminableThread):
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
-                logger.debug('Failed to sync sensor writes: %s', e, exc_info=e)
+                logger.warning('Failed to sync sensor writes: %s', e, exc_info=e)
                 sync.nack()
                 raise
             else:
@@ -223,18 +223,15 @@ class CommunicatorThread(TerminableThread):
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
-            logger.debug('Got nothing to sync (1)')
             return
         try:
             data = sync.to_json()
             if not data:
                 sync.acknowledge()
-                logger.debug('Got nothing to sync (2)')
                 return
             self.device.sync_worker.sync_pathpoints(redo_data(data))
             sync.acknowledge()
             self.device.on_successful_sync()
-            logger.debug('Successfully synced %s elements', len(data))
         except SyncError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
