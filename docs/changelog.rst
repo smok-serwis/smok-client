@@ -1,8 +1,8 @@
 Changelog
 =========
 
-v0.16.3
-~~~~~~~
+v0.17
+~~~~~
 
 * improved logging for NGTT
 * improved behaviour of the logging subsystem on low memory conditions
@@ -11,6 +11,7 @@ v0.16.3
 * HTTP API will use minijson everywhere
 * logs won't be synced via NGTT anymore - they are dropped too often
 * SMOKDevice will raise RuntimeErrors on most calls if called after close
+* new considerations for PPDatabase and EventDatabase
 
 v0.16.2
 ~~~~~~~
