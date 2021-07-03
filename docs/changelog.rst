@@ -4,7 +4,7 @@ Changelog
 v0.17.1
 ~~~~~~~
 
-* _TBA_
+* removed unnecessary profiling with logs
 
 v0.17
 ~~~~~
