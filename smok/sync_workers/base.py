@@ -43,5 +43,7 @@ class BaseSyncWorker(metaclass=ABCMeta):
     @abstractmethod
     def sync_pathpoints(self, data: tp.List[dict]):
         """
+        Synchronize the pathpoint data
+
         :raises SyncError: on failure
         """
