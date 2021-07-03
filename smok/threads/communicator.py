@@ -339,6 +339,17 @@ class CommunicatorThread(TerminableThread):
         # Give the app a moment to prepare and define it's pathpoints
         self.safe_sleep(self.startup_delay)
 
+    @profile
+    def wait(self, time_taken: float):
+        time_to_wait = COMMUNICATOR_INTERVAL - time_taken
+        while time_to_wait > 0.1 and not self.terminating:  # for float roundings
+            try:
+                ttw = min(time_to_wait, 5)
+                self.data_to_update.wait(timeout=ttw)
+                return
+            except WouldWaitMore:
+                time_to_wait -= ttw
+
     @log_exceptions(logger, logging.ERROR)
     def loop(self) -> None:
         with measure() as measurement:
@@ -387,12 +398,4 @@ class CommunicatorThread(TerminableThread):
                     self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
-            time_to_wait = COMMUNICATOR_INTERVAL - measurement()
-            while time_to_wait > 0.1 and not self.terminating:  # for float roundings
-                try:
-                    ttw = min(time_to_wait, 5)
-                    self.data_to_update.wait(timeout=ttw)
-                    logger.debug('Breakout!')
-                    break
-                except WouldWaitMore:
-                    time_to_wait -= ttw
+            self.wait(measurement())
