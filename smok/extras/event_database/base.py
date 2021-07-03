@@ -30,7 +30,7 @@ class BaseEventDatabase(metaclass=ABCMeta):
     @abstractmethod
     def checkpoint(self) -> None:
         """
-        Called by the communicator thread, once every about 20 seconds.
+        Called by the communicator thread, once every about 60 seconds.
         May be called much more often, it's the function responsibility to throttle.
         """
 

@@ -36,7 +36,7 @@ def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
     return output
 
 
-COMMUNICATOR_INTERVAL = 20
+COMMUNICATOR_INTERVAL = 60
 PREDICATE_SYNC_INTERVAL = 300
 BAOB_SYNC_INTERVAL = 60 * 60  # an hour
 

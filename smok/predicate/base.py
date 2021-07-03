@@ -103,7 +103,7 @@ class BaseStatistic(metaclass=ABCMeta):
     @abstractmethod
     def on_tick(self) -> None:
         """
-        Called about each 20 seconds by the communicator thread. This should commence any required
+        Called about each 60 seconds by the communicator thread. This should commence any required
         analyses.
 
         :attr:`state` is loaded before this call and persisted after it finishes

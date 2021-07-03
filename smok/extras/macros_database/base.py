@@ -51,5 +51,5 @@ class BaseMacroDatabase(metaclass=ABCMeta):
     @abstractmethod
     def checkpoint(self) -> None:
         """
-        Called about each 20 seconds by communicator thread
+        Called about each 60 seconds by communicator thread
         """

@@ -5,6 +5,7 @@ v0.17.1
 ~~~~~~~
 
 * removed unnecessary profiling with logs
+* increased communicator timeout to 60s
 
 v0.17
 ~~~~~
