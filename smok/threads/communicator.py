@@ -4,7 +4,7 @@ import time
 import typing as tp
 
 import ujson
-from satella.coding import silence_excs, for_argument, log_exceptions
+from satella.coding import silence_excs, for_argument, log_exceptions, wraps
 from satella.coding.concurrent import TerminableThread, Condition
 from satella.coding.decorators import retry
 from satella.coding.transforms import jsonify
@@ -25,6 +25,16 @@ from smok.sync_workers.base import SyncError
 logger = logging.getLogger(__name__)
 
 SENSORS_SYNC_INTERVAL = 300
+
+
+def profile(fun):
+    @wraps(fun)
+    def inner(*args, **kwargs):
+        with measure() as measurement:
+            y = fun(*args, **kwargs)
+        logger.debug('Running %s took %s seconds', fun, measurement())
+        return y
+    return inner
 
 
 @for_argument(returns=jsonify)
@@ -83,6 +93,7 @@ class CommunicatorThread(TerminableThread):
         self.data_to_update = Condition()
         self.last_baob_synced = 0
 
+    @profile
     def tick_predicates(self) -> None:
         for predicate in self.device.predicates.values():
             kwargs = predicate.to_kwargs()
@@ -93,6 +104,7 @@ class CommunicatorThread(TerminableThread):
                 self.device.pred_database.update_predicate(new_kwargs)
 
     @retry(3, ResponseError)
+    @profile
     def sync_events(self) -> None:
         evt_to_sync = self.device.evt_database.get_events_to_sync()
         if evt_to_sync is None:
@@ -111,6 +123,7 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
+    @profile
     def sync_predicates(self) -> None:
         try:
             resp = self.device.api.get('/v1/device/predicates')
@@ -168,11 +181,13 @@ class CommunicatorThread(TerminableThread):
         self.db_sync_predicates()
         self.device.on_successful_sync()
 
+    @profile
     def db_sync_predicates(self):
         lst = [predicate.to_kwargs() for predicate in self.device.predicates.values()]
         self.device.pred_database.set_new_predicates(lst)
 
     @retry(3, ResponseError)
+    @profile
     def sync_sensors(self) -> None:
         try:
             resp = self.device.api.get('/v1/device/sensors')
@@ -187,6 +202,7 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
+    @profile
     def fetch_orders(self) -> None:
         try:
             resp = self.device.api.post('/v1/device/orders')
@@ -200,6 +216,7 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
+    @profile
     def sync_sensor_writes(self) -> None:
         sync = self.device.sensor_write_database.get_sw_sync()
         if not sync:
@@ -220,6 +237,7 @@ class CommunicatorThread(TerminableThread):
                 sync.ack()
 
     @retry(3, SyncError)
+    @profile
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
@@ -245,6 +263,7 @@ class CommunicatorThread(TerminableThread):
                                'Assuming is it damaged and marking as synced', e.status_code)
                 sync.acknowledge()
 
+    @profile
     def sync_baob(self) -> None:
         self._sync_baob()
         self.device.baobs_loaded = True
@@ -290,6 +309,7 @@ class CommunicatorThread(TerminableThread):
             raise
 
     @retry(3, ResponseError)
+    @profile
     def sync_pathpoints(self) -> None:
         pps = self.device.pathpoints.copy_and_clear_dirty()
         data = pathpoints_to_json(pps.values())
