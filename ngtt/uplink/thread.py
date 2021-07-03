@@ -165,12 +165,10 @@ class NGTTConnection(TerminableThread):
 
                 if frame.packet_type == NGTTHeaderType.DATA_STREAM_CONFIRM:
                     fut.set_result(None)
-                    logger.debug('Confirmed data stream no %s', tid)
                 elif frame.packet_type == NGTTHeaderType.DATA_STREAM_REJECT:
                     fut.set_exception(DataStreamSyncFailed())
-                    logger.debug('Negatively confirmed data stream no %s', tid)
             else:
-                logger.debug('This was an unknown confirmation')
+                logger.info('This was an unknown confirmation')
 
     def loop(self) -> None:
         try:
