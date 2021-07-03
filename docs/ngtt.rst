@@ -5,6 +5,10 @@ NGTT
 Standing for **Next Generation TransporT protocol** it is a better way to poll for orders
 and upload data than polling over a HTTP API.
 
+.. warning:: Syncing both data and logs will be done over HTTP API. It's been disabled
+    for NGTT right now due to many problems with that approach, namely, that syncing data
+    proved to be too slow.
+
 It establishes a TLS session, over which data (logs, pathpoints and orders) fly in the form of
 excellent minijson_ JSON binary representation. It it a better way to transmit data and orders
 if there's a limit on
