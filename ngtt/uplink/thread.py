@@ -4,8 +4,6 @@ from concurrent.futures import Future
 import minijson
 from satella.coding import wraps, for_argument, silence_excs, rethrow_as
 from satella.coding.optionals import Optional
-from satella.coding.predicates import x
-from satella.coding.sequences import index_of
 from satella.exceptions import Empty
 from satella.time import ExponentialBackoff
 

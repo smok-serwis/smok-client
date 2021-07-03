@@ -19,7 +19,7 @@ from ..exceptions import ConnectionFailed
 from ..protocol import NGTTHeaderType, STRUCT_LHH, env_to_hostname, NGTTFrame
 
 PING_INTERVAL_TIME = 30
-INTERVAL_TIME_NO_RESPONSE_KILL = 70
+INTERVAL_TIME_NO_RESPONSE_KILL = 90
 INTERVAL_TIME_NO_RESPONSE_READ_KILL = 120
 logger = logging.getLogger(__name__)
 
