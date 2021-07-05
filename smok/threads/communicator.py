@@ -4,7 +4,7 @@ import time
 import typing as tp
 
 import ujson
-from satella.coding import silence_excs, for_argument, log_exceptions, wraps
+from satella.coding import silence_excs, for_argument, log_exceptions
 from satella.coding.concurrent import TerminableThread, Condition
 from satella.coding.decorators import retry
 from satella.coding.transforms import jsonify
