@@ -30,7 +30,7 @@ SENSORS_SYNC_INTERVAL = 300
 @for_argument(returns=jsonify)
 def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
     output = []
-    for pp in pps:
+    for pp in pps: 
         output.append({'path': pp.name,
                        'storage_level': pp.storage_level})
     return output
