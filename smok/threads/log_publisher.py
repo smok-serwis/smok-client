@@ -5,6 +5,7 @@ import typing as tp
 from satella.coding import queue_get
 from satella.coding.concurrent import TerminableThread
 from satella.coding.decorators import retry
+from satella.time import ExponentialBackoff
 
 from ..sync_workers.base import SyncError
 
@@ -18,6 +19,7 @@ class LogPublisherThread(TerminableThread):
         super().__init__(name='log publisher')
         self.device = device
         self.queue = queue.Queue()
+        self.waiter = ExponentialBackoff()
 
     def get_all_messages(self, starting_msg: dict) -> tp.List[dict]:
         msgs = [starting_msg]
@@ -43,10 +45,13 @@ class LogPublisherThread(TerminableThread):
             try:
                 self.device.sync_worker.sync_logs(lst)
                 self.device.on_successful_sync()
+                self.waiter.success()
             except Exception as e:
                 logger.error('exception %s', e, exc_info=e)
                 raise
         except SyncError as e:
+            self.waiter.failed()
+            self.waiter.sleep()
             if e.is_no_link():
                 self.device.on_failed_sync()
             raise
