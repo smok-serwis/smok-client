@@ -69,7 +69,7 @@ class OperationFailedError(SMOKClientError):
     """
     Raised by the pathpoint's on_read and on_write futures when the operation fails
 
-    :ivar reason: reason of failure
+    :ivar reason: reason of failure, or None if just not readed
     :ivar timestamp: timestamp of failure in milliseconds
     """
 
