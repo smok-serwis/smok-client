@@ -14,6 +14,7 @@ class HTTPSyncWorker(BaseSyncWorker):
             self.api.post('/v1/device/pathpoints', json=data, timeout=40)
         except ResponseError as e:
             raise SyncError(e.is_no_link(), e.status_code // 100 == 4) from e
+        logger.debug('Successfully synchronized %s pathpoints', len(data))
 
     def sync_logs(self, data: tp.List[dict]):
         try:

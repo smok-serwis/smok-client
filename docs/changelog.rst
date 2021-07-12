@@ -5,6 +5,7 @@ v0.17.1
 ~~~~~~~
 
 * removed unnecessary profiling with logs
+* restored some debug-level logs
 * increased communicator timeout to 60s
 * increased logs timeout to 40s and added exponential backoff in case of failure
 
