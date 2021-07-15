@@ -30,7 +30,7 @@ SENSORS_SYNC_INTERVAL = 300
 @for_argument(returns=jsonify)
 def pathpoints_to_json(pps: tp.Iterable[Pathpoint]) -> list:
     output = []
-    for pp in pps: 
+    for pp in pps:
         output.append({'path': pp.name,
                        'storage_level': pp.storage_level})
     return output
@@ -372,6 +372,8 @@ class CommunicatorThread(TerminableThread):
                     self.device.pp_database.checkpoint()
                 if not self.dont_do_predicates:
                     self.device.evt_database.checkpoint()
+            else:
+                logger.debug('Sync was disallowed')
 
             # Wait for variables to refresh, do we need to upload any?
             self.wait(measurement())
