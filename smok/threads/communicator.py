@@ -333,6 +333,7 @@ class CommunicatorThread(TerminableThread):
             monotime = time.monotonic()
 
             if self.device.allow_sync:
+                logger.debug('Sync allowed, making a pass')
                 if not self.dont_do_pathpoints:
                     self.sync_data()
 
