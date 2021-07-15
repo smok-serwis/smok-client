@@ -4,7 +4,6 @@ import gzip
 from logging import LogRecord, Handler
 
 import ujson
-from satella.coding import Monitor
 from satella.coding.concurrent import SequentialIssuer
 from satella.instrumentation import Traceback, frame_from_traceback
 from satella.instrumentation.memory import MemoryPressureManager
@@ -16,7 +15,7 @@ __all__ = ['SMOKLogHandler']
 logger = logging.getLogger(__name__)
 
 
-class SMOKLogHandler(Handler, Monitor):
+class SMOKLogHandler(Handler):
     """
     A logging handler for SMOK
 
@@ -26,7 +25,6 @@ class SMOKLogHandler(Handler, Monitor):
 
     def __init__(self, device: 'SMOKDevice', service_name: str):
         super().__init__()
-        Monitor.__init__(self)
 
         self.service_name = service_name
         self.device = device
