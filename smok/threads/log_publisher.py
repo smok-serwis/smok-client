@@ -33,14 +33,13 @@ class LogPublisherThread(TerminableThread):
         while not self.device.allow_sync:
             while self.queue.qsize() > MAX_LOG_BUFFER_SIZE:
                 self.queue.get()
-            self.safe_sleep(10)
         if self._terminating:
             return
         msgs = self.get_all_messages(msg)
         self.sync(msgs)
 
     @retry(3, exc_classes=SyncError)
-    def sync(self, lst: tp.List[dict]):
+    def sync(self, lst: tp.List[dict]) -> None:
         try:
             try:
                 self.device.sync_worker.sync_logs(lst)
