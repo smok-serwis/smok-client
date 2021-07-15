@@ -59,7 +59,8 @@ class SMOKLogHandler(Handler):
         if len(msg) > 1000:
             msg_content = base64.b64encode(
                 gzip.compress(msg.encode('utf8'), compresslevel=8)).decode('utf8')
-            msg = {'encoding': 'base64-gzip', 'content': msg_content}
+            if len(msg_content) < len(msg):
+                msg = {'encoding': 'base64-gzip', 'content': msg_content}
 
         dct = {
             'service': self.service_name,
