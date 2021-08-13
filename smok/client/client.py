@@ -321,6 +321,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                                              dont_do_pathpoints,
                                              dont_do_predicates,
                                              dont_sync_sensor_writes, startup_delay)
+        else:
+            self.ready_lock.release()
+
         if not delayed_boot:
             if self.use_ngtt:
                 self.sync_worker = NGTTSyncWorker(self)
@@ -408,7 +411,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     def wait_until_synced(self) -> None:
         """
-        Block until everything's synchronized with the server
+        Block until everything's synchronized with the server.
+
+        Note that this is a no-op if no communicator thread is spawned.
         """
         self.ready_lock.acquire()
         self.ready_lock.release()
