@@ -33,6 +33,7 @@ class BaseSensorDatabase(metaclass=ABCMeta):
         Sensors have just been synchronized, this is the entire list.
 
         Called by communicator threads.
+        Will never be called if dont_do_pathpoints is enabled.
         """
 
     @abstractmethod

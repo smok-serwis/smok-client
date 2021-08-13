@@ -32,16 +32,18 @@ class BaseSensorWriteSynchronization:
 
 
 class BaseSensorWriteDatabase(metaclass=ABCMeta):
-    @abstractmethod
     def on_sync_sw_failed(self, event: SensorWriteEvent):
         """
-        Called when given event fails to sync
+        Called when given event fails to sync.
+
+        This will never be called if dont_do_pathpoints is True
         """
 
-    @abstractmethod
     def on_synced_sw(self, event: SensorWriteEvent):
         """
         Called when given event becomes synced
+
+        This will never be called if dont_do_pathpoints is True
         """
 
     @abstractmethod
@@ -54,4 +56,6 @@ class BaseSensorWriteDatabase(metaclass=ABCMeta):
     def get_sw_sync(self) -> BaseSensorWriteSynchronization:
         """
         Get a synchronization
+
+        This will never be called if dont_do_pathpoints is True
         """
