@@ -11,6 +11,8 @@ v0.18
 * log syncer will display the invalid logs if a 4xx is seen from the server
 * most calls related to pathpoints and sensors will be available in the no-pathpoint mode
  (you still have to provide a sensor and a pathpoint database for it to work).
+* fixed a bug with getting sensors locking up on
+    dont_do_pathpoints=True
 
 v0.17
 ~~~~~
