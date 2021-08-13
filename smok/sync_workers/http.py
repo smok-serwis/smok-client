@@ -20,6 +20,8 @@ class HTTPSyncWorker(BaseSyncWorker):
         try:
             self.api.put('/v1/device/device_logs', json=data, timeout=40)
         except ResponseError as e:
+            if e.status_code // 100 == 4:
+                logger.error('Tried to sync logs %s but resulted in %s', data, e.status_code)
             raise SyncError(e.is_no_link(), e.status_code // 100 == 4) from e
 
     def __init__(self, device: 'SMOKDevice'):

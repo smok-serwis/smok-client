@@ -8,6 +8,7 @@ v0.17.1
 * restored some debug-level logs
 * increased communicator timeout to 60s
 * increased logs timeout to 40s and added exponential backoff in case of failure
+* log syncer will display the invalid logs if a 4xx is seen from the server
 
 v0.17
 ~~~~~
