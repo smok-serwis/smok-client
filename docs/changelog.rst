@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.17.1
+v0.18
 ~~~~~~~
 
 * removed unnecessary profiling with logs
@@ -9,6 +9,8 @@ v0.17.1
 * increased communicator timeout to 60s
 * increased logs timeout to 40s and added exponential backoff in case of failure
 * log syncer will display the invalid logs if a 4xx is seen from the server
+* most calls related to pathpoints and sensors will be available in the no-pathpoint mode
+ (you still have to provide a sensor and a pathpoint database for it to work).
 
 v0.17
 ~~~~~

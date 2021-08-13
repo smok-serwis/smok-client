@@ -97,7 +97,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         This also implies dont_do_baobs. It is a ValueError to set this while setting
         dont_bo_baobs to False.
     :param dont_do_pathpoints: if set to True, this SMOKDevice won't support pathpoints
-        or sensors.
+        or sensors. By won't support I mean it won't try to synchronize the data,
+        but pathpoints and sensors will still be available. Note that providing a source
+        of pathpoints in the form of a database is required, and it is a ValueError
+        to try to give this to True without giving a sensor_database.
     :param dont_sync_sensor_writes: if set to True, sensor writes won't be synced
     :param dont_do_baobs: if set to True, this SMOKDevice won't care about BAOBs.
     :param dont_do_macros: if set to True, this SMOKDevice won't take care of the macros
@@ -221,6 +224,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         super().__init__()
         Optional(baob_database).check_consistency()
         self.cache_metadata_for = cache_metadata_for
+        if dont_do_pathpoints and sensor_database is None:
+            raise ValueError('Provide a sensor database if you dont provide pathpoints!')
+
         self.dont_do_predicates = dont_do_predicates
         self.dont_do_pathpoints = dont_do_pathpoints
         self.dont_sync_sensor_writes = dont_sync_sensor_writes
@@ -471,11 +477,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         .. note:: This will block until sensors are synced from the server
 
-        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         :raises RuntimeError: device already closed
         """
-        if self.dont_do_pathpoints:
-            raise UnavailableError('SMOKDevice was launched without pathpoints')
         with self.ready_lock:
             yield from self.sensor_database.get_all_sensors()
 
@@ -502,11 +505,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param tag_set: either set of strs or these strs joined with a ' '
         :return: sensor
         :raises KeyError: sensor does not exist
-        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         :raises RuntimeError: device already closed
         """
-        if self.dont_do_pathpoints:
-            raise UnavailableError('SMOKDevice was launched without pathpoints')
         with self.ready_lock:
             if isinstance(tag_set, set):
                 tag_set = list(tag_set)
@@ -566,7 +566,6 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         evt_uuid = uuid.uuid4().hex
         event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)
-        logger.warning('Got %s of type %s', event, type(event))
         self.evt_database.add_event(event)
         return event
 
@@ -591,11 +590,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         :param storage_level: target storage level
         :return: a pathpoint having provided name
         :raises KeyError: pathpoint not available
-        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         :raises RuntimeError: device already closed
         """
-        if self.dont_do_pathpoints:
-            raise UnavailableError('SMOKDevice was launched without pathpoints')
         if path[0] == 'r':
             return ReparsePathpoint(self, path, storage_level)
         if path in self.pathpoints:
@@ -637,11 +633,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         this call is still required
 
         :param pp: pathpoint to register
-        :raise UnavailableError: SMOKDevice was launched in a no-pathpoint mode
         :raises RuntimeError: device already closed
         """
-        if self.dont_do_pathpoints:
-            raise UnavailableError('SMOKDevice was launched without pathpoints')
         if pp.name[0] == 'r':
             return
         if pp.name not in self.pathpoints:
