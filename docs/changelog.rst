@@ -1,6 +1,12 @@
 Changelog
 =========
 
+
+v0.18.1
+~~~~~~~
+
+* fixed a bug with initializing predicates
+
 v0.18
 ~~~~~~~
 
