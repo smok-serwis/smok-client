@@ -137,9 +137,12 @@ class CommunicatorThread(TerminableThread):
                     base_class = self.device.statistic_registration.try_match(stat_name, cfg)
                     if base_class is None:
                         base_class = UndefinedStatistic
-                    predicate = base_class(self.device, predicate_id,
-                                           predicate_dict['verbose_name'],
-                                           silencing, cfg, stat_name)
+                    predicate = base_class(device=self.device,
+                                           predicate_id=predicate_id,
+                                           verbose_name=predicate_dict['verbose_name'],
+                                           silencing=silencing,
+                                           configuration=cfg,
+                                           statistic=stat_name)
                     self.device.predicates[predicate_id] = predicate
                 else:
                     stat = self.device.predicates[predicate_id]
