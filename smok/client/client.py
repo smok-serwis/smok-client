@@ -255,7 +255,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         # Load cached predicates
         for predicate in self.pred_database.get_all_predicates():
-            self.predicates[udf.predicate_id] = UndefinedStatistic(device=self, **predicate)
+            udf = UndefinedStatistic(device=self, **predicate)
+            self.predicates[udf.predicate_id] = udf
 
         self._timezone = None
         self.statistic_registration = CollectionOfStatistics()
