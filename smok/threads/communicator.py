@@ -163,6 +163,7 @@ class CommunicatorThread(TerminableThread):
         predicates_to_delete = set(self.device.predicates.keys()) - predicates_found
         for predicate_id in predicates_to_delete:
             self.device.predicates[predicate_id].on_offline()
+            self.device.evt_database.on_predicate_deleted(predicate_id)
             del self.device.predicates[predicate_id]
 
         if not self.last_predicates_synced:
