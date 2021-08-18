@@ -568,8 +568,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         if self.dont_do_predicates:
             raise UnavailableError('SMOKDevice was launched without predicates')
         metadata = dict(metadata or {})
-        evt_uuid = uuid.uuid4().hex
-        event = Event(evt_uuid, started_on, ended_on, color, is_point, token, group, message,
+        event = Event(None, started_on, ended_on, color, is_point, token, group, message,
                       None, metadata)
         self.evt_database.add_event(event)
         return event

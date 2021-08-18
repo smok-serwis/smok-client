@@ -21,7 +21,8 @@ class Event(JSONAble):
     """
     An object representing a single event in the SMOK system.
 
-    :ivar uuid: event UUID (str)
+    :ivar uuid: event UUID (str) after being synced with the server
+    :ivar provisional_uuid: UUID (str) assigned by the client after it's opening
     :ivar started_on: timestamp of event beginning, in seconds (int)
     :ivar ended_on: timestamp of event ending in seconds, or None if not ended (tp.Optional[int])
     :ivar color: event color (:class:`~smok.predicate.Color`)
