@@ -101,7 +101,6 @@ class CommunicatorThread(TerminableThread):
             json = [evt.to_json() for evt in evt_to_sync.get_events()]
             resp = self.device.api.post('/v1/device/alarms',
                                         json=json)
-            logger.warning('Synchronized %s events with resp %s', json, resp)
             evt_to_sync.acknowledge(*(data['uuid'] for data in resp))
             self.device.on_successful_sync()
         except ResponseError as e:
@@ -338,7 +337,6 @@ class CommunicatorThread(TerminableThread):
             monotime = time.monotonic()
 
             if self.device.allow_sync:
-                logger.debug('Sync allowed, making a pass')
                 if not self.dont_do_pathpoints:
                     self.sync_data()
 
@@ -378,8 +376,6 @@ class CommunicatorThread(TerminableThread):
                     self.device.pp_database.checkpoint()
                 if not self.dont_do_predicates:
                     self.device.evt_database.checkpoint()
-            else:
-                logger.debug('Sync was disallowed')
 
             # Wait for variables to refresh, do we need to upload any?
             self.wait(measurement())
