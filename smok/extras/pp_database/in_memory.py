@@ -95,6 +95,3 @@ class InMemoryPathpointDatabase(BasePathpointDatabase, Monitor):
     def __init__(self):
         self.pathpoints = {}
         Monitor.__init__(self)
-
-    def checkpoint(self) -> None:
-        pass

@@ -37,6 +37,3 @@ class InMemoryMacroDatabase(BaseMacroDatabase):
     @silence_excs(ValueError)
     def notify_macro_synced(self, macro_id: str, timestamp: int) -> None:
         self.executions_to_sync.remove((macro_id, timestamp))
-
-    def checkpoint(self) -> None:
-        pass

@@ -48,7 +48,6 @@ class BaseMacroDatabase(metaclass=ABCMeta):
         Get a list of macros to execute
         """
 
-    @abstractmethod
     def checkpoint(self) -> None:
         """
         Called about each 60 seconds by communicator thread

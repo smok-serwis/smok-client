@@ -73,7 +73,6 @@ class BasePathpointDatabase(metaclass=ABCMeta):
     """
     __slots__ = ()
 
-    @abstractmethod
     def checkpoint(self) -> None:
         """
         Called by the communicator thread, once every about 60 seconds.

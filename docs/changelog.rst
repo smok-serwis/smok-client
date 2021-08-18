@@ -7,6 +7,7 @@ v0.18.1
 
 * fixed a bug with initializing predicates
 * fixed a bug with deleting predicates
+* removed some abstractmethods' from checkpoints
 
 v0.18
 ~~~~~~~

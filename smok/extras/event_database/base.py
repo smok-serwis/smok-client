@@ -20,14 +20,12 @@ class BaseEventSynchronization(metaclass=ABCMeta):
 
         :param uuids: UUIDs assigned to events"""
 
-    @abstractmethod
     def negative_acknowledge(self) -> None:
         """Called by the communicator, when sync fails"""
 
 
 class BaseEventDatabase(metaclass=ABCMeta):
 
-    @abstractmethod
     def checkpoint(self) -> None:
         """
         Called by the communicator thread, once every about 60 seconds.
