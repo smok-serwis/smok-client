@@ -70,15 +70,17 @@ class SMOKLogHandler(Handler):
         }
 
         if record.exc_info:
-            f = frame_from_traceback(record.exc_info[2])
-            tb = Traceback(f)
-            try:
-                tb_json = base64.b64encode(
-                    gzip.compress(ujson.dumps(tb.to_json()).encode('utf-8'), 9)).decode('utf-8')
-            except OverflowError:
-                return None
-            dct.update(exception_text=tb.pretty_format(),
-                       exception_traceback=tb_json)
+            frame = record.exc_info[2]
+            if frame is not None:
+                f = frame_from_traceback(frame)
+                tb = Traceback(f)
+                try:
+                    tb_json = base64.b64encode(
+                        gzip.compress(ujson.dumps(tb.to_json()).encode('utf-8'), 9)).decode('utf-8')
+                except OverflowError:
+                    return None
+                dct.update(exception_text=tb.pretty_format(),
+                           exception_traceback=tb_json)
 
         return dct
 

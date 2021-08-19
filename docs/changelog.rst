@@ -4,7 +4,7 @@ Changelog
 v0.18.2
 ~~~~~~~
 
-* _TBA_
+* fixed a bug with logging bad exceptions
 
 v0.18.1
 ~~~~~~~
