@@ -125,7 +125,7 @@ class Sensor:
         :param advise: advise level to use
         :raises TypeError: invalid type
         """
-        values = self.type.sensor_to_pathpoint(value)
+        values = self.type.sensor_to_pathpoint(value, *self.slave_pathpoints)
         section = Section()
         for value, pp in zip(values, self.slave_pathpoints):
             section += pp.write(value, advise)

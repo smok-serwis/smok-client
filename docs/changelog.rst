@@ -6,6 +6,7 @@ v0.18.2
 
 * fixed a bug with logging bad exceptions
 * removed debug logging after syncing a pathpoint
+* fixed a bug with writing a sensor
 
 v0.18.1
 ~~~~~~~
