@@ -5,6 +5,7 @@ v0.18.2
 ~~~~~~~
 
 * fixed a bug with logging bad exceptions
+* removed debug logging after syncing a pathpoint
 
 v0.18.1
 ~~~~~~~
