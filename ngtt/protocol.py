@@ -12,10 +12,6 @@ class NGTTHeaderType(HashableIntEnum):
     PING = 0  #: a PING, sent by the client, server responds alike
     ORDER = 1  #: sent by the server
     ORDER_CONFIRM = 2  #: sent by the client
-    LOGS = 3  #: sent by the client
-    DATA_STREAM = 4  #: sent by the client
-    DATA_STREAM_CONFIRM = 5  #: sent by the server
-    DATA_STREAM_REJECT = 6  #: sent by the server
     ORDER_REJECT = 9  #: sent by the client, currently unused (by the client)
     FETCH_ORDERS = 10  #: a request by the client to fetch orders
 

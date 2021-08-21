@@ -4,7 +4,7 @@ Changelog
 v0.18.3
 ~~~~~~~
 
-* _TBA_
+* removed unused sync logs and pathpoints from NGTT
 
 v0.18.2
 ~~~~~~~

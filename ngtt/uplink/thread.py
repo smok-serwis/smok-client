@@ -105,32 +105,6 @@ class NGTTConnection(TerminableThread):
             if self.terminating:
                 return
 
-    @must_be_connected_else_raise
-    @for_argument(None, minijson.dumps)
-    def sync_pathpoints(self, data) -> Future:
-        """
-        Try to synchronize pathpoints.
-
-        This will survive multiple reconnection attempts.
-
-        :param data: exactly the same thing that you would submit to POST
-        at POST https://api.smok.co/v1/device/
-        :return: a Future telling you whether this succeeds or fails. If succeeds, it will
-            end with a result of None, if fails, it will end with a
-            :class:`~ngtt.exceptions.DataStreamSyncFailed`
-        """
-        fut = Future()
-        fut.set_running_or_notify_cancel()
-        try:
-            tid = self.current_connection.id_assigner.allocate_int()
-        except Empty as e:
-            logger.error('Ran out of IDs with a NGTT connection', exc_info=e)
-            raise ConnectionFailed(False, 'Ran out of IDs to assign')
-
-        self.current_connection.send_frame(tid, NGTTHeaderType.DATA_STREAM, data)
-        self.current_connection.futures[tid] = fut
-        return fut
-
     def inner_loop(self):
         self.current_connection.try_ping()
         ccon = [self.current_connection]
@@ -189,15 +163,3 @@ class NGTTConnection(TerminableThread):
     def cleanup(self):
         Optional(self.current_connection).close()
         self.current_connection = None
-
-    @must_be_connected_else_raise
-    @for_argument(None, minijson.dumps)
-    def stream_logs(self, data: tp.List) -> None:
-        """
-        Stream logs to the server
-
-        This will work on a best-effort basis.
-
-        :param data: the same thing that you would PUT /v1/device/device_logs
-        """
-        self.current_connection.send_frame(0, NGTTHeaderType.LOGS, data)
