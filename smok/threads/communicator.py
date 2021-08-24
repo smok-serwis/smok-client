@@ -108,6 +108,9 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             logger.error('Failure syncing events: %s', e, exc_info=e)
             evt_to_sync.negative_acknowledge()
+            if e.is_clients_fault():
+                # we failed this sync, but we still need to mark it as correct data
+                return
             raise
 
     @retry(3, ResponseError)
@@ -223,7 +226,6 @@ class CommunicatorThread(TerminableThread):
                 logger.warning('Got HTTP %s on sync sensor writes, acking', e.status_code)
                 sync.ack()
 
-    @retry(3, SyncError)
     def sync_data(self) -> None:
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
@@ -288,6 +290,8 @@ class CommunicatorThread(TerminableThread):
         except ResponseError as e:
             if e.is_no_link():
                 self.device.on_failed_sync()
+            if e.is_clients_fault():
+                return  # no reason to repeat requests that failed because of us
             raise
 
     @retry(3, ResponseError)
@@ -314,6 +318,10 @@ class CommunicatorThread(TerminableThread):
                 self.device.on_failed_sync()
             self.device.pathpoints.update(pps)
             self.device.pathpoints.dirty = True
+            if e.is_clients_fault():
+                # this part of data was damaged in that the server has rejected it
+                # but we still need to mark it as successful in order no to retry that sync
+                return
             raise
 
     def prepare(self) -> None:

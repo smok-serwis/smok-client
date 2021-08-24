@@ -6,6 +6,8 @@ v0.18.3
 
 * removed unused sync logs and pathpoints from NGTT
 * fixed string interpolation syntax for Python 3.6
+* code will behave better in HTTP 4xx situations
+* changed maximum logging amount behaviour
 
 v0.18.2
 ~~~~~~~
