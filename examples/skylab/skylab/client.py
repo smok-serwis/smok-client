@@ -33,7 +33,7 @@ class PP(Pathpoint):
         return self.value
 
     def on_write(self, value: PathpointValueType, advise: AdviseLevel) -> None:
-        print(f'Written {self.name} with {value}')
+        print('Written %s with %s', self.name, value)
         self.value = value
 
 

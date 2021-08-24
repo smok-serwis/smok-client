@@ -268,7 +268,7 @@ class CommunicatorThread(TerminableThread):
                 self.device.baob_database.delete_baob(key_to_delete)
 
             for key_to_download in data['should_download']:
-                resp, headers = self.device.api.get(f'/v1/device/baobs/{key_to_download}',
+                resp, headers = self.device.api.get('/v1/device/baobs/%s' % (key_to_download, ),
                                                     direct_response=True)
                 self.device.baob_database.set_baob_value(key_to_download, resp,
                                                          int(headers['X-SMOK-BAOB-Version']))
@@ -276,7 +276,7 @@ class CommunicatorThread(TerminableThread):
                     self.device.on_baob_updated(key_to_download)
 
             for key_to_upload in data['should_upload']:
-                self.device.api.put(f'/v1/device/baobs/{key_to_upload}', files={
+                self.device.api.put('/v1/device/baobs/%s' % (key_to_upload, ), files={
                     'file': self.device.baob_database.get_baob_value(key_to_upload),
                     'data': ujson.dumps(
                         {'version': self.device.baob_database.get_baob_version(

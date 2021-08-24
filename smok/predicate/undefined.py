@@ -26,7 +26,7 @@ class UndefinedStatistic(BaseStatistic):
                 base_class = self.device.statistic_registration.try_match(pred.statistic,
                                                                           pred.configuration)
                 if base_class is not None:
-                    logger.info(f'Initialized missing predicate ID %s statistic %s', predicate_id,
+                    logger.info('Initialized missing predicate ID %s statistic %s', predicate_id,
                                 statistic_name)
                     self.device.predicates[predicate_id] = pred.initialize(base_class)
 
