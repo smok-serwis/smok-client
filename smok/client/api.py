@@ -64,7 +64,7 @@ class RequestsAPI:
             else:
                 return {}
 
-        if resp.status_code not in (200, 201):
+        if resp.status_code // 100 != 2:
             if direct_response:
                 return resp.content, resp.headers
             try:

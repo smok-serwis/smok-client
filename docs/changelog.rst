@@ -4,7 +4,7 @@ Changelog
 v0.18.4
 ~~~~~~~
 
-* _TBA_
+* enabled smok-client to successfully parse 204 as response
 
 v0.18.3
 ~~~~~~~
