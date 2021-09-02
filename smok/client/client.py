@@ -782,3 +782,13 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         dev_ca_dat = get_dev_ca_cert()
         root_ca_dat = get_root_cert()
         return b''.join((my_dat, dev_ca_dat, root_ca_dat))
+
+    def clear_closed_and_synced_events(self) -> None:
+        """
+        Clear all closed and synchronized events
+
+        :raises UnavailableError: SMOKDevice was launched without predicates
+        """
+        if self.dont_do_predicates:
+            raise UnavailableError('SMOKDevice was launched without predicates')
+        self.evt_database.clear_closed_and_synced_events()

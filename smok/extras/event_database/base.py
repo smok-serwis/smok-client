@@ -93,3 +93,9 @@ class BaseEventDatabase(metaclass=ABCMeta):
 
         :param predicate_id: ID of the predicate that was deleted
         """
+
+    @abstractmethod
+    def clear_closed_and_synced_events(self) -> None:
+        """
+        Clear all events that were both closed and are already on the server
+        """

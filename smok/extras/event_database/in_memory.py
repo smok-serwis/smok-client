@@ -4,7 +4,7 @@ import time
 import typing as tp
 import weakref
 
-from satella.coding import Monitor, silence_excs
+from satella.coding import Monitor, silence_excs, ListDeleter
 from satella.time import parse_time_string
 
 from .base import BaseEventDatabase, BaseEventSynchronization
@@ -103,3 +103,13 @@ class InMemoryEventDatabase(BaseEventDatabase, Monitor):
     def on_predicate_deleted(self, predicate_id: str) -> None:
         del self.internal_data[predicate_id]
         self.sync()
+
+    @Monitor.synchronized
+    def clear_closed_and_synced_events(self) -> None:
+        """
+        Clear all events that were both closed and are already on the server
+        """
+        with ListDeleter(self.events) as ld:
+            for event in ld:
+                if event not in self.events_to_sync:
+                    ld.delete()

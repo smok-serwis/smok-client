@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.18.5
-~~~~~~~
+v0.19
+~~~~~
 
-* _TBA_
+* added option to clean all synced and closed events
 
 v0.18.4
 ~~~~~~~

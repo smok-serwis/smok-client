@@ -35,3 +35,7 @@ class NullEventDatabase(BaseEventDatabase):
 
     def checkpoint(self) -> None:
         pass
+
+    def clear_closed_and_synced_events(self) -> None:
+        pass
+

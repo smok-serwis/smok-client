@@ -2,7 +2,7 @@ import os
 import pickle
 import typing as tp
 
-from satella.coding import silence_excs, Monitor
+from satella.coding import silence_excs, Monitor, ListDeleter
 
 from smok.extras.event_database import InMemoryEventDatabase
 from smok.extras.event_database.in_memory import InMemoryEventSynchronization
@@ -59,3 +59,14 @@ class PicklingEventDatabase(InMemoryEventDatabase):
         with open(self.data_path, 'wb') as f_out:
             pickle.dump((self.events, self.events_to_sync), f_out, pickle.HIGHEST_PROTOCOL)
         self.dirty = False
+
+    @Monitor.synchronized
+    def clear_closed_and_synced_events(self) -> None:
+        """
+        Clear all events that were both closed and are already on the server
+        """
+        with ListDeleter(self.events) as ld:
+            for event in ld:
+                if event not in self.events_to_sync:
+                    ld.delete()
+            self.dirty = True
