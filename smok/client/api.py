@@ -65,11 +65,9 @@ class RequestsAPI:
                 return {}
 
         if resp.status_code // 100 != 2:
-            if direct_response:
-                return resp.content, resp.headers
             try:
                 error_json = resp.json()['status']
-            except (json.decoder.JSONDecodeError, ValueError):
+            except (json.decoder.JSONDecodeError, ValueError, KeyError):
                 try:
                     error_json = resp.text
                 except AttributeError:
