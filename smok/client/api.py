@@ -4,6 +4,7 @@ import typing as tp
 
 import minijson
 import requests
+from requests import HTTPError, Response
 from satella.files import read_in_file
 
 from smok.basics import Environment
@@ -64,22 +65,21 @@ class RequestsAPI:
             else:
                 return {}
 
-        if resp.status_code // 100 != 2:
+        try:
+            resp.raise_for_status()
+            if direct_response:
+                return resp.content, resp.headers
+            else:
+                try:
+                    return resp.json()
+                except json.decoder.JSONDecodeError as e:
+                    raise ResponseError(resp.status_code, resp.content) from e
+        except HTTPError:
             try:
                 error_json = resp.json()['status']
             except (json.decoder.JSONDecodeError, ValueError, KeyError):
-                try:
-                    error_json = resp.text
-                except AttributeError:
-                    error_json = repr(resp.content)
+                error_json = resp.text
             raise ResponseError(resp.status_code, error_json)
-        if direct_response:
-            return resp.content, resp.headers
-        else:
-            try:
-                return resp.json()
-            except json.decoder.JSONDecodeError as e:
-                raise ResponseError(resp.status_code, resp.content) from e
 
     def get(self, url: str, **kwargs):
         return self.request('get', url, **kwargs)
