@@ -64,8 +64,8 @@ A very important method of your custom class is
 :meth:`~smok.client.SMOKDevice.provide_unknown_pathpoint`. When smok-client encounters
 an unknown pathpoint (for example, an order for it was made) it tries to create it.
 This method should provide this pathpoint. Note that it doesn't need to provide pathpoints
-that you will create and register manually. If a predicate cannot be found, it should raise
-`KeyError`.
+that you will create and register manually. If a pathpoint cannot be found, and smok-client should
+ignore the order sent to it, it should raise `KeyError`.
 
 The pickle for predicates will be used for persisting the state of alarm detectors, aka
 :term:`predicate` .
