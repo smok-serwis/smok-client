@@ -184,6 +184,10 @@ Pathpoint
 .. autoclass:: smok.pathpoint.ReparsePathpoint
     :members:
 
+:code:`smok-client` will handle reparse pathpoints automatically for you, so you don't need
+to concern yourself with them being called as part of
+:meth:`smok.client.SMOKDevice.provide_unknown_pathpoint`.
+
 Enums
 -----
 .. autoclass:: smok.pathpoint.AdviseLevel
