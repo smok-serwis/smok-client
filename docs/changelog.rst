@@ -1,6 +1,11 @@
 Changelog
 =========
 
+v0.20
+~~~~~
+
+* changed NGTT port to 2405
+
 v0.19
 ~~~~~
 

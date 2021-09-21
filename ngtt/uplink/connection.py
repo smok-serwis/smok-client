@@ -185,7 +185,7 @@ class NGTTSocket(Closeable):
         sock.settimeout(10)
         ssl_sock = ssl_context.wrap_socket(sock, server_hostname=self.host)
         try:
-            ssl_sock.connect((self.host, 2408))
+            ssl_sock.connect((self.host, 2405))
             ssl_sock.do_handshake()
         except ConnectionRefusedError as e:
             ssl_sock.close()
