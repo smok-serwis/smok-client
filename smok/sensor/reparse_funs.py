@@ -142,8 +142,8 @@ def ecre_eval(expression: str, my_locals=None, args: tp.Union[tp.Any, tp.Tuple[t
 
     my_locals.update({'d': d, 'D': D, 'ked': ked, 'pt1000': pt1000, 'huba505': huba505,
                       'negz': lambda x: 0 if x < 0 else x,
-                      'mkflt': mkflt,
+                      'mkflt': mkflt, 'min': min, 'max': max, 'float': float, 'int': int,
                       'str': str,
                       'kty81': kty81,
                       'mkint32': mkint32})
-    return eval(expression, {}, my_locals)
+    return eval(expression, {'__builtins__': {}}, my_locals)

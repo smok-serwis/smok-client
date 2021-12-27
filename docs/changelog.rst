@@ -4,7 +4,7 @@ Changelog
 v0.20.1
 ~~~~~~~
 
-* _TBA_
+* fixed a dangerous exploit
 
 v0.20
 ~~~~~
