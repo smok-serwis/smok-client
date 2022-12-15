@@ -18,10 +18,6 @@ logger = logging.getLogger(__name__)
 
 DEVICE_ID = x509.ObjectIdentifier('1.3.6.1.4.1.55338.0.0')
 ENVIRONMENT = x509.ObjectIdentifier('1.3.6.1.4.1.55338.0.1')
-# noinspection PyProtectedMember
-x509.oid._OID_NAMES[DEVICE_ID] = 'DeviceID'
-# noinspection PyProtectedMember
-x509.oid._OID_NAMES[ENVIRONMENT] = 'Environment'
 
 
 def get_root_cert() -> bytes:

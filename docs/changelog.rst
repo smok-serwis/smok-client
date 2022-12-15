@@ -5,6 +5,7 @@ v0.20.1
 ~~~~~~~
 
 * fixed a dangerous exploit
+* updated to work with latest cryptography
 
 v0.20
 ~~~~~
