@@ -62,6 +62,9 @@ def redo_data(data):
 
 
 class CommunicatorThread(TerminableThread):
+    """
+    Note that this will sleep only if no data was synchronized during current loop execution.
+    """
     def __init__(self, device: 'SMOKClient', order_queue: queue.Queue,
                  data_to_sync: BasePathpointDatabase, dont_obtain_orders: bool,
                  dont_do_baobs: bool, dont_do_pathpoints: bool,
@@ -242,7 +245,6 @@ class CommunicatorThread(TerminableThread):
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:
-            logger.debug('Synchronization failed', exc_info=e)
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
