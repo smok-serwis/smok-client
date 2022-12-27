@@ -52,5 +52,5 @@ def archiving_dict_from_json(y: tp.List[dict]) -> tp.Dict[int, tp.List[str]]:
     result = {}
     for entry in y:
         interval = entry['interval']
-        result[entry['interval']] = entry['pathpoints']
+        result[interval] = entry['pathpoints']
     return result
