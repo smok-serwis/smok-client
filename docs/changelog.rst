@@ -4,7 +4,7 @@ Changelog
 v0.21.1
 ~~~~~~~
 
-* _TBA_
+* bumped device certificate
 
 v0.21.0
 ~~~~~~~
