@@ -73,7 +73,7 @@ class RequestsAPI:
                 try:
                     return resp.json()
                 except json.decoder.JSONDecodeError as e:
-                    if (e.status_code % 100) == 2:
+                    if (resp.status_code % 100) == 2:
                         return {}
                     raise ResponseError(resp.status_code, resp.content) from e
         except HTTPError:
