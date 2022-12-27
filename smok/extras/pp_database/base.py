@@ -80,6 +80,10 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def __bool__(self) -> bool:
+        """Does this contain any data to sync at all?"""
+
+    @abstractmethod
     def on_new_data(self, pathpoint: str, timestamp: Number,
                     value_or_exception: ValueOrExcept) -> None:
         """
