@@ -32,7 +32,11 @@ class SMOKLogHandler(Handler):
         self.timestamper = SequentialIssuer(time_us())
 
         mpm = MemoryPressureManager()
-        self.mem_callback = mpm.register_on_entered_severity(2)(self.prune_the_queue)
+        try:
+            self.mem_callback = mpm.register_on_entered_severity(2)(self.prune_the_queue)
+        except IndexError:
+            logger.debug('Unable to register memory pressure callback')
+            pass
 
     def __del__(self):
         self.mem_callback.cancel()

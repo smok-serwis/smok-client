@@ -352,12 +352,12 @@ class CommunicatorThread(TerminableThread):
 
             if self.device.allow_sync:
                 if not self.dont_do_pathpoints:
-                    self.sync_data()
+                    if self.sync_data():
+                        should_wait = False
 
                     # Synchronize the pathpoints
                     if self.device.pathpoints.dirty:
-                        if self.sync_pathpoints():
-                            should_wait = False
+                        self.sync_pathpoints()
 
                     # Synchronize sensors
                     if monotime - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:

@@ -6,6 +6,7 @@ from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
 
+from smok.basics import StorageLevel
 from smok.exceptions import ResponseError
 from smok.macro import Macro
 from smok.pathpoint.orders import Section
@@ -33,7 +34,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
         # Load the archiving data
         for interval, pathpoints in self.device.arch_database.get_archiving_instructions().items():
             for pp in pathpoints:
-                self.archiving_entries.add(ArchivingEntry(pp, interval))
+                self.archiving_entries.add(ArchivingEntry.provide(device, pp, interval))
 
     def should_update_archives(self) -> bool:
         return time.time() - self.archives_updated_on > ARCHIVE_UPDATING_INTERVAL
@@ -70,7 +71,7 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
             if e.is_no_link():
                 self.device.on_failed_sync()
             raise
-        entries_now = archiving_entries_from_json(data)
+        entries_now = archiving_entries_from_json(self.device, data)
         dct = archiving_dict_from_json(data)
         self.device.arch_database.on_archiving_data_sync(dct)
         entries_to_evict = self.archiving_entries - entries_now

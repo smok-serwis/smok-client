@@ -6,6 +6,8 @@ v0.21.0
 
 * fixed a bug with syncing endpoints
 * improved pathpoint sync logic
+* fixed an issue registering memory pressure handler
+* improved sync logic - archives will no longer read already read pathpoints
 
 v0.20.1
 ~~~~~~~
