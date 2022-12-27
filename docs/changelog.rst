@@ -4,7 +4,8 @@ Changelog
 v0.21.0
 ~~~~~~~
 
-* You're supposed to overload __bool__ for sync data as well
+* fixed a bug with syncing endpoints
+* improved pathpoint sync logic
 
 v0.20.1
 ~~~~~~~

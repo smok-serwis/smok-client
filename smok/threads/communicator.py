@@ -226,15 +226,18 @@ class CommunicatorThread(TerminableThread):
                 logger.warning('Got HTTP %s on sync sensor writes, acking', e.status_code)
                 sync.ack()
 
-    def sync_data(self) -> None:
+    def sync_data(self) -> bool:
+        """
+        :return: whether we should resynchronize right away
+        """
         sync = self.data_to_sync.get_data_to_sync()
         if sync is None:
-            return
+            return False
         try:
             data = sync.to_json()
             if not data:
                 sync.acknowledge()
-                return
+                return False
             self.device.sync_worker.sync_pathpoints(redo_data(data))
             sync.acknowledge()
             self.device.on_successful_sync()
@@ -248,6 +251,7 @@ class CommunicatorThread(TerminableThread):
                 logger.warning('Got HTTP %s while syncing pathpoint data. '
                                'Assuming is it damaged and marking as synced', e.status_code)
                 sync.acknowledge()
+        return True
 
     def sync_baob(self) -> None:
         self._sync_baob()
@@ -307,9 +311,7 @@ class CommunicatorThread(TerminableThread):
                     continue
                 with silence_excs(KeyError):
                     pathpoint = self.device.provide_unknown_pathpoint(name, StorageLevel(
-                        pp.get(
-                            'storage_level',
-                            1)))
+                        pp.get('storage_level', 1)))
                     stor_level = StorageLevel(pp.get('storage_level', 1))
                     if stor_level != pathpoint.storage_level:
                         pathpoint.on_new_storage_level(stor_level)
@@ -341,6 +343,7 @@ class CommunicatorThread(TerminableThread):
 
     @log_exceptions(logger, logging.ERROR)
     def loop(self) -> None:
+        should_wait = True
         with measure() as measurement:
             # Synchronize the data
             monotime = time.monotonic()
@@ -351,7 +354,8 @@ class CommunicatorThread(TerminableThread):
 
                     # Synchronize the pathpoints
                     if self.device.pathpoints.dirty:
-                        self.sync_pathpoints()
+                        if self.sync_pathpoints():
+                            should_wait = False
 
                     # Synchronize sensors
                     if monotime - self.last_sensors_synced > SENSORS_SYNC_INTERVAL:
@@ -387,4 +391,5 @@ class CommunicatorThread(TerminableThread):
                     self.device.evt_database.checkpoint()
 
             # Wait for variables to refresh, do we need to upload any?
-            self.wait(measurement())
+            if should_wait:
+                self.wait(measurement())
