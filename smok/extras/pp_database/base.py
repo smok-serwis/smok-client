@@ -15,9 +15,13 @@ class BaseDataToSynchronize(metaclass=ABCMeta):
         Mark the data as successfully synchronized
         """
 
-    @abstractmethod
     def __bool__(self) -> bool:
-        """Does this contain any data to sync at all?"""
+        """
+        Does this contain any data to sync at all?
+
+        You best overload it, as it's not fast enough being not overloaded
+        """
+        return bool(self.to_json())
 
     @abstractmethod
     def negative_acknowledge(self) -> None:

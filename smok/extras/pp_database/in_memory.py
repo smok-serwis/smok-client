@@ -22,9 +22,6 @@ class InMemoryDataToSynchronize(BaseDataToSynchronize):
     def to_json(self) -> tp.List:
         return self.data
 
-    def __bool__(self):
-        return bool(self.data)
-
     def acknowledge(self) -> None:
         timestamps_for_pathpoints = {}  # type: tp.Dict[str, Number]
         for pp in self.data:
