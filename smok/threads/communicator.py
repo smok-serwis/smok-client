@@ -239,6 +239,7 @@ class CommunicatorThread(TerminableThread):
             sync.acknowledge()
             self.device.on_successful_sync()
         except SyncError as e:
+            logger.debug('Synchronization failed', exc_info=e)
             if e.is_no_link():
                 self.device.on_failed_sync()
             if not e.is_clients_fault():
