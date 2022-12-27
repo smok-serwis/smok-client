@@ -1,10 +1,10 @@
 Changelog
 =========
 
-v0.20.2
+v0.21.0
 ~~~~~~~
 
-* _todo_
+* You're supposed to overload __bool__ for sync data as well
 
 v0.20.1
 ~~~~~~~
