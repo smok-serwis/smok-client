@@ -70,6 +70,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     Read carefully. If the documentation states that a particular thread invokes this method, this means
     that you are essentially not allowed to call the method itself. It will be called by respective processor thread.
 
+    When in doubt, use the source or just call super() while overloading.
+
     Note that instantiating this object spawns two non-daemon threads. This object must be
     close()d before termination (or garbage collected).
 
@@ -660,7 +662,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Called by executor thread upon receiving a request to execute a particular SysctlOrder
 
-        Handles commonly defined BAOBs. Extend to implement custom sysctls.
+        Handles commonly defined sysctls of `baob-created` and `baob-updated`.
+        Extend to implement custom sysctls.
         Sysctl orders are user-defined.
 
         :param op_type: type of operation to execute

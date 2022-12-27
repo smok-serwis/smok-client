@@ -34,3 +34,12 @@ Note that all of the:
 Will return you a :class:`smok.pathpoint.Section` that represents what needs to be done
 in order to carry out your command. You need to execute
 with :meth:`smok.client.SMOKDevice.execute` in order for them to take any effect.
+
+Common sysctl orders
+--------------------
+
+Amongst well-defined sysctls there are:
+
+* `update` - trigger the device to download new versions of software
+* `reboot` - trigger a reboot
+* `baob-updated` and `baob-created` - BAOB has changed, these are handled transparently by :class:`smok.client.Client`.
