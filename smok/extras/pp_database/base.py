@@ -16,6 +16,10 @@ class BaseDataToSynchronize(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def __bool__(self) -> bool:
+        """Does this contain any data to sync at all?"""
+
+    @abstractmethod
     def negative_acknowledge(self) -> None:
         """
         Mark the data as failed to synchronize
@@ -78,10 +82,6 @@ class BasePathpointDatabase(metaclass=ABCMeta):
         Called by the communicator thread, once every about 60 seconds.
         May be called much more often, it's the function responsibility to throttle.
         """
-
-    @abstractmethod
-    def __bool__(self) -> bool:
-        """Does this contain any data to sync at all?"""
 
     @abstractmethod
     def on_new_data(self, pathpoint: str, timestamp: Number,
