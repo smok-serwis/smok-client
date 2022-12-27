@@ -5,6 +5,7 @@ v0.21.1
 ~~~~~~~
 
 * bumped device certificate
+   * as well as made them smaller files
 
 v0.21.0
 ~~~~~~~
