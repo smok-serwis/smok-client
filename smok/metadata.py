@@ -12,6 +12,8 @@ from smok.extras import BaseMetadataDatabase
 
 
 class PlainDataUpdater:
+    __slots__ = 'entries', 'device'
+
     def __init__(self, device: 'SMOKDevice'):
         self.entries = queue.Queue()
         self.device = device

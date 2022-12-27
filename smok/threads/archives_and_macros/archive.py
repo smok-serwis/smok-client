@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time
 import typing as tp
 
@@ -8,25 +9,23 @@ from satella.coding.typing import Number
 from smok.basics import StorageLevel
 from smok.exceptions import OperationFailedError
 from smok.pathpoint import Pathpoint
-from smok.pathpoint.orders import Section, ReadOrder, AdviseLevel
+from smok.pathpoint.orders import Section
 
 
 class ArchivingEntry(OmniHashableMixin, ReprableMixin):
-    _REPR_FIELDS = ('pathpoint', 'interval')
-    _HASH_FIELDS_TO_USE = ('pathpoint',)
-    __slots__ = ('pathpoint', 'interval', 'last_updated')
+    _REPR_FIELDS = 'pathpoint', 'interval'
+    _HASH_FIELDS_TO_USE = 'pathpoint',
+    __slots__ = 'pathpoint', 'interval'
 
     @staticmethod
-    def provide(client, pp_name: str, interval: Number):
-        return ArchivingEntry(client.provide_unknown_pathpoint(pp_name, StorageLevel.PERMANENT), interval)
+    def provide(client, pp_name: str, interval: Number) -> ArchivingEntry:
+        return ArchivingEntry(client.get_pathpoint(pp_name, StorageLevel.PERMANENT), interval)
 
     def __init__(self, pathpoint: Pathpoint, interval: Number):
         self.pathpoint = pathpoint
         self.interval = interval
-        self.last_updated = 0
 
     def should_update(self) -> bool:
-        self.last_updated = time.time()
         try:
             ts = self.pathpoint.get()[0]
         except OperationFailedError:

@@ -67,7 +67,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
     You should subclass it, to provide your own device.
 
-    Note that instantiating this object spawns two non-daemon thread. This object must be
+    Read carefully. If the documentation states that a particular thread invokes this method, this means
+    that you are essentially not allowed to call the method itself. It will be called by respective processor thread.
+
+    Note that instantiating this object spawns two non-daemon threads. This object must be
     close()d before termination (or garbage collected).
 
     :param cert: either a path to or a file-like object containing the device certificate
@@ -114,9 +117,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     :param delayed_boot: if set to True, you will need to call
         :meth:`~smok.client.SMOKDevice.continue_boot` in order to start fetching orders and the
         like. False by default.
-    :param use_ngtt: if set to True, logs, orders and pathpoint data will be transmitted over
-        a persistent TLS connection instead of HTTP API.
-
+    :param use_ngtt: if set to True, orders will be fetched asynchronously over
+        a persistent TLS connection instead of HTTP API. This is both more efficient and bandwidth-saving instead
+        of polling.
 
     About 10 seconds from creation if CommunicatorThread was created, sensors will be synced and
     the device will start talking. To reduce this delay, set parameter startup_delay
@@ -154,6 +157,8 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
 
         .. note:: this can safely raise `KeyError` upon encountering a predicate that is manually
                   defined and registered via :class:`~smokclient.pathpoint.Pathpoint`
+
+        This will be called by an assortment of threads, as well as you.
 
         :return: a Pathpoint instance corresponding to what was ordered
         :raises KeyError: pathpoint could not be generated
@@ -362,7 +367,10 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
     @must_be_open
     def log_sensor_write(self, sw: SensorWriteEvent):
         """
-        Log that a sensor has been written and enqueue it for cloud upload
+        Log that a sensor has been written and enqueue it for cloud upload.
+
+        This will be called by the user. Note that :meth:`smok.sensor.Sensor.write` does not automatically generate
+        a saving entry.
 
         :param sw: sensor write event to upload
         :raises RuntimeError: device already closed
@@ -577,7 +585,7 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
         """
         Schedule sections to be executed.
 
-        To be invoked by any thread. Use this to inject sections into device's execution loop.
+        To be invoked by any thread, as well as the user. Use this to inject sections into device's execution loop.
 
         :param secs: sections to be executed, in that order, unless they're joinable
         """
@@ -589,6 +597,9 @@ class SMOKDevice(Closeable, metaclass=ABCMeta):
                       storage_level: StorageLevel = StorageLevel.TREND) -> Pathpoint:
         """
         Obtain a pathpoint. Creates one and registers it if not available.
+
+        Prefer to call this than :meth:`smok.client.Client.provide_unknown_pathpoint`. This will be called
+        by threads, as well as the user.
 
         :param path: path of the pathpoint
         :param storage_level: target storage level

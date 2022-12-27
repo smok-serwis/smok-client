@@ -6,7 +6,6 @@ from satella.coding.concurrent import PeekableQueue, IntervalTerminableThread
 from satella.coding.decorators import retry
 from satella.time import time_as_int
 
-from smok.basics import StorageLevel
 from smok.exceptions import ResponseError
 from smok.macro import Macro
 from smok.pathpoint.orders import Section
@@ -86,35 +85,40 @@ class ArchivingAndMacroThread(IntervalTerminableThread):
     def loop(self) -> None:
         if self.device.allow_sync:
             if not self.dont_do_macros:
-                if self.should_update_macros():
-                    self.update_macros()
-
-                mdb = self.device.macros_database
-
-                for macro in mdb.get_macros():
-                    if macro.should_execute():
-                        macro.execute(self.device)
-
-                for macro_id, ts in mdb.get_done_macros():
-                    try:
-                        self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
-                    except ResponseError as e:
-                        if e.is_no_link():
-                            self.device.on_failed_sync()
-                            continue
-                    mdb.notify_macro_synced(macro_id, ts)
-
+                self.do_macros()
             self.device.metadata.try_update()
 
             if not self.dont_do_archives:
-                if self.should_update_archives():
-                    self.update_archives()
-
-                sec = Section()
-                for a_entry in self.archiving_entries:
-                    if a_entry.should_update():
-                        sec += a_entry.update()
-                if sec:
-                    self.order_queue.put(sec)
+                self.do_archives()
         else:
             self.safe_sleep(10)
+
+    def do_macros(self):
+        if self.should_update_macros():
+            self.update_macros()
+
+        mdb = self.device.macros_database
+
+        for macro in mdb.get_macros():
+            if macro.should_execute():
+                macro.execute(self.device)
+
+        for macro_id, ts in mdb.get_done_macros():
+            try:
+                self.device.api.post('/v1/device/macros/%s/%s' % (macro_id, ts))
+            except ResponseError as e:
+                if e.is_no_link():
+                    self.device.on_failed_sync()
+                    continue
+            mdb.notify_macro_synced(macro_id, ts)
+
+    def do_archives(self):
+        if self.should_update_archives():
+            self.update_archives()
+
+        sec = Section()
+        for a_entry in self.archiving_entries:
+            if a_entry.should_update():
+                sec += a_entry.update()
+        if sec:
+            self.device.execute(sec)
