@@ -4,6 +4,7 @@ Changelog
 v0.21.1
 ~~~~~~~
 
+* added bool to reparse
 * bumped device certificate
    * as well as made them smaller files
 
